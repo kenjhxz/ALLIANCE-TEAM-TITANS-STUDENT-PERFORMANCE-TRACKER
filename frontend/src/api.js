@@ -80,6 +80,10 @@ export const fetchProgram = async () => {
   return api.get('/programs/');
 };
 
+export const fetchDiscipline = async () => {
+  return api.get('/disciplines/');
+};
+
 export const fetchTeacher = async () => {
   return api.get('/teachers/');
 };
