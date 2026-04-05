@@ -87,3 +87,16 @@ export const fetchDiscipline = async () => {
 export const fetchTeacher = async () => {
   return api.get('/teachers/');
 };
+
+export const fetchStudent = async () => {
+  return api.get('/students/');
+};
+
+/*grade exports */
+export const addGrade = async (grade) => {
+  return api.post('/grades/', grade);
+};
+
+export const fetchGrades = async () => {
+  return api.get('/grades/');
+};

@@ -33,6 +33,10 @@ export default function Login({onLoginSuccess}){
 
                 if(login_data.is_admin){
                     navigate('/admin-dashboard/');
+                } else if(login_data.is_teacher){
+                    navigate('/teacher-dashboard');
+                } else if(login_data.is_student){
+                    navigate('/student-dashboard');
                 }
 
 
