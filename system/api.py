@@ -116,9 +116,9 @@ class DisciplineView(APIView):
         disciplines = Discipline.objects.all()
 
         if college_id:
-            disciplines = disciplines.objects.filter(program__college_id = college_id)
+            disciplines = disciplines.filter(program__college_id=college_id)
         if program_id:
-            disciplines = disciplines.objects.filter(program_id=program_id)
+            disciplines = disciplines.filter(program_id=program_id)
         discipline_data = DisciplineSerializer(disciplines, many=True)
         return Response(discipline_data.data)
     
@@ -141,7 +141,7 @@ class TeacherView(APIView):
 
     def get (self,request):
         teachers = Teacher.objects.all()
-        teacher_data = CollegeSerializer(teachers, many=True)
+        teacher_data = TeacherSerializer(teachers, many=True)
         return Response(teacher_data.data)
     
 
