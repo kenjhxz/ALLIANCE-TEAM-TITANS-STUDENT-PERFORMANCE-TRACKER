@@ -26,16 +26,14 @@ export default function StudentDashboard() {
     }
   };
 
-  const generateReport = () => {
-    // Simple report generation
-    const report = grades.map(g => `${g.discipline_name}: ${g.score} (${g.remarks})`).join('\n');
-    alert(`Grade Report:\n${report}`);
+  const viewReport = () => {
+    navigate('/student-report');
   };
 
   return (
     <div style={{ padding: 20 }}>
       <h2>Student Dashboard - My Grades</h2>
-      <button onClick={generateReport}>Generate Report</button>
+      <button onClick={viewReport}>View Detailed Report</button>
       <ul>
         {grades.map((grade) => (
           <li key={grade.id}>

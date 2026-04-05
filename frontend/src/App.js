@@ -7,7 +7,9 @@ import College from "./admin-ui/colleges.js";
 import Discipline from "./admin-ui/disciplines.js";
 import Teacher from "./admin-ui/teachers.js";
 import TeacherDashboard from "./teacher-ui/teacher-dashboard.js";
+import TeacherGrades from "./teacher-ui/teacher-grades.js";
 import StudentDashboard from "./student-ui/student-dashboard.js";
+import GradeReport from "./student-ui/grade-report.js";
 
 
 function App(){
@@ -24,7 +26,9 @@ function App(){
           <Route path='teachers' element={<Teacher />} />
           </Route>
       <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+      <Route path="/teacher-grades" element={<TeacherGrades />} />
       <Route path="/student-dashboard" element={<StudentDashboard />} />
+      <Route path="/student-report" element={<GradeReport />} />
     </Routes>
     
     

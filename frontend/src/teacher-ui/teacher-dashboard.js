@@ -57,6 +57,7 @@ export default function TeacherDashboard() {
   return (
     <div style={{ padding: 20 }}>
       <h2>Teacher Dashboard - Add Grade</h2>
+      <button onClick={() => navigate('/teacher-grades')}>View All Grades</button>
       <form onSubmit={handleSubmit}>
         <select
           value={grade.student}
