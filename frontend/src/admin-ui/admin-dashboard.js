@@ -7,6 +7,31 @@
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const closeTimeout = useRef(null);
+    const [notifOpen, setNotifOpen] = useState(false);
+    const notifRef = useRef(null);
+    const [notifications, setNotifications] = useState([
+      {
+        id: 1,
+        type: 'info',
+        title: 'System Update',
+        message: 'System maintenance scheduled for tonight at 10 PM',
+        time: '2 hours ago'
+      },
+      {
+        id: 2,
+        type: 'warning',
+        title: 'Low Storage',
+        message: 'Database storage is at 85% capacity',
+        time: '1 day ago'
+      },
+      {
+        id: 3,
+        type: 'success',
+        title: 'Backup Complete',
+        message: 'Daily backup completed successfully',
+        time: '2 days ago'
+      }
+    ]);
 
     useEffect(() => {
       const access = localStorage.getItem("access");
@@ -22,9 +47,32 @@
       };
     }, []);
 
+    // Handle click outside notification dropdown
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        if (notifRef.current && !notifRef.current.contains(e.target)) {
+          setNotifOpen(false);
+        }
+      };
+      
+      if (notifOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }
+    }, [notifOpen]);
+
     const handleLogout = () => {
       localStorage.clear();
       navigate("/");
+    };
+
+    const handleClearNotifications = () => {
+      setNotifications([]);
+      setNotifOpen(false);
+    };
+
+    const handleRemoveNotification = (id) => {
+      setNotifications(notifications.filter(n => n.id !== id));
     };
 
     const location = useLocation();
@@ -66,7 +114,7 @@
           onMouseLeave={() => {
             closeTimeout.current = setTimeout(() => setSidebarOpen(false), 150);
           }}
-          className="sidebar"
+          className={`sidebar ${!sidebarOpen ? 'sidebar-minimized' : ''}`}
           style={{ width: sidebarOpen ? 220 : 50, transition: "width 0.2s", overflow: "hidden" }}
         >
           <div className="sb-logo">
@@ -162,6 +210,62 @@
 
         {/* Main Content */}
         <div className="main">
+          {/* Header with Notifications */}
+          <div style={{display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', position: 'relative'}}>
+            <div ref={notifRef} style={{position: 'relative'}}>
+              <button
+                className="notif-btn"
+                onClick={() => setNotifOpen(!notifOpen)}
+                aria-label="Notifications"
+                title="Notifications"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M19.13 16H5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M14 20a2 2 0 0 1-4 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {notifications.length > 0 && <div className="notif-dot"></div>}
+              </button>
+
+              {/* Notification Dropdown */}
+              {notifOpen && (
+                <div className="notif-dropdown show">
+                  <div className="notif-dropdown-head">
+                    <h3>Notifications</h3>
+                    {notifications.length > 0 && (
+                      <button
+                        className="notif-clear-btn"
+                        onClick={handleClearNotifications}
+                      >
+                        Clear All
+                      </button>
+                    )}
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="notif-empty">
+                      <p>No notifications</p>
+                    </div>
+                  ) : (
+                    notifications.map(notif => (
+                      <div key={notif.id} className="notif-item">
+                        <div className={`notif-icon ${notif.type}`}>
+                          {notif.type === 'info' && '📘'}
+                          {notif.type === 'warning' && '⚠️'}
+                          {notif.type === 'success' && '✓'}
+                          {notif.type === 'error' && '❌'}
+                        </div>
+                        <div className="notif-content">
+                          <p className="notif-title">{notif.title}</p>
+                          <p className="notif-message">{notif.message}</p>
+                          <p className="notif-time">{notif.time}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           <Outlet />
         </div>
       </div>
