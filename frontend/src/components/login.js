@@ -9,10 +9,63 @@ export default function Login({onLoginSuccess}){
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
+    // Development-friendly hard-coded accounts. These are used before attempting
+    // a real API login so developers can test student/teacher flows without the
+    // backend running.
+    const DEV_ACCOUNTS = {
+        student: {
+            username: 'student',
+            password: 'studentpass',
+            access: 'dev-access-token-student',
+            refresh: 'dev-refresh-token-student',
+            is_admin: false,
+            is_teacher: false,
+            is_student: true,
+            profile: { first_name: 'Dev', last_name: 'Student', role: 'student' }
+        },
+        teacher: {
+            username: 'teacher',
+            password: 'teacherpass',
+            access: 'dev-access-token-teacher',
+            refresh: 'dev-refresh-token-teacher',
+            is_admin: false,
+            is_teacher: true,
+            is_student: false,
+            profile: { first_name: 'Dev', last_name: 'Teacher', role: 'teacher' }
+        }
+    };
+
     const handleLogin = async (e) => {
         e.preventDefault();
         try{
-            
+            // Check for hard-coded dev accounts first. This lets developers
+            // sign in without a backend during UI work.
+            const tryDev = Object.values(DEV_ACCOUNTS).find(a => a.username === username && a.password === password);
+            if (tryDev) {
+                const login_data = tryDev;
+                // store values expected by the rest of the app
+                localStorage.setItem('access', login_data.access);
+                localStorage.setItem('refresh', login_data.refresh);
+                localStorage.setItem('is_admin', String(login_data.is_admin));
+                localStorage.setItem('is_teacher', String(login_data.is_teacher));
+                localStorage.setItem('is_student', String(login_data.is_student));
+                localStorage.setItem('profile', JSON.stringify(login_data.profile));
+
+                setMessage(`You have successfully logged in ${username}! (dev)`);
+                if(onLoginSuccess) onLoginSuccess();
+
+                if(login_data.is_admin){
+                    navigate('/admin-dashboard/');
+                } else if(login_data.is_teacher){
+                    navigate('/teacher-dashboard');
+                } else if(login_data.is_student){
+                    navigate('/student-dashboard');
+                }
+
+                return; // short-circuit real API call
+            }
+
+            // Fallback to real backend login if dev account not used
             const res = await fetch('http://localhost:8000/api/login/', {
                 method: 'POST',
                 headers: {'Content-Type':'application/json'},
@@ -82,6 +135,9 @@ export default function Login({onLoginSuccess}){
                         />
                         <button className="auth-btn" type="submit">Login</button>
                     </form>
+                    {process.env.NODE_ENV === 'development' && (
+                        <div style={{marginTop:12,fontSize:12,color:'#9aa'}}>Dev accounts: <strong>student</strong>/<strong>studentpass</strong> (Student) — <strong>teacher</strong>/<strong>teacherpass</strong> (Teacher)</div>
+                    )}
                 </div>
             </div>
         </div>

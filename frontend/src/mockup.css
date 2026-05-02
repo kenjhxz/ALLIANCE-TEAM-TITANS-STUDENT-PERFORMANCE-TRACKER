@@ -271,6 +271,18 @@
 .sb-item svg {
   flex-shrink: 0;
   opacity: 0.85;
+  width: 18px; /* consistent icon size */
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Explicit svg icon class for consistent proportions across the sidebar */
+.sb-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .sb-item .sb-badge {
@@ -705,12 +717,14 @@ td {
 /* Minimized sidebar state */
 .sidebar-minimized .sb-item {
   justify-content: center;
-  padding: 9px 0;
+  padding: 10px 0; /* slightly more room vertically */
   gap: 0;
 }
 
 .sidebar-minimized .sb-item svg {
   margin: 0;
+  width: 18px;
+  height: 18px;
 }
 
 .sidebar-minimized .sb-badge {
