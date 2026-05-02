@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchGrades, addGrade } from '../api';
+import { fetchGrades } from '../api';
 
 export default function TeacherGrades() {
   const [grades, setGrades] = useState([]);

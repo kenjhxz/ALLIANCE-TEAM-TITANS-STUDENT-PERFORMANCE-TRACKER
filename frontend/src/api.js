@@ -70,26 +70,21 @@ export const addTeacher = async (teacher)=>{
   return api.post('/teachers/', teacher);
 };
 
-
-/*fetching exports */
-export const fetchCollege = async () => {
-    return api.get('/colleges/');
+export const addStudent = async (student) => {
+  return api.post('/students/', student);
 };
 
-export const fetchProgram = async () => {
-  return api.get('/programs/');
+
+/*fetching exports (see dev fallback implementations further below) */
+
+export const fetchUsers = async () => {
+  return api.get('/users/');
 };
 
-export const fetchDiscipline = async () => {
-  return api.get('/disciplines/');
-};
-
-export const fetchTeacher = async () => {
-  return api.get('/teachers/');
-};
-
-export const fetchStudent = async () => {
-  return api.get('/students/');
+export const searchUsers = async (query) => {
+  const q = (query || '').trim();
+  if (!q) return api.get('/users/');
+  return api.get(`/users/?search=${encodeURIComponent(q)}`);
 };
 
 /*grade exports */
@@ -99,4 +94,78 @@ export const addGrade = async (grade) => {
 
 export const fetchGrades = async () => {
   return api.get('/grades/');
+};
+// Development-friendly mock data fallback when backend is unavailable
+export const DEV_MOCK = {
+  colleges: [
+    { id: 1, name: 'College of Engineering', code: 'COE' },
+    { id: 2, name: 'College of Education', code: 'COED' }
+  ],
+  programs: [
+    { id: 1, name: 'Computer Science', college: 1 },
+    { id: 2, name: 'Software Engineering', college: 1 },
+    { id: 3, name: 'Education Major', college: 2 }
+  ],
+  disciplines: [
+    { id: 1, name: 'CS101', program: 1 },
+    { id: 2, name: 'CS301', program: 1 }
+  ],
+  students: [
+    { id: 1, first_name: 'Jane', last_name: 'Doe', course: 1 },
+    { id: 2, first_name: 'John', last_name: 'Smith', course: 2 }
+  ],
+  teachers: [
+    { id: 1, first_name: 'Alice', last_name: 'Ng', department: 1 },
+    { id: 2, first_name: 'Bob', last_name: 'Tan', department: 2 }
+  ],
+  flags: [
+    { id: 1, title: 'Grade encoding error — COE · CS301', desc: 'Finals grades mismatch detected', meta: 'Today · System', action: 'Resolve' },
+    { id: 2, title: 'Course overload request', desc: '3 students awaiting approval', meta: 'Yesterday · COED', action: 'Review' }
+  ]
+};
+
+const withFallback = async (fn, fallback) => {
+  try {
+    return await fn();
+  } catch (err) {
+    console.warn('API call failed, using DEV_MOCK fallback', err);
+    return { data: fallback };
+  }
+};
+
+export const fetchFlags = async () => {
+  return withFallback(() => api.get('/flags/'), DEV_MOCK.flags);
+};
+
+export const fetchCollege = async () => {
+  return withFallback(() => api.get('/colleges/'), DEV_MOCK.colleges);
+};
+
+export const fetchProgram = async () => {
+  return withFallback(() => api.get('/programs/'), DEV_MOCK.programs);
+};
+
+export const fetchDiscipline = async () => {
+  return withFallback(() => api.get('/disciplines/'), DEV_MOCK.disciplines);
+};
+
+export const fetchTeacher = async () => {
+  return withFallback(() => api.get('/teachers/'), DEV_MOCK.teachers);
+};
+
+export const fetchStudent = async () => {
+  return withFallback(() => api.get('/students/'), DEV_MOCK.students);
+};
+
+// Flag action endpoints
+export const resolveFlag = async (flagId) => {
+  return api.post(`/flags/${flagId}/resolve/`);
+};
+
+export const dismissFlag = async (flagId) => {
+  return api.post(`/flags/${flagId}/dismiss/`);
+};
+
+export const reviewFlag = async (flagId) => {
+  return api.post(`/flags/${flagId}/review/`);
 };

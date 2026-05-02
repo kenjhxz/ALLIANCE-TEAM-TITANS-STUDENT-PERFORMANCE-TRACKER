@@ -37,15 +37,9 @@ export default function DegreeProgram() {
   };
 
   return (
-    <div style={{
-      flex: 1,
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "80vh"
-    }}>
-      <div style={{ width: 400, padding: 20, borderRadius: 8, backgroundColor: "#f3f4f6", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>Add Degree Program</h2>
+    <div className="center" style={{ minHeight: '80vh' }}>
+      <div className="card" style={{ width: 400, padding: 20 }}>
+        <h2 className="page-title" style={{ textAlign: 'center', marginBottom: 20 }}>Add Degree Program</h2>
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {/*select college first*/}
           <select

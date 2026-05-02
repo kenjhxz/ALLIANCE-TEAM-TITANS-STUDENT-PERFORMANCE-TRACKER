@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { addDiscipline, fetchCollege, fetchProgram } from '../api';
+import { addDiscipline, fetchProgram } from '../api';
 
 export default function Discipline(){
 
     const [ discipline, setDiscipline]= useState({program: '', name: '', code: ''});
     const [program, setProgram] = useState([]);
-    const [college, setCollege] = useState([]);
     const navigate = useNavigate();
 
    //Check for admin access
@@ -22,9 +21,7 @@ export default function Discipline(){
         const loadData = async () => {
             try {
             const resPrograms = await fetchProgram();
-            const resColleges = await fetchCollege();
             setProgram(resPrograms.data);
-            setCollege(resColleges.data);
             } catch (err) {
             console.error("Error fetching data:", err);
             }

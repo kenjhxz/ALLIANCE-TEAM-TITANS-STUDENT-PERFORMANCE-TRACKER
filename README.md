@@ -103,6 +103,47 @@ A comprehensive web application for managing student grades and performance trac
    ```
    Frontend will run on http://localhost:3000
 
+### Quick commands (run from repo root)
+
+You can run these helper scripts from the project root (recommended):
+
+```powershell
+npm run frontend:install   # installs dependencies in frontend/
+npm run frontend:start     # starts the React dev server (frontend)
+npm run frontend:build     # builds production bundle into frontend/build
+npm run mock-server       # starts local mock API server (http://127.0.0.1:8000/api/)
+```
+
+Or run directly from the `frontend` folder:
+
+```powershell
+cd frontend
+npm install
+npm start
+```
+
+### Mock API Server (for local development)
+
+For UI development without the backend Django server, run the mock API server:
+
+```powershell
+npm run mock-server
+```
+
+This starts a lightweight Express server that serves mock data for colleges, programs, disciplines, students, teachers, and flags. The frontend will automatically use this when running `npm run frontend:start`.
+
+**In separate terminals:**
+```powershell
+# Terminal 1: Start mock API server
+npm run mock-server
+
+# Terminal 2: Start React dev server  
+npm run frontend:start
+```
+
+Access the app at http://localhost:3000. Admin panel is at http://localhost:3000/admin-dashboard.
+*** End Patch
+
 ## 🔧 Configuration
 
 ### Environment Variables

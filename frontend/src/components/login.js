@@ -51,31 +51,41 @@ export default function Login({onLoginSuccess}){
     };
 
 
-   return (
-    <div style={{ maxWidth: 300, margin: '50px auto' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ width: '100%', marginBottom: 10, padding: 8 }}
-        />
-        <button type="submit" style={{ width: '100%', padding: 8 }}>Login</button>
-      </form>
-      {message && <p>{message}</p>}
-    </div>
-    );
+     return (
+        <div className="auth-wrap">
+            <div className="auth-card">
+                <div className="auth-head">
+                    <div className="auth-logo">S</div>
+                    <div>
+                        <div className="auth-title">Sign in</div>
+                        <div className="auth-sub">Access the Student Performance Tracker</div>
+                    </div>
+                </div>
+                <div className="auth-body">
+                    {message && <div className={`auth-error ${message ? 'visible' : ''}`}>{message}</div>}
+                    <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:10}}>
+                        <input
+                            className="auth-input"
+                            type="text"
+                            placeholder="Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            required
+                        />
+                        <input
+                            className="auth-input"
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <button className="auth-btn" type="submit">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+     );
 
 
 }
