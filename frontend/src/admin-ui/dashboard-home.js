@@ -116,12 +116,6 @@ export default function DashboardHome(){
           <div className="page-sub">Overview</div>
         </div>
         <div style={{display:'flex',gap:8,alignItems:'center'}}>
-          <button className="notif-btn" title="Notifications">
-            <div className="notif-dot"></div>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M9.4 18H14.6M6.2 15V10.8C6.2 7.5 8.3 4.9 11.4 4.2V3.8C11.4 3.1 11.9 2.6 12.6 2.6C13.3 2.6 13.8 3.1 13.8 3.8V4.2C16.9 4.9 19 7.5 19 10.8V15L20.2 16.2V16.8H5V16.2L6.2 15Z" stroke="#57473A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
           <div className="user-chip"><div className="avatar">SA</div><div style={{fontSize:12,color:'#fff',marginLeft:8}}>Super Admin</div></div>
         </div>
       </div>
