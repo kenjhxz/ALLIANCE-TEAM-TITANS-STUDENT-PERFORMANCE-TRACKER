@@ -5,6 +5,7 @@ from .views import (
     SubjectOfferingView,
     StudentDisciplineRequestView, StudentScheduleSelectView,
     AdminEnrollmentQueueView, GradeViewSet
+    , TeacherOfferingsView, TeacherOfferingEnrollmentsView
 )
 
 urlpatterns = [
@@ -30,5 +31,11 @@ urlpatterns = [
 
     # Grades
     path('grades/', GradeViewSet.as_view({'get': 'list', 'post': 'create'}), name='grades'),
+    path('grades/<int:pk>/', GradeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'put': 'update', 'delete': 'destroy'}), name='grade-detail'),
     path('grades/mine/', GradeViewSet.as_view({'get': 'mine'}), name='my-grades'),
+    path('grades/export/', GradeViewSet.as_view({'get': 'export'}), name='grades-export'),
+
+    # Teacher-specific endpoints
+    path('teacher/offerings/', TeacherOfferingsView.as_view(), name='teacher-offerings'),
+    path('teacher/offerings/<int:offering_id>/enrollments/', TeacherOfferingEnrollmentsView.as_view(), name='teacher-offering-enrollments'),
 ]

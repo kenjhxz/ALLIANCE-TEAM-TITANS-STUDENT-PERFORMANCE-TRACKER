@@ -78,6 +78,10 @@ export const updateTerm   = (id, payload) => api.patch(`/system/terms/${id}/`, p
 export const fetchOfferings  = (params)  => api.get('/system/offerings/', { params });
 export const createOffering  = (payload) => api.post('/system/offerings/', payload);
 
+// Teacher endpoints
+export const fetchTeacherOfferings = () => api.get('/system/teacher/offerings/');
+export const fetchOfferingEnrollments = (offeringId) => api.get(`/system/teacher/offerings/${offeringId}/enrollments/`);
+
 // ── SYSTEM: Enrollment (student) ─────────────────────────────────────────────
 export const getMyProspectus         = ()               => api.get('/system/enrollment/request/');
 export const submitDisciplineRequest = (discipline_ids) => api.post('/system/enrollment/request/', { discipline_ids });
@@ -91,8 +95,10 @@ export const approveRejectEnrollments = (enrollment_ids, action)   => api.patch(
 
 // ── SYSTEM: Grades ────────────────────────────────────────────────────────────
 export const getMyGrades   = ()              => api.get('/system/grades/mine/');
+export const fetchGrades   = (params)        => api.get('/system/grades/', { params });
 export const submitGrade   = (payload)       => api.post('/system/grades/', payload);
 export const updateGrade   = (id, payload)   => api.patch(`/system/grades/${id}/`, payload);
+export const exportMyGrades = () => api.get('/system/grades/export/', { responseType: 'blob' });
 
 // ── SYSTEM: Faculty & Students (admin) ───────────────────────────────────────
 export const adminCreateTeacher       = (payload)     => api.post('/auth/admin/create-teacher/', payload);

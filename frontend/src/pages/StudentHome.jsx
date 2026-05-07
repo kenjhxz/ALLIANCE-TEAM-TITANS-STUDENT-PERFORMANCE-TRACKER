@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   getStudentProfile,
   updateStudentProfile,
@@ -9,6 +11,7 @@ import {
   selectSchedule,
   fetchTerms,
   getMyGrades,
+  exportMyGrades,
 } from '../services/api';
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -744,6 +747,9 @@ function GradesTab() {
   const [loading, setLoading] = useState(true);
   const [filterTerm, setFilterTerm] = useState('');
   const [prospectus, setProspectus] = useState([]);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const exportRef = useRef(null);
 
   useEffect(() => {
     Promise.all([getMyGrades(), getMyProspectus()])
@@ -795,6 +801,16 @@ function GradesTab() {
 
   const syncedEnrolled = Array.from(enrolledMap.values());
 
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (exportRef.current && !exportRef.current.contains(event.target)) {
+        setExportOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
   // ─── STATS ──────────────────────────────────────────────────────────────
   const gradedAll = grades.filter((g) => g.finals != null);
   const allPassed = gradedAll.filter((g) => parseFloat(g.finals) <= 3.0);
@@ -824,12 +840,142 @@ function GradesTab() {
     return '#ef4444';
   }
 
+  async function handleExportCsv() {
+    try {
+      setExporting(true);
+      const res = await exportMyGrades();
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grades.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download grades CSV.');
+    } finally {
+      setExporting(false);
+      setExportOpen(false);
+    }
+  }
+
+  function handleExportPdf() {
+    try {
+      const doc = new jsPDF({ orientation: 'landscape' });
+      const now = new Date();
+
+      doc.setFontSize(15);
+      doc.text('Student Grade Report', 14, 16);
+      doc.setFontSize(10);
+      doc.text(`Generated: ${now.toLocaleString()}`, 14, 23);
+
+      const tableRows = syncedEnrolled.map((d) => {
+        const finals = d.finals ?? null;
+        const finalsNum = finals == null ? null : Number(finals);
+        const status = finalsNum == null ? 'IN PROGRESS' : finalsNum <= 3.0 ? 'PASSED' : 'FAILED';
+        return [
+          d.discipline_code || d.code || '-',
+          d.discipline_name || d.name || '-',
+          d.units ?? '-',
+          d.prelim ?? '--',
+          d.midterm ?? '--',
+          d.finals ?? '--',
+          status,
+        ];
+      });
+
+      autoTable(doc, {
+        startY: 30,
+        head: [['Code', 'Subject', 'Units', 'Prelim', 'Midterm', 'Finals', 'Status']],
+        body: tableRows,
+        styles: { fontSize: 9, cellPadding: 2.4 },
+        headStyles: { fillColor: [30, 35, 53] },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+      });
+
+      doc.save('grades.pdf');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to download grades PDF.');
+    } finally {
+      setExportOpen(false);
+    }
+  }
+
   return (
     <>
       <div>
         <div style={s.pageTitle}>My Grades</div>
         <div style={s.pageSub}>
           Academic records + currently enrolled subjects (synced view).
+        </div>
+        <div style={{ marginTop: 8, position: 'relative', display: 'inline-block' }} ref={exportRef}>
+          <button
+            onClick={() => setExportOpen((v) => !v)}
+            disabled={exporting}
+            style={{
+              marginTop: 8,
+              padding: '7px 12px',
+              fontSize: 13,
+              borderRadius: 8,
+              border: '1px solid #2a3050',
+              background: '#1e2335',
+              color: '#e2e8f0',
+              cursor: exporting ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {exporting ? 'Exporting...' : 'Export Grades ▾'}
+          </button>
+          {exportOpen && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 44,
+                left: 0,
+                minWidth: 170,
+                border: '1px solid #2a3050',
+                background: '#111827',
+                borderRadius: 8,
+                overflow: 'hidden',
+                zIndex: 5,
+                boxShadow: '0 10px 24px rgba(0,0,0,0.35)',
+              }}
+            >
+              <button
+                onClick={handleExportCsv}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  background: 'transparent',
+                  color: '#e2e8f0',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                Download CSV
+              </button>
+              <button
+                onClick={handleExportPdf}
+                style={{
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 12px',
+                  background: 'transparent',
+                  color: '#e2e8f0',
+                  border: 'none',
+                  borderTop: '1px solid #2a3050',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                Download PDF
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -884,8 +1030,8 @@ function GradesTab() {
             </thead>
 
             <tbody>
-              {syncedEnrolled.map((d) => (
-                <tr key={d.discipline_id}>
+              {syncedEnrolled.map((d, idx) => (
+                <tr key={`${d.discipline_id ?? 'disc'}-${d.id ?? idx}`}>
                   <td
                     style={{
                       ...s.td,

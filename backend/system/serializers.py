@@ -62,6 +62,8 @@ class SemesterLoadSerializer(serializers.ModelSerializer):
 
 
 class GradeSerializer(serializers.ModelSerializer):
+    student_id_no = serializers.CharField(source='student.student_id', read_only=True)
+    student_name  = serializers.SerializerMethodField()
     discipline_code = serializers.CharField(source='discipline.code', read_only=True)
     discipline_name = serializers.CharField(source='discipline.name', read_only=True)
     units           = serializers.IntegerField(source='discipline.units', read_only=True)
@@ -70,10 +72,14 @@ class GradeSerializer(serializers.ModelSerializer):
     year_level = serializers.IntegerField(source='discipline.year_level', read_only=True)
 
     term_label = serializers.SerializerMethodField()
+    offer_code = serializers.CharField(source='offering.offer_code', read_only=True, default=None)
 
     class Meta:
         model = Grade
         fields = [
+            'student',
+            'student_id_no',
+            'student_name',
             'id',
             'discipline',
             'discipline_code',
@@ -89,12 +95,44 @@ class GradeSerializer(serializers.ModelSerializer):
 
             'term',
             'term_label',
+            'offering',
+            'offer_code',
         ]
+
+    def validate(self, attrs):
+        for key in ('prelim', 'midterm', 'finals'):
+            value = attrs.get(key, getattr(self.instance, key, None) if self.instance else None)
+            if value is None:
+                if key == 'finals':
+                    raise serializers.ValidationError({key: 'Finals grade is required.'})
+                continue
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError({key: 'Grade must be a number.'})
+            if numeric < 1.0 or numeric > 5.0:
+                raise serializers.ValidationError({key: 'Grade must be between 1.00 and 5.00.'})
+
+        offering = attrs.get('offering', getattr(self.instance, 'offering', None) if self.instance else None)
+        term = attrs.get('term', getattr(self.instance, 'term', None) if self.instance else None)
+        discipline = attrs.get('discipline', getattr(self.instance, 'discipline', None) if self.instance else None)
+
+        if offering and term and offering.term_id != term.id:
+            raise serializers.ValidationError({'term': 'Selected term does not match the offering term.'})
+        if offering and discipline and offering.discipline_id != discipline.id:
+            raise serializers.ValidationError({'discipline': 'Selected discipline does not match the offering discipline.'})
+
+        return attrs
 
     def get_term_label(self, obj):
         if obj.term:
             return f"{obj.term.school_year} - Semester {obj.term.semester}"
         return None
+
+    def get_student_name(self, obj):
+        u = obj.student.user
+        mid = f" {u.middle_name}" if getattr(u, 'middle_name', None) else ""
+        return f"{u.first_name}{mid} {u.last_name}"
 class AcademicTermSerializer(serializers.ModelSerializer):
     class Meta:
         model  = AcademicTerm
@@ -138,9 +176,11 @@ class AdminCreateOfferingSerializer(serializers.ModelSerializer):
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     student_name    = serializers.SerializerMethodField()
+    student_id      = serializers.IntegerField(source='student.id', read_only=True)
     student_id_no   = serializers.CharField(source='student.student_id', read_only=True)
     discipline_name = serializers.CharField(source='discipline.name', read_only=True)
     discipline_code = serializers.CharField(source='discipline.code', read_only=True)
+    discipline_id   = serializers.IntegerField(source='discipline.id', read_only=True)
     discipline_units = serializers.IntegerField(source='discipline.units', read_only=True)
     year_level      = serializers.IntegerField(source='discipline.year_level', read_only=True)
     semester        = serializers.IntegerField(source='discipline.semester', read_only=True)
@@ -153,8 +193,8 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model  = StudentEnrollment
         fields = [
-            'id', 'student_name', 'student_id_no',
-            'discipline_name', 'discipline_code', 'discipline_units',
+            'id', 'student_name', 'student_id', 'student_id_no',
+            'discipline_name', 'discipline_code', 'discipline_id', 'discipline_units',
             'year_level', 'semester', 'term_label',
             'offer_code', 'schedule', 'room', 'teacher_name',
             'status', 'enrolled_at',

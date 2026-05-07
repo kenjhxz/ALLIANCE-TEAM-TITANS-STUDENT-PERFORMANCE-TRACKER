@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 
 from .serializers import (
     DegreeProgramSerializer, CollegeSerializer, DisciplineSerializer,
@@ -15,7 +16,10 @@ from .models import (
     DegreeProgram, College, Discipline, SemesterLoad,
     AcademicTerm, SubjectOffering, StudentEnrollment, Grade
 )
-from profiles.views import IsAdmin, IsStudent, IsAdminOrReadOnly
+from profiles.views import IsAdmin, IsStudent, IsAdminOrReadOnly, IsTeacher
+from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
+import csv
 
 # ── School setup ──────────────────────────────────────────────────────────────
 
@@ -409,9 +413,30 @@ class GradeViewSet(viewsets.ModelViewSet):
     queryset = Grade.objects.all()
     serializer_class = GradeSerializer
 
+    def get_permissions(self):
+        # Safe methods (GET, HEAD, OPTIONS) allowed for authenticated users.
+        # Unsafe methods (POST, PUT, PATCH, DELETE) require professor role.
+        if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return [IsAuthenticated()]
+        return [IsTeacher()]
+
     def get_queryset(self):
-        # optional: default filter for safety
-        return Grade.objects.all()
+        # Default queryset; allow filtering by student, offering, term, or teacher
+        qs = Grade.objects.select_related('student__user', 'discipline', 'teacher__user', 'term', 'offering')
+        params = self.request.query_params
+        if params.get('student'):
+            qs = qs.filter(student_id=params.get('student'))
+        if params.get('offering'):
+            offering = params.get('offering')
+            if str(offering).isdigit():
+                qs = qs.filter(offering_id=offering)
+            else:
+                qs = qs.filter(offering__offer_code=offering)
+        if params.get('term'):
+            qs = qs.filter(term_id=params.get('term'))
+        if params.get('teacher'):
+            qs = qs.filter(teacher_id=params.get('teacher'))
+        return qs
 
     @action(detail=False, methods=['get'], url_path='mine')
     def mine(self, request):
@@ -424,3 +449,84 @@ class GradeViewSet(viewsets.ModelViewSet):
         grades = Grade.objects.filter(student=student)
         serializer = self.get_serializer(grades, many=True)
         return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        # ensure the requester is a professor and set the teacher automatically
+        try:
+            teacher = self.request.user.teacherprofile
+        except Exception:
+            raise PermissionDenied('Teacher profile not found.')
+
+        offering = serializer.validated_data.get('offering')
+        if offering and offering.teacher_id and offering.teacher_id != teacher.id:
+            # only the assigned teacher may post grades for this offering
+            raise PermissionDenied('You are not assigned to this offering.')
+
+        serializer.save(teacher=teacher)
+
+    def perform_update(self, serializer):
+        try:
+            teacher = self.request.user.teacherprofile
+        except Exception:
+            raise PermissionDenied('Teacher profile not found.')
+
+        offering = serializer.validated_data.get('offering', getattr(self.get_object(), 'offering', None))
+        if offering and offering.teacher_id and offering.teacher_id != teacher.id:
+            raise PermissionDenied('You are not assigned to this offering.')
+
+        serializer.save(teacher=teacher)
+
+    @action(detail=False, methods=['get'], url_path='export', permission_classes=[IsStudent])
+    def export(self, request):
+        try:
+            student = request.user.studentprofile
+        except Exception:
+            return Response({'error': 'Student profile not found.'}, status=400)
+
+        grades = Grade.objects.filter(student=student).select_related('discipline', 'term', 'offering')
+
+        # build CSV
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="grades.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Offer Code', 'Term', 'Discipline Code', 'Discipline Name', 'Units', 'Prelim', 'Midterm', 'Finals', 'Final Grade', 'Passed'])
+        for g in grades:
+            offer = g.offering.offer_code if g.offering else ''
+            term = str(g.term) if g.term else ''
+            final = float(g.final_grade) if g.final_grade is not None else ''
+            writer.writerow([offer, term, g.discipline.code, g.discipline.name, g.discipline.units, g.prelim, g.midterm, g.finals, final, g.passed])
+        return response
+
+
+class TeacherOfferingsView(APIView):
+    permission_classes = [IsTeacher]
+
+    def get(self, request):
+        try:
+            teacher = request.user.teacherprofile
+        except Exception:
+            return Response({'error': 'Teacher profile not found.'}, status=400)
+
+        offerings = SubjectOffering.objects.filter(teacher=teacher).select_related('discipline', 'term')
+        return Response(SubjectOfferingSerializer(offerings, many=True).data)
+
+
+class TeacherOfferingEnrollmentsView(APIView):
+    permission_classes = [IsTeacher]
+
+    def get(self, request, offering_id):
+        try:
+            teacher = request.user.teacherprofile
+        except Exception:
+            return Response({'error': 'Teacher profile not found.'}, status=400)
+
+        try:
+            offering = SubjectOffering.objects.get(id=offering_id)
+        except SubjectOffering.DoesNotExist:
+            return Response({'error': 'Offering not found.'}, status=404)
+
+        if offering.teacher_id != teacher.id:
+            return Response({'error': 'Not allowed for this offering.'}, status=403)
+
+        enrollments = StudentEnrollment.objects.filter(offering=offering, status=StudentEnrollment.Status.ENROLLED).select_related('student__user', 'discipline')
+        return Response(EnrollmentSerializer(enrollments, many=True).data)

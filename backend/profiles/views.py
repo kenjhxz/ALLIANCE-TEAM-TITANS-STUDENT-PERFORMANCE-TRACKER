@@ -25,7 +25,7 @@ class IsStudent(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.role == 'STUDENT'
 
-class IsProfessor(IsAuthenticated):
+class IsTeacher(IsAuthenticated):
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.role == 'PROFESSOR'
 
@@ -202,7 +202,7 @@ class StudentProfileView(generics.RetrieveUpdateAPIView):
 
 
 class TeacherProfileView(generics.RetrieveUpdateAPIView):
-    permission_classes = [IsProfessor]
+    permission_classes = [IsTeacher]
     serializer_class = TeacherProfileSerializer
 
     def get_object(self):

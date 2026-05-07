@@ -1,18 +1,107 @@
-# React + Vite
+# Alliance Team Titans Student Performance Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Project Overview
+The **Alliance Team Titans Student Performance Tracker** is a web application designed to help administrators, teachers, and students manage and track academic performance efficiently. The platform includes features for user authentication, student enrollment, discipline management, and performance tracking.
 
-Currently, two official plugins are available:
+## Features
+### Frontend
+- Built with **React** and **Vite** for a fast and modern user interface.
+- Pages include:
+  - **Login** and **Sign Up** for user authentication.
+  - **Admin Home**, **Teacher Home**, and **Student Home** for role-specific dashboards.
+  - **Verify Email** for account verification.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Backend
+- Developed using **Django** for robust and scalable server-side logic.
+- Features include:
+  - User authentication and profile management.
+  - Discipline and enrollment management.
+  - API endpoints for frontend integration.
 
-## React Compiler
+## Project Structure
+### Frontend
+```
+frontend/
+├── public/          # Static assets
+├── src/
+│   ├── assets/      # Images and other assets
+│   ├── components/  # Reusable components
+│   ├── pages/       # Page components
+│   ├── services/    # API service files
+│   ├── styles/      # CSS files
+│   ├── App.jsx      # Main app component
+│   ├── main.jsx     # Entry point
+│   └── index.html   # HTML template
+```
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Backend
+```
+backend/
+├── core/            # Django project settings
+├── profiles/        # User profile management
+├── system/          # Discipline and enrollment management
+├── db.sqlite3       # SQLite database (for development)
+├── manage.py        # Django management script
+```
 
-Note: This will impact Vite dev & build performances.
+## Installation
+### Prerequisites
+- **Node.js** (for frontend)
+- **Python 3.9+** (for backend)
+- **Virtual Environment** (recommended for Python dependencies)
 
-## Expanding the ESLint configuration
+### Backend Setup
+1. Navigate to the `backend` directory:
+   ```bash
+   cd backend
+   ```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run migrations:
+   ```bash
+   python manage.py migrate
+   ```
+5. Start the development server:
+   ```bash
+   python manage.py runserver
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Frontend Setup
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Contributing
+1. Fork the repository.
+2. Create a new branch:
+   ```bash
+   git checkout -b feature-branch-name
+   ```
+3. Commit your changes:
+   ```bash
+   git commit -m "Description of changes"
+   ```
+4. Push to the branch:
+   ```bash
+   git push origin feature-branch-name
+   ```
+5. Open a pull request.
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.

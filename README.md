@@ -46,9 +46,15 @@ backend/
 
 ## Installation
 ### Prerequisites
-- **Node.js** (for frontend)
-- **Python 3.9+** (for backend)
-- **Virtual Environment** (recommended for Python dependencies)
+- **Python 3.9+** (for the backend)
+- **Node.js 18+** and **npm** (for the frontend)
+- A terminal for running the backend and frontend separately
+
+### What To Install
+Install these before running the app:
+- Backend Python packages from `backend/requirements.txt`
+- Frontend Node packages from `frontend/package.json` using `npm install`
+- Optional but recommended: a Python virtual environment for the backend
 
 ### Backend Setup
 1. Navigate to the `backend` directory:
@@ -73,6 +79,11 @@ backend/
    python manage.py runserver
    ```
 
+Backend package install command:
+```bash
+pip install -r requirements.txt
+```
+
 ### Frontend Setup
 1. Navigate to the `frontend` directory:
    ```bash
@@ -86,6 +97,44 @@ backend/
    ```bash
    npm run dev
    ```
+
+Frontend package install command:
+```bash
+npm install
+```
+
+### Run The App
+Use two terminals:
+- Backend: `cd backend` then `python manage.py runserver`
+- Frontend: `cd frontend` then `npm run dev`
+
+If your team uses the seed data for testing:
+```bash
+cd backend
+python scripts/seed_test_data.py
+```
+
+### Role-separated login flow
+- The landing page now routes users to separate login links for:
+   - Student login: `/login/student`
+   - Professor login: `/login/teacher`
+   - Admin login: `/login/admin`
+- The general login page still exists at `/login`, but the dashboard-specific links are separated for cleaner navigation.
+
+### Verified integration commands
+The following scripts were run successfully during integration checks:
+```bash
+cd backend
+python scripts/seed_test_data.py
+python scripts/e2e_test.py
+```
+
+The end-to-end flow verified:
+- professor login
+- teacher offerings and enrollment roster lookup
+- grade posting and editing
+- student grade view
+- CSV grade export
 
 ## Contributing
 1. Fork the repository.

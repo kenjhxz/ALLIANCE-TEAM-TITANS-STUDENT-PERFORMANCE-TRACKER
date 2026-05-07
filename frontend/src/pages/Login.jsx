@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/api";
 
 const initialForm = { email: "", password: "" };
 
-export default function Login() {
+export default function Login({ preferredRole }) {
   const navigate = useNavigate();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -36,10 +36,10 @@ export default function Login() {
       const role = data.user?.role;
       console.log("role:", role); 
 
-      if (role === "STUDENT") navigate("/StudentHome");
-      else if (role === "PROFESSOR") navigate("/TeacherHome");
+      if (role === "STUDENT") navigate("/studenthome");
+      else if (role === "PROFESSOR") navigate("/teacherhome");
       else if (role === "ADMIN") navigate("/adminhome");
-      else navigate("/home");
+      else navigate("/");
 
     } catch (err) {
       if (err.response?.data) {
@@ -55,16 +55,24 @@ export default function Login() {
     }
   };
 
-  if (localStorage.getItem("token")) {
-//   return <Navigate to="/home" replace />;
-}
+  const roleLabel = preferredRole === "STUDENT" ? "Student" : preferredRole === "PROFESSOR" ? "Professor" : preferredRole === "ADMIN" ? "Admin" : null;
 
   return (
       <div className="right-panel">
         <div className="card">
-          <div className="eyebrow">Log in</div>
+          <div className="eyebrow">{roleLabel ? `${roleLabel} login` : "Log in"}</div>
           <div className="card-title">Good to see you<i>.</i></div>
-          <div className="card-sub">Enter your credentials to continue.</div>
+          <div className="card-sub">
+            {preferredRole
+              ? `Enter your ${roleLabel?.toLowerCase()} credentials to continue.`
+              : "Enter your credentials to continue."}
+          </div>
+
+          <div className="role-group" style={{ marginBottom: '1rem' }}>
+            <Link className="role-btn" to="/login/student">🎒 Student</Link>
+            <Link className="role-btn" to="/login/teacher">📖 Professor</Link>
+            <Link className="role-btn" to="/login/admin">🛡️ Admin</Link>
+          </div>
 
           <div className="form">
             <Field label="Email" error={errors.email}>
@@ -103,6 +111,10 @@ export default function Login() {
           <p className="footer-text">
             No account yet?{" "}
             <a href="/signup" className="link">Sign up free</a>
+          </p>
+          <p className="footer-text" style={{ marginTop: "0.4rem" }}>
+            Need a different role login?{" "}
+            <a href="/" className="link">Choose login path</a>
           </p>
           <p className="footer-text" style={{ marginTop: "0.4rem" }}>
             Didn't get the email?{" "}

@@ -1,15 +1,33 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import AuthLanding from "./pages/AuthLanding";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import VerifyEmail from "./pages/VerifyEmail";
 import AdminHome from "./pages/AdminHome";
-import StudentHome from "./pages/StudentHome"
+import StudentHome from "./pages/StudentHome";
+import TeacherHome from "./pages/TeacherHome"
 
 
 const router = createBrowserRouter([
   { 
+    path: "/",
+    element: <AuthLanding />
+  },
+  { 
     path: "/login",
     element: <Login />
+  },
+  {
+    path: "/login/student",
+    element: <Login preferredRole="STUDENT" />
+  },
+  {
+    path: "/login/teacher",
+    element: <Login preferredRole="PROFESSOR" />
+  },
+  {
+    path: "/login/admin",
+    element: <Login preferredRole="ADMIN" />
   },
   {
     path: "/signup",
@@ -20,12 +38,16 @@ const router = createBrowserRouter([
     element: <VerifyEmail />
   },
   {
-    path: "adminhome",
+    path: "/adminhome",
     element: <AdminHome />
   },
   {
-    path: "studenthome",
+    path: "/studenthome",
     element: <StudentHome />
+  },
+  {
+    path: "/teacherhome",
+    element: <TeacherHome />
   }
 ]);
 

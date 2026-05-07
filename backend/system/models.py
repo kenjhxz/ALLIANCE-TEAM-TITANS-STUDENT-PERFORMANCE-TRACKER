@@ -135,12 +135,14 @@ class Grade(models.Model):
     student    = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     discipline = models.ForeignKey(Discipline, on_delete=models.CASCADE)
     teacher    = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE)
+    term       = models.ForeignKey(AcademicTerm, on_delete=models.CASCADE, null=True, blank=True)
+    offering   = models.ForeignKey(SubjectOffering, on_delete=models.SET_NULL, null=True, blank=True)
     prelim     = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     midterm    = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     finals     = models.DecimalField(max_digits=3, decimal_places=2)
 
     class Meta:
-        unique_together = ['student', 'discipline']
+        unique_together = ['student', 'discipline', 'term']
 
     @property
     def final_grade(self):
