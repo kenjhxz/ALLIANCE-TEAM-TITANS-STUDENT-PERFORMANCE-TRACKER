@@ -84,6 +84,11 @@ Backend package install command:
 pip install -r requirements.txt
 ```
 
+Backend explicit install (alternative):
+```bash
+pip install django djangorestframework djangorestframework-simplejwt django-cors-headers python-dotenv python-decouple
+```
+
 ### Frontend Setup
 1. Navigate to the `frontend` directory:
    ```bash
@@ -101,6 +106,11 @@ pip install -r requirements.txt
 Frontend package install command:
 ```bash
 npm install
+```
+
+Frontend explicit install (additional):
+```bash
+npm install axios
 ```
 
 ### Run The App
