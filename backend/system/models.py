@@ -139,7 +139,7 @@ class Grade(models.Model):
     offering   = models.ForeignKey(SubjectOffering, on_delete=models.SET_NULL, null=True, blank=True)
     prelim     = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     midterm    = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
-    finals     = models.DecimalField(max_digits=3, decimal_places=2)
+    finals     = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
     class Meta:
         unique_together = ['student', 'discipline', 'term']

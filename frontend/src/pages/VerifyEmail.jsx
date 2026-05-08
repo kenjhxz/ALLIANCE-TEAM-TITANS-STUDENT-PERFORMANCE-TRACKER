@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { verifyEmail, resendVerification } from "../services/api";
+import Logo from "../assets/Logo.png";
 
 export default function VerifyEmail() {
   const { token } = useParams();
@@ -68,6 +69,7 @@ export default function VerifyEmail() {
         style={{ alignItems: "center", justifyContent: "center" }}
       >
         <div className="card" style={{ maxWidth: 380, textAlign: "center" }}>
+          <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
           <div
             className="status-icon loading"
             style={{ margin: "0 auto 1.5rem" }}
@@ -104,6 +106,7 @@ export default function VerifyEmail() {
         style={{ alignItems: "center", justifyContent: "center" }}
       >
         <div className="card" style={{ maxWidth: 380, textAlign: "center" }}>
+          <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
           <div
             className="status-icon success"
             style={{ margin: "0 auto 1.5rem" }}

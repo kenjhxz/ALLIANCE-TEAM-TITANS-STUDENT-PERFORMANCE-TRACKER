@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../services/api";
+import Logo from "../assets/Logo.png";
 
 const initialForm = { email: "", password: "" };
 
@@ -58,70 +59,76 @@ export default function Login({ preferredRole }) {
   const roleLabel = preferredRole === "STUDENT" ? "Student" : preferredRole === "PROFESSOR" ? "Professor" : preferredRole === "ADMIN" ? "Admin" : null;
 
   return (
-      <div className="right-panel">
-        <div className="card">
-          <div className="eyebrow">{roleLabel ? `${roleLabel} login` : "Log in"}</div>
-          <div className="card-title">Good to see you<i>.</i></div>
-          <div className="card-sub">
-            {preferredRole
-              ? `Enter your ${roleLabel?.toLowerCase()} credentials to continue.`
-              : "Enter your credentials to continue."}
-          </div>
-
-          <div className="role-group" style={{ marginBottom: '1rem' }}>
-            <Link className="role-btn" to="/login/student">🎒 Student</Link>
-            <Link className="role-btn" to="/login/teacher">📖 Professor</Link>
-            <Link className="role-btn" to="/login/admin">🛡️ Admin</Link>
-          </div>
-
-          <div className="form">
-            <Field label="Email" error={errors.email}>
-              <input
-                className={`finput ${errors.email ? "finput-error" : ""}`}
-                type="email"
-                placeholder="you@email.com"
-                value={form.email}
-                onChange={(e) => set("email", e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              />
-            </Field>
-
-            <Field label="Password" error={errors.password}>
-              <input
-                className={`finput ${errors.password ? "finput-error" : ""}`}
-                type="password"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={(e) => set("password", e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              />
-            </Field>
-
-            <button
-              className="btn-primary"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading ? "Logging in..." : "Log in"}
-            </button>
-          </div>
-
-          <div className="or-line">or</div>
-
-          <p className="footer-text">
-            No account yet?{" "}
-            <a href="/signup" className="link">Sign up free</a>
-          </p>
-          <p className="footer-text" style={{ marginTop: "0.4rem" }}>
-            Need a different role login?{" "}
-            <a href="/" className="link">Choose login path</a>
-          </p>
-          <p className="footer-text" style={{ marginTop: "0.4rem" }}>
-            Didn't get the email?{" "}
-            <a href="/verify-email/resend" className="link">Resend verification</a>
-          </p>
+    <div className="login-shell">
+      <div className="login-card">
+        <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
+        <div className="login-title">Login</div>
+        <div className="login-sub">
+          {roleLabel ? `${roleLabel} access` : 'Access your account'}
         </div>
+
+        <div className="role-group" style={{ marginBottom: '1rem' }}>
+          <Link className={`role-btn ${preferredRole === 'STUDENT' ? 'role-active' : ''}`} to="/login/student">🎒 Student</Link>
+          <Link className={`role-btn ${preferredRole === 'PROFESSOR' ? 'role-active' : ''}`} to="/login/teacher">📖 Professor</Link>
+          <Link className={`role-btn ${preferredRole === 'ADMIN' ? 'role-active' : ''}`} to="/login/admin">🛡️ Admin</Link>
+        </div>
+
+        <div className="login-field">
+          <label className="login-label">Email</label>
+          <div className="login-input">
+            <span className="login-icon">@</span>
+            <input
+              className={`login-text ${errors.email ? "finput-error" : ""}`}
+              type="email"
+              placeholder="you@email.com"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            />
+          </div>
+          {errors.email && <span className="error-msg">{errors.email}</span>}
+        </div>
+
+        <div className="login-field">
+          <label className="login-label">Password</label>
+          <div className="login-input">
+            <span className="login-icon">*</span>
+            <input
+              className={`login-text ${errors.password ? "finput-error" : ""}`}
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => set("password", e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            />
+          </div>
+          {errors.password && <span className="error-msg">{errors.password}</span>}
+        </div>
+
+        <button
+          className="btn-primary"
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        <div className="or-line">or</div>
+
+        <p className="footer-text">
+          No account yet?{" "}
+          <a href="/signup" className="link">Sign up free</a>
+        </p>
+        <p className="footer-text" style={{ marginTop: "0.4rem" }}>
+          Need a different role login?{" "}
+          <a href="/" className="link">Choose login path</a>
+        </p>
+        <p className="footer-text" style={{ marginTop: "0.4rem" }}>
+          Didn't get the email?{" "}
+          <a href="/verify-email/resend" className="link">Resend verification</a>
+        </p>
       </div>
+    </div>
   );
 }
 

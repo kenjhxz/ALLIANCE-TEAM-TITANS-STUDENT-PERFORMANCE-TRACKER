@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   addCollege, addDegreeProgram, addDiscipline,
@@ -9,38 +9,46 @@ import {
   fetchTerms, createTerm, fetchOfferings, createOffering,
   fetchTeachers as fetchAllTeachers,
   getEnrollmentQueue, approveRejectEnrollments,
+  logout as apiLogout,
 } from '../services/api';
+import Logo from '../assets/Logo.png';
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 const s = {
   root: {
     display: 'flex', minHeight: '100vh',
     fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-    background: '#0f1117', color: '#e2e8f0',
+    background: 'var(--app-bg-gradient)', color: 'var(--app-text)',
   },
   sidebar: {
-    width: 220, minHeight: '100vh', background: '#181c27',
-    borderRight: '1px solid #2a3050', display: 'flex',
+    width: 220, minHeight: '100vh', background: 'var(--app-card)',
+    borderRight: '1px solid var(--app-border)', display: 'flex',
     flexDirection: 'column', padding: '28px 16px', gap: 6, flexShrink: 0,
   },
+  sidebarFooter: {
+    marginTop: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
   logo: {
-    fontFamily: 'monospace', fontSize: 12, color: '#4ade80',
+    fontFamily: 'monospace', fontSize: 12, color: 'var(--app-accent)',
     letterSpacing: '0.08em', marginBottom: 28, paddingLeft: 4,
     display: 'flex', alignItems: 'center', gap: 8,
   },
+  logoImg: { width: 22, height: 22, objectFit: 'contain' },
   logoDot: {
-    width: 8, height: 8, background: '#4ade80', borderRadius: '50%',
-    boxShadow: '0 0 8px #4ade80', flexShrink: 0,
+    width: 8, height: 8, background: 'var(--app-accent)', borderRadius: '50%',
+    boxShadow: '0 0 8px var(--app-accent)', flexShrink: 0,
   },
   navLabel: {
-    fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: '#64748b',
+    fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--app-muted)',
     textTransform: 'uppercase', padding: '0 10px', margin: '12px 0 4px',
   },
   pillBtn: (active) => ({
     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-    borderRadius: 50, border: active ? '1px solid #4ade80' : '1px solid transparent',
-    background: active ? '#1a3a2a' : 'transparent',
-    color: active ? '#4ade80' : '#94a3b8', fontSize: 13.5, fontWeight: 500,
+    borderRadius: 50, border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent',
+    color: active ? 'var(--app-accent)' : 'var(--app-muted)', fontSize: 13.5, fontWeight: 500,
     cursor: 'pointer', textAlign: 'left', width: '100%', fontFamily: 'inherit',
     transition: 'all 0.18s',
   }),
@@ -49,45 +57,44 @@ const s = {
     display: 'flex', flexDirection: 'column', gap: 24,
   },
   pageTitle: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
-  pageSub:   { fontSize: 13, color: '#64748b', marginTop: 4 },
+  pageSub:   { fontSize: 13, color: 'var(--app-muted)', marginTop: 4 },
   panels:    { display: 'flex', gap: 20, flexWrap: 'wrap' },
   panel: {
-    background: '#181c27', border: '1px solid #2a3050', borderRadius: 10,
+    background: 'var(--app-card)', border: '1px solid var(--app-border)', borderRadius: 10,
     padding: 24, flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column', gap: 14,
   },
   panelTitle: {
     fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
-    color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+    color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
   },
-  hint:  { fontSize: 12, color: '#64748b', marginTop: -8, lineHeight: 1.5 },
+  hint:  { fontSize: 12, color: 'var(--app-muted)', marginTop: -8, lineHeight: 1.5 },
   label: {
-    display: 'block', fontSize: 11, fontWeight: 500, color: '#64748b',
+    display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--app-muted)',
     letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 5,
   },
   input: {
-    width: '100%', background: '#1e2335', border: '1px solid #2a3050', borderRadius: 7,
-    padding: '9px 12px', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit',
+    width: '100%', background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 7,
+    padding: '9px 12px', color: 'var(--app-text)', fontSize: 13.5, fontFamily: 'inherit',
     outline: 'none', boxSizing: 'border-box',
   },
   submitBtn: (disabled) => ({
-    background: disabled ? '#1e2335' : '#22543d',
-    border:     disabled ? '1px solid #2a3050' : '1px solid #4ade80',
-    color:      disabled ? '#64748b' : '#4ade80',
+    background: disabled ? 'var(--app-panel)' : 'var(--app-accent-bg)',
+    border:     disabled ? '1px solid var(--app-border)' : '1px solid var(--app-accent)',
+    color:      disabled ? 'var(--app-muted)' : 'var(--app-accent)',
     fontSize: 13, fontWeight: 600, padding: '10px 16px', borderRadius: 7,
     cursor: disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 2,
   }),
   comingSoon: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', minHeight: 320, gap: 12, color: '#64748b', textAlign: 'center',
+    justifyContent: 'center', minHeight: 320, gap: 12, color: 'var(--app-muted)', textAlign: 'center',
   },
 };
 
-// ─── Shared subcomponents ─────────────────────────────────────────────────────
 
 function PanelTitle({ children }) {
   return (
     <div style={s.panelTitle}>
-      <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', opacity: 0.7, display: 'inline-block' }} />
+      <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', opacity: 0.7, display: 'inline-block' }} />
       {children}
     </div>
   );
@@ -143,7 +150,7 @@ function MultiSelect({ options, selected, onChange, placeholder, groupKey = 'pro
                   background: active ? '#4ade80' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {active && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>✓</span>}
+                  {active && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
                 </span>
                 {opt.name}
                 {opt.year_level && opt.semester && (
@@ -160,7 +167,6 @@ function MultiSelect({ options, selected, onChange, placeholder, groupKey = 'pro
   );
 }
 
-// ─── School Tab ───────────────────────────────────────────────────────────────
 
 function SchoolTab() {
   const [colleges,      setColleges]      = useState([]);
@@ -197,7 +203,7 @@ function SchoolTab() {
     e.preventDefault();
     try {
       await addCollege({ name: col.name, code: col.code.toUpperCase() });
-      alert(`✓ College "${col.name} (${col.code})" added.`);
+      alert(`OK: College "${col.name} (${col.code})" added.`);
       setCol({ name: '', code: '' }); loadColleges();
     } catch (err) { alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)); }
   }
@@ -206,7 +212,7 @@ function SchoolTab() {
     e.preventDefault();
     try {
       await addDegreeProgram({ college: parseInt(prog.college), name: prog.name, code: prog.code.toUpperCase() });
-      alert(`✓ Program "${prog.name} (${prog.code})" added.`);
+      alert(`OK: Program "${prog.name} (${prog.code})" added.`);
       setProg({ college: '', name: '', code: '' }); loadPrograms();
     } catch (err) { alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)); }
   }
@@ -223,7 +229,7 @@ function SchoolTab() {
         units:         parseInt(disc.units),
         prerequisites: disc.prerequisites,
       });
-      alert(`✓ Discipline "${disc.name}" added.`);
+      alert(`OK: Discipline "${disc.name}" added.`);
       setDisc({ program: disc.program, name: '', code: '', year_level: '1', semester: '1', units: '3', prerequisites: [] });
       fetchDiscipline(disc.program).then(({ data }) => setPrereqOptions(data)).catch(console.error);
     } catch (err) { alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)); }
@@ -238,7 +244,7 @@ function SchoolTab() {
         semester:   parseInt(semload.semester),
         max_units:  parseInt(semload.max_units),
       });
-      alert('✓ Semester load set.');
+      alert('OK: Semester load set.');
       setSemload({ program: '', year_level: '1', semester: '1', max_units: '27' });
       loadSemLoads();
     } catch (err) { alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)); }
@@ -286,7 +292,7 @@ function SchoolTab() {
             <Field label="Select College">
               <select style={s.input} value={prog.college}
                 onChange={(e) => setProg({ ...prog, college: e.target.value })} required>
-                <option value="">— Select College —</option>
+                <option value="">-- Select College --</option>
                 {colleges.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
               </select>
             </Field>
@@ -311,7 +317,7 @@ function SchoolTab() {
             <Field label="Degree Program">
               <select style={s.input} value={disc.program}
                 onChange={(e) => setDisc({ ...disc, program: e.target.value, prerequisites: [] })} required>
-                <option value="">— Select Program —</option>
+                <option value="">-- Select Program --</option>
                 {programs.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
               </select>
             </Field>
@@ -343,18 +349,18 @@ function SchoolTab() {
               <Field label="Units">
                 <select style={s.input} value={disc.units}
                   onChange={(e) => setDisc({ ...disc, units: e.target.value })} required>
-                  <option value="1">1 — Guidance/PE</option>
-                  <option value="2">2 — Minor</option>
-                  <option value="3">3 — Major</option>
+                  <option value="1">1 - Guidance/PE</option>
+                  <option value="2">2 - Minor</option>
+                  <option value="3">3 - Major</option>
                 </select>
               </Field>
             </div>
-            <Field label={`Prerequisites ${disc.prerequisites.length ? `(${disc.prerequisites.length} selected)` : '— optional'}`}>
+            <Field label={`Prerequisites ${disc.prerequisites.length ? `(${disc.prerequisites.length} selected)` : '- optional'}`}>
               <MultiSelect
                 options={prereqOptions}
                 selected={disc.prerequisites}
                 onChange={(val) => setDisc({ ...disc, prerequisites: val })}
-                placeholder={disc.program ? 'No existing disciplines yet — add some first.' : 'Select a program first.'}
+                placeholder={disc.program ? 'No existing disciplines yet - add some first.' : 'Select a program first.'}
               />
             </Field>
             <button type="submit" style={s.submitBtn(!disc.program || !disc.name)} disabled={!disc.program || !disc.name}>
@@ -372,7 +378,7 @@ function SchoolTab() {
             <Field label="Degree Program">
               <select style={s.input} value={semload.program}
                 onChange={(e) => setSemload({ ...semload, program: e.target.value })} required>
-                <option value="">— Select Program —</option>
+                <option value="">-- Select Program --</option>
                 {programs.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
               </select>
             </Field>
@@ -424,7 +430,7 @@ function SchoolTab() {
 
           {filteredLoadKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 140 }}>
-              <div style={{ fontSize: 32, opacity: 0.3 }}>📋</div>
+              <div style={{ fontSize: 32, opacity: 0.3 }}>*</div>
               <div style={{ fontSize: 13, color: '#94a3b8' }}>No semester loads configured yet.</div>
             </div>
           )}
@@ -472,7 +478,7 @@ function SchoolTab() {
                                     background: '#1e2335', border: '1px solid #2a3050',
                                     color: '#94a3b8', borderRadius: 4, padding: '2px 8px', fontSize: 11,
                                   }}>
-                                    {d.code} — {d.name} <span style={{ color: '#4ade80' }}>({d.units}u)</span>
+                                    {d.code} - {d.name} <span style={{ color: '#4ade80' }}>({d.units}u)</span>
                                   </span>
                                 ))
                               : <span style={{ color: '#64748b', fontSize: 12 }}>No disciplines yet</span>
@@ -491,7 +497,6 @@ function SchoolTab() {
   );
 }
 
-// ─── Teacher Tab ──────────────────────────────────────────────────────────────
 
 function TeacherTab() {
   const emptyForm = {
@@ -539,7 +544,7 @@ function TeacherTab() {
         email: form.email, employee_id: form.employee_id,
         department: parseInt(form.department), disciplines: form.disciplines,
       });
-      alert(`✓ Teacher account created. Credentials sent to ${form.email}.`);
+      alert(`OK: Teacher account created. Credentials sent to ${form.email}.`);
       setForm(emptyForm); setDisciplines([]); loadTeachers();
     } catch (err) {
       alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
@@ -594,7 +599,7 @@ function TeacherTab() {
             <Field label="Department (College)">
               <select style={s.input} value={form.department}
                 onChange={(e) => set('department', e.target.value)} required>
-                <option value="">— Select Department —</option>
+                <option value="">-- Select Department --</option>
                 {colleges.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
               </select>
             </Field>
@@ -625,7 +630,7 @@ function TeacherTab() {
 
           {deptKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 180 }}>
-              <div style={{ fontSize: 36, opacity: 0.3 }}>👨‍🏫</div>
+              <div style={{ fontSize: 36, opacity: 0.3 }}>*</div>
               <div style={{ fontSize: 14, color: '#94a3b8' }}>No faculty added yet.</div>
             </div>
           )}
@@ -670,7 +675,7 @@ function TeacherTab() {
                                   color: '#4ade80', borderRadius: 4, padding: '2px 7px', fontSize: 11,
                                 }}>{d}</span>
                               ))
-                            : <span style={{ color: '#64748b', fontSize: 12 }}>—</span>}
+                            : <span style={{ color: '#64748b', fontSize: 12 }}>-</span>}
                         </div>
                       </td>
                     </tr>
@@ -685,7 +690,6 @@ function TeacherTab() {
   );
 }
 
-// ─── Student Tab ──────────────────────────────────────────────────────────────
 
 function StudentTab() {
   const emptyForm = {
@@ -727,7 +731,7 @@ function StudentTab() {
         email: form.email, student_id: form.student_id,
         program: parseInt(form.program), year_level: parseInt(form.year_level),
       });
-      alert(`✓ Student account created. Credentials sent to ${form.email}.`);
+      alert(`OK: Student account created. Credentials sent to ${form.email}.`);
       setForm(emptyForm); setPrograms([]); loadStudents();
     } catch (err) {
       alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
@@ -789,14 +793,14 @@ function StudentTab() {
             <Field label="College">
               <select style={s.input} value={form.college}
                 onChange={(e) => set('college', e.target.value)} required>
-                <option value="">— Select College —</option>
+                <option value="">-- Select College --</option>
                 {colleges.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
               </select>
             </Field>
             <Field label="Degree Program">
               <select style={s.input} value={form.program}
                 onChange={(e) => set('program', e.target.value)} required disabled={!form.college}>
-                <option value="">— Select Program —</option>
+                <option value="">-- Select Program --</option>
                 {programs.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.code})</option>)}
               </select>
             </Field>
@@ -829,7 +833,7 @@ function StudentTab() {
 
           {progKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 180 }}>
-              <div style={{ fontSize: 36, opacity: 0.3 }}>🎓</div>
+              <div style={{ fontSize: 36, opacity: 0.3 }}>*</div>
               <div style={{ fontSize: 14, color: '#94a3b8' }}>No students enrolled yet.</div>
             </div>
           )}
@@ -872,7 +876,7 @@ function StudentTab() {
                           <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>{st.email}</td>
                           <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>Year {st.year_level}</td>
                           <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>
-                            {st.date_joined ? new Date(st.date_joined).toLocaleDateString() : '—'}
+                            {st.date_joined ? new Date(st.date_joined).toLocaleDateString() : '-'}
                           </td>
                           <td style={{ padding: '10px 16px' }}>
                             <button onClick={() => setExpandedStudent(isExpanded ? null : st.student_id)} style={{
@@ -882,7 +886,7 @@ function StudentTab() {
                               borderRadius: 5, padding: '3px 10px', fontSize: 11,
                               cursor: 'pointer', fontFamily: 'inherit',
                             }}>
-                              {st.enrolled_subjects?.length || 0} subjects {isExpanded ? '▲' : '▼'}
+                              {st.enrolled_subjects?.length || 0} subjects {isExpanded ? 'v' : '>'}
                             </button>
                           </td>
                         </tr>
@@ -898,7 +902,7 @@ function StudentTab() {
                                       return (
                                         <div key={key}>
                                           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginBottom: 6 }}>
-                                            Year {year_level} — Sem {semester}
+                                            Year {year_level} - Sem {semester}
                                           </div>
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                             {items.map((sub) => (
@@ -929,7 +933,6 @@ function StudentTab() {
   );
 }
 
-// ─── Create Term Modal ────────────────────────────────────────────────────────
 
 function CreateTermModal({ onClose, onCreated }) {
   const [form, setForm] = useState({
@@ -991,7 +994,7 @@ function CreateTermModal({ onClose, onCreated }) {
           <button onClick={onClose} style={{
             background: 'none', border: 'none', color: '#64748b',
             fontSize: 18, cursor: 'pointer', lineHeight: 1,
-          }}>✕</button>
+          }}>x</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1066,13 +1069,11 @@ function CreateTermModal({ onClose, onCreated }) {
   );
 }
 
-// ─── Offerings Tab ────────────────────────────────────────────────────────────
 
 const emptyOfferingForm = () => ({
   teacher: '', schedule: '', room: '', max_slots: '40',
 });
 
-// ─── Approval Queue ───────────────────────────────────────────────────────────
 
 const STATUS_COLORS = {
   PENDING:   { bg: '#1e2335', border: '#2a3050',  color: '#94a3b8' },
@@ -1103,11 +1104,11 @@ function ApprovalQueue() {
     finally { setLoading(false); }
   }
 
-  // Group: year_level → program → "DISC_CODE — DISC_NAME" → [enrollments]
+  // Group: year_level -> program -> "DISC_CODE - DISC_NAME" -> [enrollments]
   const grouped = queue.reduce((acc, enr) => {
     const yl   = enr.year_level ?? '?';
     const prog = enr.program    ?? 'Unknown';
-    const disc = `${enr.discipline_code} — ${enr.discipline_name}`;
+    const disc = `${enr.discipline_code} - ${enr.discipline_name}`;
     if (!acc[yl])             acc[yl]             = {};
     if (!acc[yl][prog])       acc[yl][prog]       = {};
     if (!acc[yl][prog][disc]) acc[yl][prog][disc] = [];
@@ -1150,7 +1151,6 @@ function ApprovalQueue() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── Section header ──────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 18, fontWeight: 600, color: '#e2e8f0', letterSpacing: '-0.01em' }}>
           Enrollment Requests
@@ -1176,7 +1176,7 @@ function ApprovalQueue() {
           })}
         </div>
 
-        {/* Bulk actions — PENDING only, when something is selected */}
+        {/* Bulk actions - PENDING only, when something is selected */}
         {isPending && selected.size > 0 && (
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', alignItems: 'center' }}>
             <span style={{ fontSize: 12, color: '#64748b' }}>{selected.size} selected</span>
@@ -1188,7 +1188,7 @@ function ApprovalQueue() {
               fontSize: 12, fontWeight: 600,
               cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
             }}>
-              {submitting ? 'Working…' : '✓ Approve'}
+              {submitting ? 'Working...' : 'Approve'}
             </button>
             <button onClick={() => handleAction('REJECTED')} disabled={submitting} style={{
               background: submitting ? '#1e2335' : '#3a1a1a',
@@ -1198,7 +1198,7 @@ function ApprovalQueue() {
               fontSize: 12, fontWeight: 600,
               cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
             }}>
-              ✕ Reject
+              Reject
             </button>
           </div>
         )}
@@ -1212,27 +1212,24 @@ function ApprovalQueue() {
             color: '#64748b', borderRadius: 7, padding: '6px 10px',
             fontSize: 13, cursor: 'pointer',
           }}
-        >↻</button>
+        >R</button>
       </div>
 
-      {/* ── Loading ─────────────────────────────────────────────────────────── */}
       {loading && (
         <div style={{ ...s.comingSoon, minHeight: 140 }}>
-          <div style={{ fontSize: 13, color: '#64748b' }}>Loading…</div>
+          <div style={{ fontSize: 13, color: '#64748b' }}>Loading...</div>
         </div>
       )}
 
-      {/* ── Empty ───────────────────────────────────────────────────────────── */}
       {!loading && queue.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
-          <div style={{ fontSize: 36, opacity: 0.25 }}>📥</div>
+          <div style={{ fontSize: 36, opacity: 0.25 }}>*</div>
           <div style={{ fontSize: 13, color: '#94a3b8' }}>
             No {statusFilter.toLowerCase()} enrollment requests.
           </div>
         </div>
       )}
 
-      {/* ── Year-level sections ──────────────────────────────────────────────── */}
       {!loading && yearLevels.map((yl) => (
         <div key={yl} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
@@ -1279,11 +1276,11 @@ function ApprovalQueue() {
                     {Object.keys(disciplines).length}{' '}
                     {Object.keys(disciplines).length === 1 ? 'discipline' : 'disciplines'}
                     <span style={{ color: '#64748b', marginLeft: 6, fontSize: 12 }}>
-                      · {totalCount} {totalCount === 1 ? 'request' : 'requests'}
+                      - {totalCount} {totalCount === 1 ? 'request' : 'requests'}
                     </span>
                   </span>
 
-                  {/* Select-all for group — PENDING only */}
+                  {/* Select-all for group - PENDING only */}
                   {isPending && (
                     <div
                       onClick={(e) => { e.stopPropagation(); toggleGroup(allIds); }}
@@ -1296,12 +1293,12 @@ function ApprovalQueue() {
                         cursor: 'pointer', flexShrink: 0,
                       }}
                     >
-                      {selCount === totalCount ? '✓ All' : `Select all (${totalCount})`}
+                      {selCount === totalCount ? 'All selected' : `Select all (${totalCount})`}
                     </div>
                   )}
 
                   <span style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
-                    {isExpanded ? '▲' : '▼'}
+                    {isExpanded ? 'v' : '>'}
                   </span>
                 </div>
 
@@ -1334,7 +1331,7 @@ function ApprovalQueue() {
                             <span style={{ fontSize: 11, color: '#64748b' }}>
                               {enrollments.length} {enrollments.length === 1 ? 'student' : 'students'}
                             </span>
-                            {/* Select-all for discipline — PENDING only */}
+                            {/* Select-all for discipline - PENDING only */}
                             {isPending && (
                               <div
                                 onClick={() => toggleGroup(discIds)}
@@ -1347,7 +1344,7 @@ function ApprovalQueue() {
                                   cursor: 'pointer', flexShrink: 0,
                                 }}
                               >
-                                {allDiscSel ? '✓ Selected' : 'Select all'}
+                                {allDiscSel ? 'Selected' : 'Select all'}
                               </div>
                             )}
                           </div>
@@ -1371,7 +1368,7 @@ function ApprovalQueue() {
                                       transition: 'background 0.1s',
                                     }}
                                   >
-                                    {/* Checkbox — PENDING only */}
+                                    {/* Checkbox - PENDING only */}
                                     {isPending && (
                                       <td style={{ width: 40, padding: '10px 0 10px 20px' }}>
                                         <div style={{
@@ -1380,7 +1377,7 @@ function ApprovalQueue() {
                                           background: isSel ? '#4ade80' : 'transparent',
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         }}>
-                                          {isSel && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>✓</span>}
+                                          {isSel && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
                                         </div>
                                       </td>
                                     )}
@@ -1397,7 +1394,7 @@ function ApprovalQueue() {
                                             month: 'short', day: 'numeric',
                                             hour: '2-digit', minute: '2-digit',
                                           })
-                                        : '—'}
+                                        : '-'}
                                     </td>
                                     <td style={{ padding: '10px 16px', textAlign: 'right' }}>
                                       <span style={{
@@ -1428,7 +1425,6 @@ function ApprovalQueue() {
   );
 }
 
-// ─── Offerings Tab ────────────────────────────────────────────────────────────
 
 function OfferingsTab() {
   const [terms,     setTerms]     = useState([]);
@@ -1549,11 +1545,10 @@ function OfferingsTab() {
       <div>
         <div style={s.pageTitle}>Subject Offerings</div>
         <div style={s.pageSub}>
-          Select a term, program, and semester — then add schedule offerings per discipline.
+          Select a term, program, and semester - then add schedule offerings per discipline.
         </div>
       </div>
 
-      {/* ── Filter bar ───────────────────────────────────────────────────────── */}
       <div style={{
         ...s.panel,
         flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', padding: '18px 24px',
@@ -1562,10 +1557,10 @@ function OfferingsTab() {
           <label style={s.label}>Academic Term</label>
           <div style={{ display: 'flex', gap: 8 }}>
             <select style={{ ...s.input, flex: 1 }} value={selTerm} onChange={(e) => setSelTerm(e.target.value)}>
-              <option value="">— Select Term —</option>
+              <option value="">-- Select Term --</option>
               {terms.map((t) => (
                 <option key={t.id} value={t.id}>
-                  {t.school_year} — Sem {t.semester}{t.is_active ? ' ★' : ''}
+                  {t.school_year} - Sem {t.semester}{t.is_active ? ' (active)' : ''}
                 </option>
               ))}
             </select>
@@ -1586,7 +1581,7 @@ function OfferingsTab() {
           <label style={s.label}>Degree Program</label>
           <select style={s.input} value={selProgram}
             onChange={(e) => { setSelProgram(e.target.value); setSelYearLevel(''); setSelSemester(''); setExpandedDisc(null); }}>
-            <option value="">— Select Program —</option>
+            <option value="">-- Select Program --</option>
             {programs.map((p) => (
               <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
             ))}
@@ -1598,7 +1593,7 @@ function OfferingsTab() {
           <select style={s.input} value={selYearLevel}
             onChange={(e) => { setSelYearLevel(e.target.value); setExpandedDisc(null); }}
             disabled={!selProgram}>
-            <option value="">—</option>
+            <option value="">--</option>
             <option value="1">Year 1</option>
             <option value="2">Year 2</option>
             <option value="3">Year 3</option>
@@ -1611,17 +1606,16 @@ function OfferingsTab() {
           <select style={s.input} value={selSemester}
             onChange={(e) => { setSelSemester(e.target.value); setExpandedDisc(null); }}
             disabled={!selYearLevel}>
-            <option value="">—</option>
+            <option value="">--</option>
             <option value="1">1st Sem</option>
             <option value="2">2nd Sem</option>
           </select>
         </div>
       </div>
 
-      {/* ── Disciplines list ─────────────────────────────────────────────────── */}
       {!filtersReady && (
         <div style={{ ...s.comingSoon, minHeight: 220 }}>
-          <div style={{ fontSize: 40, opacity: 0.25 }}>📅</div>
+          <div style={{ fontSize: 40, opacity: 0.25 }}>*</div>
           <div style={{ fontSize: 13, color: '#94a3b8' }}>
             Select a program, year level, and semester to manage offerings.
           </div>
@@ -1630,7 +1624,7 @@ function OfferingsTab() {
 
       {filtersReady && disciplines.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
-          <div style={{ fontSize: 36, opacity: 0.25 }}>📭</div>
+          <div style={{ fontSize: 36, opacity: 0.25 }}>*</div>
           <div style={{ fontSize: 13, color: '#94a3b8' }}>
             No disciplines found for this program / year / semester combo.
           </div>
@@ -1681,7 +1675,7 @@ function OfferingsTab() {
                   </span>
 
                   <span style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
-                    {isExpanded ? '▲' : '▼'}
+                    {isExpanded ? 'v' : '>'}
                   </span>
                 </div>
 
@@ -1711,11 +1705,11 @@ function OfferingsTab() {
                                   {o.offer_code}
                                 </td>
                                 <td style={{ padding: '8px 14px', color: '#e2e8f0' }}>
-                                  {o.teacher_name || <span style={{ color: '#64748b' }}>—</span>}
+                                  {o.teacher_name || <span style={{ color: '#64748b' }}>-</span>}
                                 </td>
                                 <td style={{ padding: '8px 14px', color: '#94a3b8' }}>{o.schedule}</td>
                                 <td style={{ padding: '8px 14px', color: '#94a3b8' }}>
-                                  {o.room || <span style={{ color: '#64748b' }}>—</span>}
+                                  {o.room || <span style={{ color: '#64748b' }}>-</span>}
                                 </td>
                                 <td style={{ padding: '8px 14px' }}>
                                   <span style={{
@@ -1748,7 +1742,7 @@ function OfferingsTab() {
                         Add New Offering
                         {!selTerm && (
                           <span style={{ color: '#ef4444', fontWeight: 400, fontSize: 10, marginLeft: 8 }}>
-                            — select a term above first
+                            - select a term above first
                           </span>
                         )}
                       </div>
@@ -1761,7 +1755,7 @@ function OfferingsTab() {
                           <label style={s.label}>Teacher (optional)</label>
                           <select style={s.input} value={form.teacher}
                             onChange={(e) => setForm(disc.id, 'teacher', e.target.value)}>
-                            <option value="">— TBA —</option>
+                            <option value="">-- TBA --</option>
                             {teachers.map((t) => (
                               <option key={t.id} value={t.id}>{t.full_name}</option>
                             ))}
@@ -1772,7 +1766,7 @@ function OfferingsTab() {
                           <label style={s.label}>Schedule <span style={{ color: '#ef4444' }}>*</span></label>
                           <input
                             style={s.input} type="text"
-                            placeholder="e.g. MWF 7:30–9:00 AM"
+                            placeholder="e.g. MWF 7:30-9:00 AM"
                             value={form.schedule}
                             onChange={(e) => setForm(disc.id, 'schedule', e.target.value)}
                             required
@@ -1818,27 +1812,25 @@ function OfferingsTab() {
         </div>
       )}
 
-      {/* ── Divider ──────────────────────────────────────────────────────────── */}
       <div style={{
         height: 1,
         background: 'linear-gradient(to right, transparent, #2a3050, transparent)',
         margin: '4px 0',
       }} />
 
-      {/* ── Approval Queue ───────────────────────────────────────────────────── */}
       <ApprovalQueue />
     </>
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
+//  Main component
 const TABS = [
   { key: 'school',    label: 'School Setup',      icon: '🏫' },
   { key: 'teacher',   label: 'Add Teacher',        icon: '👨‍🏫' },
   { key: 'student',   label: 'Add Student',        icon: '🎓' },
   { key: 'offerings', label: 'Subject Offerings',  icon: '📅' },
 ];
+
 
 export default function AdminHome() {
   const navigate    = useNavigate();
@@ -1847,13 +1839,25 @@ export default function AdminHome() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user  = JSON.parse(localStorage.getItem('user') || '{}');
-    if (!token || !user?.is_admin) navigate('/');
+    if (!token || user?.role !== 'ADMIN') navigate('/');
   }, [navigate]);
+
+  async function handleLogout() {
+    try {
+      await apiLogout();
+    } catch (err) {
+      console.warn('logout request failed, clearing local session anyway', err);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/');
+    }
+  }
 
   return (
     <div style={s.root}>
       <div style={s.sidebar}>
-        <div style={s.logo}><span style={s.logoDot} />ADMIN PANEL</div>
+        <div style={s.logo}><img src={Logo} alt="Alliance Team Titans logo" style={s.logoImg} />ADMIN PANEL</div>
         <div style={s.navLabel}>Management</div>
         {TABS.map((tab) => (
           <button key={tab.key} style={s.pillBtn(activeTab === tab.key)} onClick={() => setActiveTab(tab.key)}>
@@ -1861,6 +1865,12 @@ export default function AdminHome() {
             {tab.label}
           </button>
         ))}
+        <div style={s.sidebarFooter}>
+          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: '#ef4444', border: '1px solid #3a1a1a' }}>
+            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>⏻</span>
+            Log Out
+          </button>
+        </div>
       </div>
       <div style={s.main}>
         {activeTab === 'school'    && <SchoolTab />}

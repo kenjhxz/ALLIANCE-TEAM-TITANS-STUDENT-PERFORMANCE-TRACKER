@@ -9,12 +9,13 @@ import {
   getTeacherProfile,
   logout as apiLogout,
 } from '../services/api';
+import Logo from '../assets/Logo.png';
 
 const shell = {
   page: {
     minHeight: '100vh',
-    background: '#0f1117',
-    color: '#e2e8f0',
+    background: 'var(--app-bg-gradient)',
+    color: 'var(--app-text)',
     fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
   },
   layout: {
@@ -23,8 +24,8 @@ const shell = {
     minHeight: '100vh',
   },
   sidebar: {
-    borderRight: '1px solid #2a3050',
-    background: '#181c27',
+    borderRight: '1px solid var(--app-border)',
+    background: 'var(--app-card)',
     padding: '28px 16px',
     display: 'flex',
     flexDirection: 'column',
@@ -33,7 +34,7 @@ const shell = {
   logo: {
     fontFamily: 'monospace',
     fontSize: 12,
-    color: '#4ade80',
+    color: 'var(--app-accent)',
     letterSpacing: '0.08em',
     marginBottom: 16,
     paddingLeft: 4,
@@ -41,19 +42,24 @@ const shell = {
     alignItems: 'center',
     gap: 8,
   },
+  logoImg: {
+    width: 22,
+    height: 22,
+    objectFit: 'contain',
+  },
   logoDot: {
     width: 8,
     height: 8,
-    background: '#4ade80',
+    background: 'var(--app-accent)',
     borderRadius: '50%',
-    boxShadow: '0 0 8px #4ade80',
+    boxShadow: '0 0 8px var(--app-accent)',
     flexShrink: 0,
   },
   navLabel: {
     fontSize: 10,
     fontWeight: 600,
     letterSpacing: '0.12em',
-    color: '#64748b',
+    color: 'var(--app-muted)',
     textTransform: 'uppercase',
     padding: '0 10px',
     margin: '12px 0 4px',
@@ -64,9 +70,9 @@ const shell = {
     gap: 10,
     padding: '10px 14px',
     borderRadius: 50,
-    border: active ? '1px solid #4ade80' : '1px solid transparent',
-    background: active ? '#1a3a2a' : 'transparent',
-    color: active ? '#4ade80' : '#94a3b8',
+    border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent',
+    color: active ? 'var(--app-accent)' : 'var(--app-muted)',
     fontSize: 13.5,
     fontWeight: 500,
     cursor: 'pointer',
@@ -78,7 +84,7 @@ const shell = {
   sidebarFooter: {
     marginTop: 'auto',
     paddingTop: 16,
-    borderTop: '1px solid #2a3050',
+    borderTop: '1px solid var(--app-border)',
     display: 'flex',
     flexDirection: 'column',
     gap: 6,
@@ -86,8 +92,8 @@ const shell = {
   profileCard: {
     padding: '10px 12px',
     borderRadius: 8,
-    background: '#1a2030',
-    border: '1px solid #2a3050',
+    background: 'var(--app-panel)',
+    border: '1px solid var(--app-border)',
     display: 'flex',
     flexDirection: 'column',
     gap: 2,
@@ -103,9 +109,9 @@ const shell = {
     textAlign: 'left',
     padding: '10px 14px',
     borderRadius: 50,
-    border: active ? '1px solid #4ade80' : '1px solid transparent',
-    background: active ? '#1a3a2a' : 'transparent',
-    color: active ? '#4ade80' : '#94a3b8',
+    border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent',
+    color: active ? 'var(--app-accent)' : 'var(--app-muted)',
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
@@ -134,13 +140,18 @@ const shell = {
   }),
   hero: {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 16,
     flexWrap: 'wrap',
+    textAlign: 'center',
   },
-  title: { margin: 0, fontSize: 'clamp(1.7rem, 2.8vw, 2.4rem)', letterSpacing: '-0.04em' },
-  subtitle: { margin: '8px 0 0', color: '#94a3b8', maxWidth: 720, lineHeight: 1.6 },
+  heroText: {
+    flex: '1 1 100%',
+    maxWidth: 760,
+  },
+  title: { margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
+  subtitle: { margin: '4px 0 0', color: 'var(--app-muted)', maxWidth: 720, lineHeight: 1.5, fontSize: 13 },
   statsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -148,17 +159,17 @@ const shell = {
   },
   statCard: {
     borderRadius: 18,
-    border: '1px solid rgba(42, 48, 80, 0.9)',
-    background: 'rgba(24, 28, 39, 0.9)',
+    border: '1px solid var(--app-border)',
+    background: 'var(--app-card)',
     padding: 18,
   },
-  statLabel: { margin: 0, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#94a3b8' },
+  statLabel: { margin: 0, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--app-muted)' },
   statValue: { margin: '10px 0 0', fontSize: 26, fontWeight: 700, letterSpacing: '-0.03em' },
-  statSub: { margin: '6px 0 0', fontSize: 12, color: '#94a3b8' },
+  statSub: { margin: '6px 0 0', fontSize: 12, color: 'var(--app-muted)' },
   sectionBar: {
     padding: '12px 18px',
-    background: '#1a3a2a',
-    borderBottom: '1px solid rgba(42, 48, 80, 0.9)',
+    background: 'var(--app-accent-bg)',
+    borderBottom: '1px solid var(--app-border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -172,24 +183,24 @@ const shell = {
     fontWeight: 700,
     letterSpacing: '0.14em',
     textTransform: 'uppercase',
-    color: '#4ade80',
+    color: 'var(--app-accent)',
   },
   panel: {
     borderRadius: 20,
-    border: '1px solid rgba(42, 48, 80, 0.9)',
-    background: 'rgba(24, 28, 39, 0.92)',
+    border: '1px solid var(--app-border)',
+    background: 'var(--app-card)',
     overflow: 'hidden',
     boxShadow: '0 24px 60px rgba(0,0,0,0.18)',
   },
   panelHead: {
     padding: '16px 18px',
-    borderBottom: '1px solid rgba(42, 48, 80, 0.9)',
+    borderBottom: '1px solid var(--app-border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
   },
-  panelTitle: { margin: 0, fontSize: 14, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4ade80' },
+  panelTitle: { margin: 0, fontSize: 14, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--app-accent)' },
   table: { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' },
   th: {
     textAlign: 'left',
@@ -197,24 +208,24 @@ const shell = {
     fontSize: 11,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
-    color: '#94a3b8',
-    background: 'rgba(15, 17, 23, 0.62)',
+    color: 'var(--app-muted)',
+    background: 'var(--app-panel)',
     position: 'sticky',
     top: 0,
     zIndex: 1,
   },
   td: {
     padding: '12px 16px',
-    borderTop: '1px solid rgba(42, 48, 80, 0.75)',
+    borderTop: '1px solid var(--app-border)',
     verticalAlign: 'top',
   },
   input: {
     width: '100%',
     maxWidth: 92,
     borderRadius: 10,
-    border: '1px solid rgba(42, 48, 80, 0.95)',
-    background: '#101523',
-    color: '#e2e8f0',
+    border: '1px solid var(--app-border)',
+    background: 'var(--app-panel)',
+    color: 'var(--app-text)',
     padding: '8px 10px',
     outline: 'none',
     boxSizing: 'border-box',
@@ -222,17 +233,17 @@ const shell = {
   actionBtn: (disabled) => ({
     border: '1px solid rgba(74, 222, 128, 0.45)',
     background: disabled ? 'rgba(15, 17, 23, 0.7)' : 'linear-gradient(180deg, rgba(26, 58, 42, 0.95), rgba(22, 101, 52, 0.85))',
-    color: disabled ? '#94a3b8' : '#d1fae5',
+    color: disabled ? 'var(--app-muted)' : '#d1fae5',
     borderRadius: 10,
     padding: '9px 12px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     fontWeight: 700,
     minWidth: 88,
   }),
-  helperText: { color: '#94a3b8', fontSize: 12, lineHeight: 1.5 },
+  helperText: { color: 'var(--app-muted)', fontSize: 12, lineHeight: 1.5 },
   emptyState: {
     padding: 28,
-    color: '#94a3b8',
+    color: 'var(--app-muted)',
     textAlign: 'center',
   },
   tableWrap: {
@@ -328,12 +339,14 @@ export default function TeacherHome() {
 
   function validateRow(row) {
     const next = {};
+    const hasAny = ['prelim', 'midterm', 'finals'].some((key) => {
+      const value = row[key];
+      return value !== '' && value != null;
+    });
+    if (!hasAny) next._row = 'Enter at least one grade.';
+
     for (const key of ['prelim', 'midterm', 'finals']) {
       const value = row[key];
-      if (key === 'finals' && (value === '' || value == null)) {
-        next[key] = 'Finals is required.';
-        continue;
-      }
       if (value === '' || value == null) continue;
       const numeric = Number(value);
       if (Number.isNaN(numeric)) next[key] = 'Must be a number.';
@@ -389,7 +402,7 @@ export default function TeacherHome() {
     <div style={shell.page}>
       <div style={shell.layout}>
         <aside style={shell.sidebar}>
-          <div style={shell.logo}><span style={shell.logoDot} />TEACHER PORTAL</div>
+          <div style={shell.logo}><img src={Logo} alt="Alliance Team Titans logo" style={shell.logoImg} />TEACHER PORTAL</div>
           <div style={shell.navLabel}>Navigation</div>
           <button
             onClick={() => selected ? selectOffering(selected) : loadOfferings()}
@@ -435,7 +448,7 @@ export default function TeacherHome() {
 
         <main style={shell.main}>
           <section style={shell.hero}>
-            <div>
+            <div style={shell.heroText}>
               <h1 style={shell.title}>
                 {selected ? `${selected.offer_code} · ${selected.discipline_name}` : 'Select an offering'}
               </h1>
@@ -478,7 +491,7 @@ export default function TeacherHome() {
               {selected && <span style={shell.badge('amber')}>{enrollments.length} enrolled</span>}
             </div>
             <div style={{ padding: '14px 18px 0' }}>
-              <div style={shell.helperText}>Enter preliminary, midterm, and finals grades. Existing grades can be updated directly.</div>
+              <div style={shell.helperText}>Enter any term grade. Existing grades can be updated directly.</div>
             </div>
 
             {!selected ? (
@@ -522,7 +535,7 @@ export default function TeacherHome() {
                                 setEnrollments(copy);
                               }}
                               style={shell.input}
-                              placeholder="optional"
+                              placeholder=""
                             />
                             {errors[row.enrollment_id]?.prelim && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].prelim}</div>}
                           </td>
@@ -535,7 +548,7 @@ export default function TeacherHome() {
                                 setEnrollments(copy);
                               }}
                               style={shell.input}
-                              placeholder="optional"
+                              placeholder=""
                             />
                             {errors[row.enrollment_id]?.midterm && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].midterm}</div>}
                           </td>
@@ -548,7 +561,7 @@ export default function TeacherHome() {
                                 setEnrollments(copy);
                               }}
                               style={shell.input}
-                              placeholder="required"
+                              placeholder=""
                             />
                             {errors[row.enrollment_id]?.finals && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].finals}</div>}
                           </td>
@@ -563,6 +576,11 @@ export default function TeacherHome() {
                             >
                               {savingId === row.enrollment_id ? 'Saving…' : row.grade_id ? 'Update' : 'Post'}
                             </button>
+                            {errors[row.enrollment_id]?._row && (
+                              <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>
+                                {errors[row.enrollment_id]._row}
+                              </div>
+                            )}
                           </td>
                         </tr>
                       );

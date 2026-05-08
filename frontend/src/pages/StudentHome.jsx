@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -13,82 +13,81 @@ import {
   getMyGrades,
   exportMyGrades,
 } from '../services/api';
+import Logo from '../assets/Logo.png';
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// Styles
 const s = {
   root: {
     display: 'flex', minHeight: '100vh',
     fontFamily: "'DM Sans', 'Segoe UI', sans-serif",
-    background: '#0f1117', color: '#e2e8f0',
+    background: 'var(--app-bg-gradient)', color: 'var(--app-text)',
   },
   sidebar: {
-    width: 220, minHeight: '100vh', background: '#181c27',
-    borderRight: '1px solid #2a3050', display: 'flex',
+    width: 220, minHeight: '100vh', background: 'var(--app-card)',
+    borderRight: '1px solid var(--app-border)', display: 'flex',
     flexDirection: 'column', padding: '28px 16px', gap: 6, flexShrink: 0,
   },
   logo: {
-    fontFamily: 'monospace', fontSize: 12, color: '#4ade80',
-    letterSpacing: '0.08em', marginBottom: 28, paddingLeft: 4,
-    display: 'flex', alignItems: 'center', gap: 8,
+    fontFamily: 'monospace', fontSize: 12, color: 'var(--app-accent)',
   },
-  logoDot: { width: 8, height: 8, background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 8px #4ade80', flexShrink: 0 },
+  logoImg: { width: 22, height: 22, objectFit: 'contain' },
+  logoDot: { width: 8, height: 8, background: 'var(--app-accent)', borderRadius: '50%', boxShadow: '0 0 8px var(--app-accent)', flexShrink: 0 },
   navLabel: {
-    fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: '#64748b',
+    fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--app-muted)',
     textTransform: 'uppercase', padding: '0 10px', margin: '12px 0 4px',
   },
   pillBtn: (active) => ({
     display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px',
-    borderRadius: 50, border: active ? '1px solid #4ade80' : '1px solid transparent',
-    background: active ? '#1a3a2a' : 'transparent',
-    color: active ? '#4ade80' : '#94a3b8', fontSize: 13.5, fontWeight: 500,
+    borderRadius: 50, border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent',
+    color: active ? 'var(--app-accent)' : 'var(--app-muted)', fontSize: 13.5, fontWeight: 500,
     cursor: 'pointer', textAlign: 'left', width: '100%', fontFamily: 'inherit', transition: 'all 0.18s',
   }),
   sidebarFooter: {
-    marginTop: 'auto', paddingTop: 16, borderTop: '1px solid #2a3050',
+    marginTop: 'auto', paddingTop: 16, borderTop: '1px solid var(--app-border)',
     display: 'flex', flexDirection: 'column', gap: 6,
   },
   main: { flex: 1, overflowY: 'auto', padding: '36px 40px', display: 'flex', flexDirection: 'column', gap: 24 },
   pageTitle: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
-  pageSub:   { fontSize: 13, color: '#64748b', marginTop: 4 },
+  pageSub:   { fontSize: 13, color: 'var(--app-muted)', marginTop: 4 },
   panels:    { display: 'flex', gap: 20, flexWrap: 'wrap' },
   panel: {
-    background: '#181c27', border: '1px solid #2a3050', borderRadius: 10,
+    background: 'var(--app-card)', border: '1px solid var(--app-border)', borderRadius: 10,
     padding: 24, flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column', gap: 14,
   },
   panelTitle: {
     fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
-    color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+    color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
   },
-  hint:  { fontSize: 12, color: '#64748b', marginTop: -8, lineHeight: 1.5 },
-  label: { display: 'block', fontSize: 11, fontWeight: 500, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 5 },
+  hint:  { fontSize: 12, color: 'var(--app-muted)', marginTop: -8, lineHeight: 1.5 },
+  label: { display: 'block', fontSize: 11, fontWeight: 500, color: 'var(--app-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 5 },
   input: {
-    width: '100%', background: '#1e2335', border: '1px solid #2a3050', borderRadius: 7,
-    padding: '9px 12px', color: '#e2e8f0', fontSize: 13.5, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+    width: '100%', background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 7,
+    padding: '9px 12px', color: 'var(--app-text)', fontSize: 13.5, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   },
   inputReadonly: {
-    width: '100%', background: '#161b28', border: '1px solid #1e2840', borderRadius: 7,
-    padding: '9px 12px', color: '#64748b', fontSize: 13.5, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
+    width: '100%', background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 7,
+    padding: '9px 12px', color: 'var(--app-muted)', fontSize: 13.5, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box',
   },
   submitBtn: (disabled) => ({
-    background: disabled ? '#1e2335' : '#22543d',
-    border:     disabled ? '1px solid #2a3050' : '1px solid #4ade80',
-    color:      disabled ? '#64748b' : '#4ade80',
+    background: disabled ? 'var(--app-panel)' : 'var(--app-accent-bg)',
+    border:     disabled ? '1px solid var(--app-border)' : '1px solid var(--app-accent)',
+    color:      disabled ? 'var(--app-muted)' : 'var(--app-accent)',
     fontSize: 13, fontWeight: 600, padding: '10px 16px', borderRadius: 7,
     cursor: disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 2,
   }),
   statCard: {
-    background: '#1e2335', border: '1px solid #2a3050', borderRadius: 8,
+    background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 8,
     padding: '14px 18px', flex: 1, minWidth: 120, display: 'flex', flexDirection: 'column', gap: 4,
   },
   comingSoon: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', minHeight: 260, gap: 12, color: '#64748b', textAlign: 'center',
+    justifyContent: 'center', minHeight: 260, gap: 12, color: 'var(--app-muted)', textAlign: 'center',
   },
-  th: { padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', borderBottom: '1px solid #2a3050' },
-  td: { padding: '10px 14px', borderBottom: '1px solid #1e2335' },
+  th: { padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)' },
+  td: { padding: '10px 14px', borderBottom: '1px solid var(--app-border)' },
 };
 
-// ─── Status colour map ────────────────────────────────────────────────────────
 const STATUS_STYLE = {
   PENDING:   { bg: '#2a2010', border: '#5a4a1a', color: '#f59e0b' },
   APPROVED:  { bg: '#1a2a3a', border: '#1e4a6a', color: '#38bdf8' },
@@ -111,7 +110,7 @@ function StatusBadge({ status }) {
 function PanelTitle({ children }) {
   return (
     <div style={s.panelTitle}>
-      <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', opacity: 0.7, display: 'inline-block' }} />
+      <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', opacity: 0.7, display: 'inline-block' }} />
       {children}
     </div>
   );
@@ -124,9 +123,9 @@ function Field({ label, children }) {
 function StatCard({ label, value, sub, accent }) {
   return (
     <div style={s.statCard}>
-      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b' }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: accent || '#e2e8f0', letterSpacing: '-0.01em' }}>{value ?? '—'}</div>
-      {sub && <div style={{ fontSize: 11, color: '#64748b' }}>{sub}</div>}
+      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--app-muted)' }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: accent || 'var(--app-text)', letterSpacing: '-0.01em' }}>{value ?? '—'}</div>
+      {sub && <div style={{ fontSize: 11, color: 'var(--app-muted)' }}>{sub}</div>}
     </div>
   );
 }
@@ -134,18 +133,17 @@ function StatCard({ label, value, sub, accent }) {
 function SectionHeader({ title, right }) {
   return (
     <div style={{
-      padding: '10px 20px', background: '#1a3a2a', borderBottom: '1px solid #2a3050',
+      padding: '10px 20px', background: 'var(--app-accent-bg)', borderBottom: '1px solid var(--app-border)',
       fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-      color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+      color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
     }}>
-      <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+      <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
       {title}
-      {right && <span style={{ marginLeft: 'auto', fontWeight: 400, color: '#64748b', fontSize: 11 }}>{right}</span>}
+      {right && <span style={{ marginLeft: 'auto', fontWeight: 400, color: 'var(--app-muted)', fontSize: 11 }}>{right}</span>}
     </div>
   );
 }
 
-// ─── PROFILE TAB ─────────────────────────────────────────────────────────────
 
 function ProfileTab() {
   const [profile,    setProfile]   = useState(null);
@@ -181,7 +179,7 @@ function ProfileTab() {
     try {
       const { data } = await updateStudentProfile({ first_name: form.first_name, last_name: form.last_name, middle_name: form.middle_name });
       setProfile((prev) => ({ ...prev, ...data }));
-      alert('✓ Profile updated.');
+      alert('OK: Profile updated.');
     } catch (err) {
       alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     } finally { setLoading(false); }
@@ -193,7 +191,7 @@ function ProfileTab() {
     setPwLoading(true);
     try {
       await updateStudentProfile({ current_password: pwForm.current_password, new_password: pwForm.new_password });
-      alert('✓ Password changed.');
+      alert('OK: Password changed.');
       setPwForm({ current_password: '', new_password: '', confirm_password: '' });
     } catch (err) {
       alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
@@ -210,11 +208,11 @@ function ProfileTab() {
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <div style={s.statCard}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b' }}>Student ID</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>{profile?.student_id || '—'}</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>{profile?.student_id || '--'}</div>
         </div>
-        <StatCard label="Program"    value={profile?.program_code || '—'} sub={profile?.program_name}           accent="#e2e8f0" />
-        <StatCard label="Year Level" value={profile?.year_level ? `Year ${profile.year_level}` : '—'}           accent="#e2e8f0" />
-        <StatCard label="College"    value={profile?.college_name || '—'}                                        accent="#e2e8f0" />
+        <StatCard label="Program"    value={profile?.program_code || '--'} sub={profile?.program_name}           accent="#e2e8f0" />
+        <StatCard label="Year Level" value={profile?.year_level ? `Year ${profile.year_level}` : '--'}           accent="#e2e8f0" />
+        <StatCard label="College"    value={profile?.college_name || '--'}                                        accent="#e2e8f0" />
         <StatCard label="Enrolled"   value={enrolledCount}                 sub="subjects this term"              accent="#4ade80" />
         <StatCard label="Units"      value={enrolledUnits}                 sub="enrolled units"                  accent="#4ade80" />
       </div>
@@ -240,13 +238,13 @@ function ProfileTab() {
               <input style={s.inputReadonly} type="email" value={profile?.email || ''} readOnly />
             </Field>
             <Field label="College">
-              <input style={s.inputReadonly} type="text" value={profile?.college_name || '—'} readOnly />
+              <input style={s.inputReadonly} type="text" value={profile?.college_name || '--'} readOnly />
             </Field>
             <Field label="Degree Program">
-              <input style={s.inputReadonly} type="text" value={profile?.program_name ? `${profile.program_name} (${profile.program_code})` : '—'} readOnly />
+              <input style={s.inputReadonly} type="text" value={profile?.program_name ? `${profile.program_name} (${profile.program_code})` : '--'} readOnly />
             </Field>
             <Field label="Year Level">
-              <input style={s.inputReadonly} type="text" value={profile?.year_level ? `Year ${profile.year_level}` : '—'} readOnly />
+              <input style={s.inputReadonly} type="text" value={profile?.year_level ? `Year ${profile.year_level}` : '--'} readOnly />
             </Field>
             <button type="submit" style={s.submitBtn(loading)} disabled={loading}>
               {loading ? 'Saving...' : 'Save Changes'}
@@ -257,7 +255,7 @@ function ProfileTab() {
         {/* Change password */}
         <div style={{ ...s.panel, maxWidth: 340, flex: '0 0 340px' }}>
           <PanelTitle>Change Password</PanelTitle>
-          <p style={s.hint}>Use a strong password — at least 8 characters.</p>
+          <p style={s.hint}>Use a strong password - at least 8 characters.</p>
           <form onSubmit={handlePasswordChange} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <Field label="Current Password">
               <input style={s.input} type="password" value={pwForm.current_password} onChange={(e) => setPw('current_password', e.target.value)} required />
@@ -278,7 +276,7 @@ function ProfileTab() {
   );
 }
 
-// ─── PROSPECTUS TAB ───────────────────────────────────────────────────────────
+// PROSPECTUS TAB
 
 function ProspectusTab() {
   const [rows,       setRows]      = useState([]);
@@ -320,10 +318,10 @@ function ProspectusTab() {
     try {
       const { data } = await submitDisciplineRequest(selected);
       const msg = [
-        data.requested?.length ? `✓ Requested: ${data.requested.join(', ')}` : null,
-        data.errors?.length    ? `✗ Errors:\n${data.errors.join('\n')}`       : null,
+        data.requested?.length ? `OK: Requested: ${data.requested.join(', ')}` : null,
+        data.errors?.length    ? `Errors:\n${data.errors.join('\n')}`           : null,
       ].filter(Boolean).join('\n\n');
-      alert(msg || '✓ Done.');
+      alert(msg || 'OK: Done.');
       setSelected([]);
       await load();
     } catch (err) {
@@ -354,7 +352,7 @@ function ProspectusTab() {
 
       {!loading && rows.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 200 }}>
-          <div style={{ fontSize: 38, opacity: 0.25 }}>📋</div>
+          <div style={{ fontSize: 38, opacity: 0.25 }}>*</div>
           <div style={{ fontSize: 13, color: '#94a3b8' }}>No active term or no disciplines found for your program.</div>
         </div>
       )}
@@ -365,7 +363,7 @@ function ProspectusTab() {
             title="Disciplines"
             right={
               selected.length > 0
-                ? `${selected.length} selected · +${selectedUnits} units`
+                ? `${selected.length} selected +${selectedUnits} units`
                 : `${total} units total`
             }
           />
@@ -402,7 +400,7 @@ function ProspectusTab() {
                           border: isSelected ? '1px solid #4ade80' : '1px solid #2a3050',
                           background: isSelected ? '#4ade80' : 'transparent',
                         }}>
-                          {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>✓</span>}
+                          {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
                         </span>
                       )}
                     </td>
@@ -418,7 +416,7 @@ function ProspectusTab() {
                             ))}
                           </div>
                         )
-                        : <span style={{ color: '#64748b', fontSize: 11 }}>—</span>}
+                        : <span style={{ color: '#64748b', fontSize: 11 }}>-</span>}
                     </td>
                     <td style={{ ...s.td }}>
                       {d.request_status
@@ -426,7 +424,7 @@ function ProspectusTab() {
                         : <span style={{ color: '#64748b', fontSize: 11 }}>Not requested</span>}
                     </td>
                     <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>
-                      {d.offer_code || <span style={{ color: '#64748b' }}>—</span>}
+                      {d.offer_code || <span style={{ color: '#64748b' }}>-</span>}
                     </td>
                   </tr>
                 );
@@ -437,7 +435,7 @@ function ProspectusTab() {
           {selected.length > 0 && (
             <div style={{ padding: '14px 20px', borderTop: '1px solid #2a3050', display: 'flex', alignItems: 'center', gap: 12, background: '#131720' }}>
               <span style={{ flex: 1, fontSize: 12, color: '#94a3b8' }}>
-                {selected.length} subject{selected.length !== 1 ? 's' : ''} selected &nbsp;·&nbsp;
+                {selected.length} subject{selected.length !== 1 ? 's' : ''} selected +
                 <span style={{ color: '#4ade80', fontWeight: 600 }}>+{selectedUnits} units</span>
               </span>
               <button
@@ -457,7 +455,6 @@ function ProspectusTab() {
   );
 }
 
-// ─── ENROLLMENT TAB ───────────────────────────────────────────────────────────
 
 function EnrollmentTab() {
   const [activeTerm,  setActiveTerm]  = useState(null);
@@ -510,10 +507,10 @@ function EnrollmentTab() {
     try {
       const { data } = await submitDisciplineRequest(selected);
       const msg = [
-        data.requested?.length ? `✓ Requested: ${data.requested.join(', ')}` : null,
-        data.errors?.length    ? `✗ Errors:\n${data.errors.join('\n')}`       : null,
+        data.requested?.length ? `OK: Requested: ${data.requested.join(', ')}` : null,
+        data.errors?.length    ? `Errors:\n${data.errors.join('\n')}`           : null,
       ].filter(Boolean).join('\n\n');
-      alert(msg || '✓ Done.');
+      alert(msg || 'OK: Done.');
       setSelected([]);
       await reload();
     } catch (err) {
@@ -525,7 +522,7 @@ function EnrollmentTab() {
     setScheduling((p) => ({ ...p, [enrollmentId]: true }));
     try {
       const { data } = await selectSchedule(enrollmentId, offeringId);
-      alert(`✓ Enrolled in ${data.offer_code} — ${data.schedule}${data.room ? ` @ ${data.room}` : ''}`);
+      alert(`OK: Enrolled in ${data.offer_code} - ${data.schedule}${data.room ? ` @ ${data.room}` : ''}`);
       setExpandedEnr(null);
       await reload();
     } catch (err) {
@@ -541,7 +538,7 @@ function EnrollmentTab() {
       <div>
         <div style={s.pageTitle}>Enrollment</div>
         <div style={s.pageSub}>
-          {activeTerm ? `Active term: ${activeTerm.school_year} — Semester ${activeTerm.semester}` : 'No active enrollment period.'}
+          {activeTerm ? `Active term: ${activeTerm.school_year} - Semester ${activeTerm.semester}` : 'No active enrollment period.'}
         </div>
       </div>
 
@@ -554,7 +551,7 @@ function EnrollmentTab() {
 
       {!activeTerm && (
         <div style={{ ...s.comingSoon, minHeight: 200 }}>
-          <div style={{ fontSize: 40, opacity: 0.25 }}>🔒</div>
+          <div style={{ fontSize: 40, opacity: 0.25 }}>*</div>
           <div style={{ fontSize: 13, color: '#94a3b8' }}>Enrollment is currently closed.</div>
         </div>
       )}
@@ -570,7 +567,7 @@ function EnrollmentTab() {
 
           {approved.length > 0 && (
             <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
-              <SectionHeader title="Step 2 — Pick Your Schedule" right={`${approved.length} subject${approved.length !== 1 ? 's' : ''} need a schedule`} />
+              <SectionHeader title="Step 2 - Pick Your Schedule" right={`${approved.length} subject${approved.length !== 1 ? 's' : ''} need a schedule`} />
               {approved.map((item) => {
                 const isOpen   = expandedEnr === item.enrollment_id;
                 const isActing = !!scheduling[item.enrollment_id];
@@ -584,7 +581,7 @@ function EnrollmentTab() {
                       <span style={{ flex: 1, fontWeight: 500, fontSize: 14, color: '#e2e8f0' }}>{item.discipline_name}</span>
                       <span style={{ fontSize: 12, color: '#64748b' }}>{item.units} units</span>
                       <StatusBadge status="APPROVED" />
-                      <span style={{ color: '#64748b', fontSize: 12 }}>{isOpen ? '▲' : '▼'}</span>
+                      <span style={{ color: '#64748b', fontSize: 12 }}>{isOpen ? 'v' : '>'}</span>
                     </div>
                     {isOpen && (
                       <div style={{ padding: '0 20px 16px', background: '#151a28' }}>
@@ -607,7 +604,7 @@ function EnrollmentTab() {
                                       <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>{o.offer_code}</td>
                                       <td style={{ ...s.td, color: '#e2e8f0' }}>{o.teacher_name || <span style={{ color: '#64748b' }}>TBA</span>}</td>
                                       <td style={{ ...s.td, color: '#94a3b8' }}>{o.schedule}</td>
-                                      <td style={{ ...s.td, color: '#94a3b8' }}>{o.room || '—'}</td>
+                                      <td style={{ ...s.td, color: '#94a3b8' }}>{o.room || '--'}</td>
                                       <td style={{ ...s.td }}>
                                         <span style={{ color: full ? '#ef4444' : '#4ade80', fontWeight: 600 }}>{o.current_slots}/{o.max_slots}</span>
                                         <span style={{ color: '#64748b', fontSize: 11, marginLeft: 4 }}>({o.available_slots} open)</span>
@@ -638,8 +635,8 @@ function EnrollmentTab() {
           {/* Stage 1: Request subjects */}
           <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
             <SectionHeader
-              title="Step 1 — Request Subjects"
-              right={selected.length > 0 ? `${selected.length} selected · ${committedUnits + selectedUnits} units total` : undefined}
+              title="Step 1 - Request Subjects"
+              right={selected.length > 0 ? `${selected.length} selected - ${committedUnits + selectedUnits} units total` : undefined}
             />
             {prospectus.length === 0
               ? <div style={{ ...s.comingSoon, minHeight: 120 }}><div style={{ fontSize: 13, color: '#94a3b8' }}>No subjects found for this term.</div></div>
@@ -679,7 +676,7 @@ function EnrollmentTab() {
                                   border: isSelected ? '1px solid #4ade80' : '1px solid #2a3050',
                                   background: isSelected ? '#4ade80' : 'transparent',
                                 }}>
-                                  {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>✓</span>}
+                                  {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
                                 </span>
                               )}
                             </td>
@@ -695,7 +692,7 @@ function EnrollmentTab() {
                                     ))}
                                   </div>
                                 )
-                                : <span style={{ color: '#64748b', fontSize: 11 }}>—</span>}
+                                : <span style={{ color: '#64748b', fontSize: 11 }}>-</span>}
                             </td>
                             <td style={{ ...s.td }}>
                               {d.request_status
@@ -718,7 +715,7 @@ function EnrollmentTab() {
                   {selected.length > 0 && (
                     <div style={{ padding: '14px 20px', borderTop: '1px solid #2a3050', display: 'flex', alignItems: 'center', gap: 12, background: '#131720' }}>
                       <span style={{ flex: 1, fontSize: 12, color: '#94a3b8' }}>
-                        {selected.length} subject{selected.length !== 1 ? 's' : ''} selected &nbsp;·&nbsp;
+                        {selected.length} subject{selected.length !== 1 ? 's' : ''} selected
                         <span style={{ color: '#4ade80', fontWeight: 600 }}>+{selectedUnits} units</span>
                       </span>
                       <button
@@ -761,7 +758,6 @@ function GradesTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  // ─── GROUP GRADES BY TERM ───────────────────────────────────────────────
   const grouped = grades.reduce((acc, g) => {
     const key = `Year ${g.year_level || '?'} - Sem ${g.semester || '?'}`;
     if (!acc[key]) acc[key] = [];
@@ -772,7 +768,6 @@ function GradesTab() {
   const termKeys = Object.keys(grouped).sort().reverse();
   const visible = filterTerm ? [filterTerm] : termKeys;
 
-  // ─── SYNC ENROLLED + GRADES (FIX) ───────────────────────────────────────
   const enrolledMap = new Map();
 
   prospectus.forEach((p) => {
@@ -811,7 +806,6 @@ function GradesTab() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // ─── STATS ──────────────────────────────────────────────────────────────
   const gradedAll = grades.filter((g) => g.finals != null);
   const allPassed = gradedAll.filter((g) => parseFloat(g.finals) <= 3.0);
   const allFailed = gradedAll.filter((g) => parseFloat(g.finals) > 3.0);
@@ -926,7 +920,7 @@ function GradesTab() {
               cursor: exporting ? 'not-allowed' : 'pointer',
             }}
           >
-            {exporting ? 'Exporting...' : 'Export Grades ▾'}
+            {exporting ? 'Exporting...' : 'Export Grades'}
           </button>
           {exportOpen && (
             <div
@@ -979,11 +973,11 @@ function GradesTab() {
         </div>
       </div>
 
-      {/* ─── STATS ───────────────────────────────────────────────────────── */}
+      {/* STATS */}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <StatCard
           label="GWA"
-          value={gwa ?? '—'}
+          value={gwa ?? '--'}
           sub="general weighted avg"
           accent={gwa ? gradeColor(parseFloat(gwa)) : '#94a3b8'}
         />
@@ -1007,7 +1001,6 @@ function GradesTab() {
         />
       </div>
 
-      {/* ─── SYNCED ENROLLED SUBJECTS ───────────────────────────────────── */}
       <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
         <SectionHeader title="Currently Enrolled Subjects (Synced)" />
 
@@ -1047,7 +1040,7 @@ function GradesTab() {
                   </td>
 
                   <td style={{ ...s.td, textAlign: 'center' }}>
-                    {d.units || '—'}
+                    {d.units || '--'}
                   </td>
 
                 <td style={{ ...s.td, textAlign: 'center' }}>
@@ -1070,7 +1063,7 @@ function GradesTab() {
         )}
       </div>
 
-      {/* ─── GRADE RECORDS ──────────────────────────────────────────────── */}
+      {/* GRADE RECORDS */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <PanelTitle>Grade Records</PanelTitle>
@@ -1262,7 +1255,7 @@ function GradesTab() {
                               color: gradeColor(g.prelim),
                             }}
                           >
-                            {g.prelim ?? '—'}
+                            {g.prelim ?? '--'}
                           </td>
 
                           <td
@@ -1272,7 +1265,7 @@ function GradesTab() {
                               color: gradeColor(g.midterm),
                             }}
                           >
-                            {g.midterm ?? '—'}
+                            {g.midterm ?? '--'}
                           </td>
 
                           <td
@@ -1282,7 +1275,7 @@ function GradesTab() {
                               color: gradeColor(fg),
                             }}
                           >
-                            {fg ?? '—'}
+                            {fg ?? '--'}
                           </td>
 
                           <td style={{ ...s.td }}>
@@ -1315,13 +1308,13 @@ function GradesTab() {
     </>
   );
 }
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// MAIN
 
 const TABS = [
-  { key: 'profile',    label: 'Profile / Account', icon: '👤' },
-  { key: 'prospectus', label: 'Prospectus',         icon: '📋' },
-  { key: 'enrollment', label: 'Enrollment',         icon: '📝' },
-  { key: 'grades',     label: 'Grades',             icon: '📊' },
+  { key: 'profile',    label: 'Profile / Account', icon: 'P' },
+  { key: 'prospectus', label: 'Prospectus',         icon: 'S' },
+  { key: 'enrollment', label: 'Enrollment',         icon: 'E' },
+  { key: 'grades',     label: 'Grades',             icon: 'G' },
 ];
 
 export default function StudentHome() {
@@ -1348,7 +1341,7 @@ export default function StudentHome() {
   return (
     <div style={s.root}>
       <div style={s.sidebar}>
-        <div style={s.logo}><span style={s.logoDot} />STUDENT PORTAL</div>
+        <div style={s.logo}><img src={Logo} alt="Alliance Team Titans logo" style={s.logoImg} />STUDENT PORTAL</div>
         <div style={s.navLabel}>Navigation</div>
         {TABS.map((tab) => (
           <button key={tab.key} style={s.pillBtn(activeTab === tab.key)} onClick={() => setActiveTab(tab.key)}>
@@ -1368,13 +1361,13 @@ export default function StudentHome() {
               </div>
               {profile.program_code && (
                 <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2 }}>
-                  {profile.program_code} · Year {profile.year_level}
+                  {profile.program_code} - Year {profile.year_level}
                 </div>
               )}
             </div>
           )}
           <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: '#ef4444', border: '1px solid #3a1a1a', borderRadius: 50 }}>
-            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>⏻</span>
+            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>L</span>
             Log Out
           </button>
         </div>
@@ -1389,3 +1382,4 @@ export default function StudentHome() {
     </div>
   );
 }
+

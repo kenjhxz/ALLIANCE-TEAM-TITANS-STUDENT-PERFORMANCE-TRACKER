@@ -100,11 +100,11 @@ class GradeSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        values = {}
         for key in ('prelim', 'midterm', 'finals'):
             value = attrs.get(key, getattr(self.instance, key, None) if self.instance else None)
+            values[key] = value
             if value is None:
-                if key == 'finals':
-                    raise serializers.ValidationError({key: 'Finals grade is required.'})
                 continue
             try:
                 numeric = float(value)
@@ -112,6 +112,9 @@ class GradeSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({key: 'Grade must be a number.'})
             if numeric < 1.0 or numeric > 5.0:
                 raise serializers.ValidationError({key: 'Grade must be between 1.00 and 5.00.'})
+
+        if all(values[key] is None for key in ('prelim', 'midterm', 'finals')):
+            raise serializers.ValidationError('At least one term grade is required.')
 
         offering = attrs.get('offering', getattr(self.instance, 'offering', None) if self.instance else None)
         term = attrs.get('term', getattr(self.instance, 'term', None) if self.instance else None)

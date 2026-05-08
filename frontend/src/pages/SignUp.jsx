@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/api";
+import Logo from "../assets/Logo.png";
 
 const initialForm = {
   email: "",
@@ -12,7 +13,6 @@ const initialForm = {
   confirm_password: "",
   student_id: "",
   employee_id: "",
-  admin_id: "",
 };
 
 export default function SignUp() {
@@ -65,11 +65,10 @@ const handleSubmit = async () => {
   if (!validateStep2()) return;
   setLoading(true);
   try {
-    const { student_id, employee_id, admin_id, ...base } = form;
+    const { student_id, employee_id, ...base } = form;
     const payload = { ...base };
     if (form.role === "STUDENT")   payload.student_id  = student_id;
     if (form.role === "PROFESSOR") payload.employee_id = employee_id;
-    if (form.role === "ADMIN")     payload.admin_id    = admin_id;
 
     await register(payload);
     setDone(true);
@@ -93,8 +92,9 @@ const handleSubmit = async () => {
 
   if (done) {
     return (
-      <div className="salita-root" style={{ alignItems: "center", justifyContent: "center", background: "var(--cream)" }}>
-        <div className="card" style={{ maxWidth: 400, textAlign: "center" }}>
+      <div className="login-shell">
+        <div className="card signup-card" style={{ textAlign: "center" }}>
+          <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
           <div className="status-icon success" style={{ margin: "0 auto 1.5rem" }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5C6E42" strokeWidth="2" strokeLinecap="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9-2-2-2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -116,8 +116,9 @@ const handleSubmit = async () => {
 
   return (
 
-      <div className="right-panel">
-        <div className="card" style={{ maxWidth: 460 }}>
+      <div className="login-shell">
+        <div className="card signup-card">
+          <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
 
           <div className="steps">
             <div className={`step-dot ${step >= 1 ? "active" : ""}`} />
@@ -154,11 +155,6 @@ const handleSubmit = async () => {
                     className={`role-btn ${form.role === "PROFESSOR" ? "role-active" : ""}`}
                     onClick={() => set("role", "PROFESSOR")}>
                     📖 Teacher
-                  </button>
-                  <button type="button"
-                    className={`role-btn ${form.role === "ADMIN" ? "role-active" : ""}`}
-                    onClick={() => set("role", "ADMIN")}>
-                    🛡️ Admin
                   </button>
                 </div>
               </div>
@@ -215,17 +211,6 @@ const handleSubmit = async () => {
                     />
                 </Field>
                 )}
-
-                {form.role === "ADMIN" && (
-                    <Field label="Admin ID:" error={errors.admin_id}>
-                        <input
-                        className={`finput ${errors.admin_id ? "finput-error" : ""}`}
-                        type="text"
-                        value={form.admin_id || ""}
-                        onChange={(e) => set("admin_id", e.target.value)}
-                        />
-                    </Field>
-                    )}  
 
              <button className="btn-primary" onClick={handleNext}>
                 Continue →
