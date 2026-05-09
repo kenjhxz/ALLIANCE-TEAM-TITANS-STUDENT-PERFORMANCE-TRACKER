@@ -1311,10 +1311,10 @@ function GradesTab() {
 // MAIN
 
 const TABS = [
-  { key: 'profile',    label: 'Profile / Account', icon: 'P' },
-  { key: 'prospectus', label: 'Prospectus',         icon: 'S' },
-  { key: 'enrollment', label: 'Enrollment',         icon: 'E' },
-  { key: 'grades',     label: 'Grades',             icon: 'G' },
+  { key: 'profile',    label: 'Profile / Account', icon: '👤' },
+  { key: 'prospectus', label: 'Prospectus',         icon: '📋' },
+  { key: 'enrollment', label: 'Enrollment',         icon: '📝' },
+  { key: 'grades',     label: 'Grades',             icon: '📊' },
 ];
 
 export default function StudentHome() {
