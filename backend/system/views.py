@@ -5,6 +5,9 @@ from django.db.models import Sum
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
+import logging
+logger = logging.getLogger(__name__)
+
 
 from .serializers import (
     DegreeProgramSerializer, CollegeSerializer, DisciplineSerializer,
@@ -275,10 +278,11 @@ class StudentDisciplineRequestView(APIView):
             {'requested': created, 'errors': errors},
             status=201 if created else 400,
         )
+    
+    
 
 
 # ── ENROLLMENT: Stage 2 — Schedule selection (Student) ───────────────────────
-
 class StudentScheduleSelectView(APIView):
     permission_classes = [IsStudent]
 
@@ -330,7 +334,7 @@ class StudentScheduleSelectView(APIView):
         offering_id   = s.validated_data['offering_id']
 
         try:
-            enrollment = StudentEnrollment.objects.select_related('discipline').get(
+            enrollment = StudentEnrollment.objects.select_related('discipline', 'term').get(
                 id=enrollment_id,
                 student=profile,
                 status=StudentEnrollment.Status.APPROVED,
@@ -347,8 +351,39 @@ class StudentScheduleSelectView(APIView):
         except SubjectOffering.DoesNotExist:
             return Response({'error': 'Offering not found or does not match discipline.'}, status=404)
 
+        if StudentEnrollment.objects.filter(
+            student=profile,
+            discipline=enrollment.discipline,
+            term=enrollment.term,
+            status=StudentEnrollment.Status.ENROLLED,
+        ).exists():
+            return Response(
+                {'error': f'You are already enrolled in {enrollment.discipline.code} this term.'},
+                status=400,
+            )
+
+        # slots check
         if offering.available_slots <= 0:
             return Response({'error': f'{offering.offer_code} has no available slots.'}, status=400)
+
+        # schedule clash check
+        clashing = StudentEnrollment.objects.filter(
+            student=profile,
+            term=enrollment.term,
+            status=StudentEnrollment.Status.ENROLLED,
+        ).select_related('offering', 'discipline').exclude(offering__isnull=True)
+
+        for existing in clashing:
+            if existing.offering.schedule == offering.schedule:
+                return Response(
+                    {
+                        'error': (
+                            f'Schedule conflict: "{offering.schedule}" clashes with '
+                            f'{existing.offering.offer_code} ({existing.discipline.code}).'
+                        )
+                    },
+                    status=400,
+                )
 
         # lock in the schedule
         enrollment.offering = offering
@@ -358,14 +393,19 @@ class StudentScheduleSelectView(APIView):
         offering.current_slots += 1
         offering.save()
 
+        logger.info(
+            f"[AUDIT] ENROLL | student={profile.student_id} | "
+            f"discipline={enrollment.discipline.code} | offering={offering.offer_code} | "
+            f"schedule={offering.schedule}"
+        )
+
         return Response({
             'enrolled':   enrollment.id,
             'offer_code': offering.offer_code,
             'schedule':   offering.schedule,
             'room':       offering.room,
         })
-
-
+    
 # ── ENROLLMENT: Admin queue ───────────────────────────────────────────────────
 
 class AdminEnrollmentQueueView(APIView):

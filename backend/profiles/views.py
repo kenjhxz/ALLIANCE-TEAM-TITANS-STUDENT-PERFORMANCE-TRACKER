@@ -8,6 +8,8 @@ from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from datetime import timedelta
 import secrets
+import logging
+logger = logging.getLogger(__name__)
 
 from .models import User, StudentProfile, TeacherProfile, AdminProfile, EmailVerificationToken
 from .utils import send_verification_email
@@ -113,6 +115,7 @@ class LoginView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             token, _ = Token.objects.get_or_create(user=user)
+            logger.info(f"[AUDIT] LOGIN  | user={user.email} | role={user.role} | ip={request.META.get('REMOTE_ADDR')}")
             return Response({
                 "token": token.key,
                 "user": UserSerializer(user).data
@@ -125,6 +128,8 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user = request.user
+        logger.info(f"[AUDIT] LOGOUT | user={user.email} | role={user.role} | ip={request.META.get('REMOTE_ADDR')}")
         request.user.auth_token.delete()
         return Response({"message": "Logged out successfully."}, status=status.HTTP_200_OK)
 

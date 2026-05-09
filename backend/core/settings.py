@@ -162,3 +162,19 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')   # your gmail app password
 DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
  
+
+
+# AUDIT LOGGING
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

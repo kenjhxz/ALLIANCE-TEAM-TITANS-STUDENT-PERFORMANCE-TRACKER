@@ -180,7 +180,9 @@ function SchoolTab() {
   const [semload, setSemload] = useState({ program: '', year_level: '1', semester: '1', max_units: '27' });
   const [loadFilter, setLoadFilter] = useState('');
 
-  useEffect(() => { loadColleges(); loadPrograms(); loadSemLoads(); }, []);
+useEffect(() => {
+  Promise.all([loadColleges(), loadPrograms(), loadSemLoads()]);
+}, []);
 
   useEffect(() => {
     if (!disc.program) { setPrereqOptions([]); return; }
@@ -1443,14 +1445,16 @@ function OfferingsTab() {
   const [submitting,  setSubmitting]  = useState({});
   const [showTermModal, setShowTermModal] = useState(false);
 
-  useEffect(() => {
-    loadTerms();
-    fetchProgram().then(({ data }) => setPrograms(data)).catch(console.error);
-    fetchAllTeachers().then(({ data }) => setTeachers(data)).catch(console.error);
-  }, []);
+ useEffect(() => {
+  Promise.all([
+    loadTerms(),
+    fetchProgram().then(({ data }) => setPrograms(data)).catch(console.error),
+    fetchAllTeachers().then(({ data }) => setTeachers(data)).catch(console.error),
+  ]);
+}, []);
 
   function loadTerms() {
-    fetchTerms().then(({ data }) => {
+    return fetchTerms().then(({ data }) => {
       setTerms(data);
       const active = data.find((t) => t.is_active);
       if (active) setSelTerm(String(active.id));
