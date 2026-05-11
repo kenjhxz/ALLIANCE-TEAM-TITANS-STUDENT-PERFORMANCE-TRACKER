@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Discipline, DegreeProgram, College, SemesterLoad,
-    Grade, AcademicTerm, StudentEnrollment, SubjectOffering,
+    Grade, AcademicTerm, StudentEnrollment, SubjectOffering, GradeHistory,
 )
 
 
@@ -68,6 +68,8 @@ class GradeSerializer(serializers.ModelSerializer):
     discipline_name = serializers.CharField(source='discipline.name', read_only=True)
     units           = serializers.IntegerField(source='discipline.units', read_only=True)
 
+    teacher_name = serializers.SerializerMethodField()
+
     semester   = serializers.IntegerField(source='discipline.semester', read_only=True)
     year_level = serializers.IntegerField(source='discipline.year_level', read_only=True)
 
@@ -86,12 +88,16 @@ class GradeSerializer(serializers.ModelSerializer):
             'discipline_name',
             'units',
 
+            'teacher',
+            'teacher_name',
+
             'semester',
             'year_level',
 
             'prelim',
             'midterm',
             'finals',
+            'remarks',
 
             'term',
             'term_label',
@@ -136,6 +142,20 @@ class GradeSerializer(serializers.ModelSerializer):
         u = obj.student.user
         mid = f" {u.middle_name}" if getattr(u, 'middle_name', None) else ""
         return f"{u.first_name}{mid} {u.last_name}"
+
+    def get_teacher_name(self, obj):
+        if not obj.teacher:
+            return None
+        u = obj.teacher.user
+        return f"{u.first_name} {u.last_name}"
+
+
+class GradeHistorySerializer(serializers.ModelSerializer):
+    changed_by_email = serializers.EmailField(source='changed_by.email', read_only=True)
+
+    class Meta:
+        model = GradeHistory
+        fields = ['id', 'grade', 'action', 'previous', 'current', 'changed_by', 'changed_by_email', 'created_at']
 class AcademicTermSerializer(serializers.ModelSerializer):
     class Meta:
         model  = AcademicTerm

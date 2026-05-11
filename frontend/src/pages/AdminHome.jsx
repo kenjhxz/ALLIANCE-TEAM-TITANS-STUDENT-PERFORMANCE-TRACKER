@@ -9,6 +9,9 @@ import {
   fetchTerms, createTerm, fetchOfferings, createOffering,
   fetchTeachers as fetchAllTeachers,
   getEnrollmentQueue, approveRejectEnrollments,
+  fetchGrades, updateGrade, deleteGrade, submitGrade,
+  fetchGradeReport, exportGradeReportCsv, exportGradeReportExcel,
+  fetchAuditLogs, adminUpdateUser,
   logout as apiLogout,
 } from '../services/api';
 import Logo from '../assets/Logo.png';
@@ -105,6 +108,32 @@ function Field({ label, children }) {
     <div>
       <label style={s.label}>{label}</label>
       {children}
+    </div>
+  );
+}
+
+function SectionHeader({ title, right }) {
+  return (
+    <div style={{
+      padding: '10px 20px', background: 'var(--app-accent-bg)', borderBottom: '1px solid var(--app-border)',
+      fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+      color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
+    }}>
+      <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
+      {title}
+      {right && <span style={{ marginLeft: 'auto', fontWeight: 400, color: 'var(--app-muted)', fontSize: 11 }}>{right}</span>}
+    </div>
+  );
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div style={{
+      background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 8,
+      padding: '12px 16px', minWidth: 120, display: 'flex', flexDirection: 'column', gap: 4,
+    }}>
+      <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--app-muted)' }}>{label}</div>
+      <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--app-text)' }}>{value ?? '--'}</div>
     </div>
   );
 }
@@ -1827,12 +1856,481 @@ function OfferingsTab() {
   );
 }
 
+
+function UserManagementTab() {
+  const [teachers, setTeachers] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([fetchTeachers(), fetchStudents()])
+      .then(([tRes, sRes]) => {
+        setTeachers(tRes.data || []);
+        setStudents(sRes.data || []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const normalize = (val) => (val || '').toString().toLowerCase();
+  const matches = (row) => {
+    const key = normalize(search);
+    if (!key) return true;
+    return [row.full_name, row.email, row.employee_id, row.student_id].some((v) => normalize(v).includes(key));
+  };
+
+  async function toggleActive(userId, isActive) {
+    try {
+      await adminUpdateUser(userId, { is_active: !isActive });
+      const [tRes, sRes] = await Promise.all([fetchTeachers(), fetchStudents()]);
+      setTeachers(tRes.data || []);
+      setStudents(sRes.data || []);
+    } catch (err) {
+      alert('Failed to update user: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
+    }
+  }
+
+  return (
+    <>
+      <div>
+        <div style={s.pageTitle}>User Management</div>
+        <div style={s.pageSub}>Search, activate, and manage faculty/student accounts.</div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 420 }}>
+        <PanelTitle>Search Users</PanelTitle>
+        <input
+          style={s.input}
+          placeholder="Search by name, email, or ID"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {loading ? (
+        <div style={s.comingSoon}>Loading users...</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+            <SectionHeader title="Faculty Accounts" />
+            {teachers.filter(matches).length === 0 ? (
+              <div style={{ padding: 16, color: '#64748b' }}>No teachers found.</div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: '#1e2335' }}>
+                    {['Name', 'Email', 'Employee ID', 'Department', 'Status', 'Action'].map((h) => (
+                      <th key={h} style={s.th}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachers.filter(matches).map((t) => (
+                    <tr key={t.id}>
+                      <td style={s.td}>{t.full_name}</td>
+                      <td style={s.td}>{t.email}</td>
+                      <td style={s.td}>{t.employee_id}</td>
+                      <td style={s.td}>{t.department || '--'}</td>
+                      <td style={s.td}>{t.is_active ? 'Active' : 'Inactive'}</td>
+                      <td style={s.td}>
+                        <button
+                          style={s.submitBtn(false)}
+                          onClick={() => toggleActive(t.user_id, t.is_active)}
+                        >
+                          {t.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+            <SectionHeader title="Student Accounts" />
+            {students.filter(matches).length === 0 ? (
+              <div style={{ padding: 16, color: '#64748b' }}>No students found.</div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: '#1e2335' }}>
+                    {['Name', 'Email', 'Student ID', 'Program', 'Status', 'Action'].map((h) => (
+                      <th key={h} style={s.th}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.filter(matches).map((st) => (
+                    <tr key={st.id}>
+                      <td style={s.td}>{st.full_name}</td>
+                      <td style={s.td}>{st.email}</td>
+                      <td style={s.td}>{st.student_id}</td>
+                      <td style={s.td}>{st.program_name || '--'}</td>
+                      <td style={s.td}>{st.is_active ? 'Active' : 'Inactive'}</td>
+                      <td style={s.td}>
+                        <button
+                          style={s.submitBtn(false)}
+                          onClick={() => toggleActive(st.user_id, st.is_active)}
+                        >
+                          {st.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+function GradeManagementTab() {
+  const [filters, setFilters] = useState({ student: '', term: '' });
+  const [grades, setGrades] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [savingId, setSavingId] = useState(null);
+
+  async function loadGrades() {
+    setLoading(true);
+    try {
+      const { data } = await fetchGrades({
+        student: filters.student || undefined,
+        term: filters.term || undefined,
+      });
+      setGrades(data || []);
+    } catch (err) {
+      alert('Failed to load grades.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSave(row) {
+    try {
+      setSavingId(row.id);
+      await updateGrade(row.id, {
+        prelim: row.prelim === '' ? null : row.prelim,
+        midterm: row.midterm === '' ? null : row.midterm,
+        finals: row.finals === '' ? null : row.finals,
+        remarks: row.remarks,
+      });
+      await loadGrades();
+    } catch (err) {
+      alert('Failed to update grade.');
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleDelete(row) {
+    if (!confirm('Delete this grade entry?')) return;
+    try {
+      await deleteGrade(row.id);
+      await loadGrades();
+    } catch (err) {
+      alert('Failed to delete grade.');
+    }
+  }
+
+  return (
+    <>
+      <div>
+        <div style={s.pageTitle}>Grade Overrides</div>
+        <div style={s.pageSub}>Search and adjust grade entries as an administrator.</div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 520 }}>
+        <PanelTitle>Search Filters</PanelTitle>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            style={s.input}
+            placeholder="Student Profile ID"
+            value={filters.student}
+            onChange={(e) => setFilters({ ...filters, student: e.target.value })}
+          />
+          <input
+            style={s.input}
+            placeholder="Term ID"
+            value={filters.term}
+            onChange={(e) => setFilters({ ...filters, term: e.target.value })}
+          />
+        </div>
+        <button style={s.submitBtn(false)} onClick={loadGrades}>Search</button>
+      </div>
+
+      {loading ? (
+        <div style={s.comingSoon}>Loading grades...</div>
+      ) : grades.length === 0 ? (
+        <div style={s.comingSoon}>No grade records found.</div>
+      ) : (
+        <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+          <SectionHeader title="Grade Entries" />
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: '#1e2335' }}>
+                {['Student', 'Discipline', 'Prelim', 'Midterm', 'Finals', 'Remarks', 'Action'].map((h) => (
+                  <th key={h} style={s.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {grades.map((row, idx) => (
+                <tr key={row.id} style={{ background: idx % 2 === 0 ? 'transparent' : '#1a1f30' }}>
+                  <td style={s.td}>{row.student_name} ({row.student_id_no})</td>
+                  <td style={s.td}>{row.discipline_code}</td>
+                  <td style={s.td}>
+                    <input
+                      style={s.input}
+                      value={row.prelim ?? ''}
+                      onChange={(e) => {
+                        const copy = [...grades];
+                        copy[idx].prelim = e.target.value;
+                        setGrades(copy);
+                      }}
+                    />
+                  </td>
+                  <td style={s.td}>
+                    <input
+                      style={s.input}
+                      value={row.midterm ?? ''}
+                      onChange={(e) => {
+                        const copy = [...grades];
+                        copy[idx].midterm = e.target.value;
+                        setGrades(copy);
+                      }}
+                    />
+                  </td>
+                  <td style={s.td}>
+                    <input
+                      style={s.input}
+                      value={row.finals ?? ''}
+                      onChange={(e) => {
+                        const copy = [...grades];
+                        copy[idx].finals = e.target.value;
+                        setGrades(copy);
+                      }}
+                    />
+                  </td>
+                  <td style={s.td}>
+                    <input
+                      style={s.input}
+                      value={row.remarks ?? ''}
+                      onChange={(e) => {
+                        const copy = [...grades];
+                        copy[idx].remarks = e.target.value;
+                        setGrades(copy);
+                      }}
+                    />
+                  </td>
+                  <td style={s.td}>
+                    <button
+                      style={s.submitBtn(savingId === row.id)}
+                      disabled={savingId === row.id}
+                      onClick={() => handleSave(row)}
+                    >
+                      {savingId === row.id ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      style={{ ...s.submitBtn(false), marginLeft: 8, borderColor: '#ef4444', color: '#ef4444' }}
+                      onClick={() => handleDelete(row)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+function ReportsTab() {
+  const [filters, setFilters] = useState({ term: '', program: '', year_level: '' });
+  const [report, setReport] = useState(null);
+  const [programs, setPrograms] = useState([]);
+
+  useEffect(() => {
+    fetchProgram().then(({ data }) => setPrograms(data)).catch(console.error);
+  }, []);
+
+  async function loadReport() {
+    const { data } = await fetchGradeReport(filters);
+    setReport(data);
+  }
+
+  async function handleExportCsv() {
+    const res = await exportGradeReportCsv(filters);
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'grade_report.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function handleExportExcel() {
+    const res = await exportGradeReportExcel(filters);
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'grade_report.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  return (
+    <>
+      <div>
+        <div style={s.pageTitle}>Reports</div>
+        <div style={s.pageSub}>Generate grade summary reports and export files.</div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 520 }}>
+        <PanelTitle>Filters</PanelTitle>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            style={s.input}
+            placeholder="Term ID"
+            value={filters.term}
+            onChange={(e) => setFilters({ ...filters, term: e.target.value })}
+          />
+          <select
+            style={s.input}
+            value={filters.program}
+            onChange={(e) => setFilters({ ...filters, program: e.target.value })}
+          >
+            <option value="">All Programs</option>
+            {programs.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+          <select
+            style={s.input}
+            value={filters.year_level}
+            onChange={(e) => setFilters({ ...filters, year_level: e.target.value })}
+          >
+            <option value="">All Years</option>
+            {[1, 2, 3, 4].map((y) => (
+              <option key={y} value={y}>Year {y}</option>
+            ))}
+          </select>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button style={s.submitBtn(false)} onClick={loadReport}>Generate</button>
+          <button style={s.submitBtn(false)} onClick={handleExportCsv}>Export CSV</button>
+          <button style={s.submitBtn(false)} onClick={handleExportExcel}>Export Excel</button>
+        </div>
+      </div>
+
+      {report && (
+        <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+          <SectionHeader title="Summary" />
+          <div style={{ padding: 16, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            <StatCard label="Total" value={report.summary.total} />
+            <StatCard label="Graded" value={report.summary.graded} />
+            <StatCard label="Passing" value={report.summary.passing} />
+            <StatCard label="Failing" value={report.summary.failing} />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+
+function AuditLogTab() {
+  const [filters, setFilters] = useState({ action: '', email: '' });
+  const [logs, setLogs] = useState([]);
+
+  async function loadLogs() {
+    const { data } = await fetchAuditLogs(filters);
+    setLogs(data || []);
+  }
+
+  useEffect(() => {
+    loadLogs().catch(console.error);
+  }, []);
+
+  return (
+    <>
+      <div>
+        <div style={s.pageTitle}>Audit Logs</div>
+        <div style={s.pageSub}>Track administrative actions and grade changes.</div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 520 }}>
+        <PanelTitle>Search Logs</PanelTitle>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            style={s.input}
+            placeholder="Action"
+            value={filters.action}
+            onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+          />
+          <input
+            style={s.input}
+            placeholder="User email"
+            value={filters.email}
+            onChange={(e) => setFilters({ ...filters, email: e.target.value })}
+          />
+        </div>
+        <button style={s.submitBtn(false)} onClick={loadLogs}>Search</button>
+      </div>
+
+      <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+        <SectionHeader title="Recent Activity" />
+        {logs.length === 0 ? (
+          <div style={{ padding: 16, color: '#64748b' }}>No logs found.</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: '#1e2335' }}>
+                {['Action', 'User', 'IP', 'When'].map((h) => (
+                  <th key={h} style={s.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {logs.slice(0, 200).map((log) => (
+                <tr key={log.id}>
+                  <td style={s.td}>{log.action}</td>
+                  <td style={s.td}>{log.user_email || '--'}</td>
+                  <td style={s.td}>{log.ip_address || '--'}</td>
+                  <td style={s.td}>{new Date(log.created_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </>
+  );
+}
+
 //  Main component
 const TABS = [
   { key: 'school',    label: 'School Setup',      icon: '🏫' },
   { key: 'teacher',   label: 'Add Teacher',        icon: '👨‍🏫' },
   { key: 'student',   label: 'Add Student',        icon: '🎓' },
   { key: 'offerings', label: 'Subject Offerings',  icon: '📅' },
+  { key: 'users',     label: 'User Management',    icon: '🧑‍💼' },
+  { key: 'grades',    label: 'Grade Overrides',    icon: '🧾' },
+  { key: 'reports',   label: 'Reports',            icon: '📈' },
+  { key: 'audit',     label: 'Audit Logs',         icon: '🕵️' },
 ];
 
 
@@ -1881,6 +2379,10 @@ export default function AdminHome() {
         {activeTab === 'teacher'   && <TeacherTab />}
         {activeTab === 'student'   && <StudentTab />}
         {activeTab === 'offerings' && <OfferingsTab />}
+        {activeTab === 'users'     && <UserManagementTab />}
+        {activeTab === 'grades'    && <GradeManagementTab />}
+        {activeTab === 'reports'   && <ReportsTab />}
+        {activeTab === 'audit'     && <AuditLogTab />}
       </div>
     </div>
   );

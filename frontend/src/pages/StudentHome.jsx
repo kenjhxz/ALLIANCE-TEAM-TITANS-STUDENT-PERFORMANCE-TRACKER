@@ -12,6 +12,8 @@ import {
   fetchTerms,
   getMyGrades,
   exportMyGrades,
+  changePassword,
+  fetchGradeTimeline,
 } from '../services/api';
 import Logo from '../assets/Logo.png';
 
@@ -190,7 +192,7 @@ function ProfileTab() {
     if (pwForm.new_password !== pwForm.confirm_password) { alert('New passwords do not match.'); return; }
     setPwLoading(true);
     try {
-      await updateStudentProfile({ current_password: pwForm.current_password, new_password: pwForm.new_password });
+      await changePassword({ current_password: pwForm.current_password, new_password: pwForm.new_password });
       alert('OK: Password changed.');
       setPwForm({ current_password: '', new_password: '', confirm_password: '' });
     } catch (err) {
@@ -746,6 +748,8 @@ function GradesTab() {
   const [prospectus, setProspectus] = useState([]);
   const [exportOpen, setExportOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [timeline, setTimeline] = useState([]);
+  const [timelineLoading, setTimelineLoading] = useState(true);
   const exportRef = useRef(null);
 
   useEffect(() => {
@@ -756,6 +760,13 @@ function GradesTab() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchGradeTimeline()
+      .then(({ data }) => setTimeline(data))
+      .catch(console.error)
+      .finally(() => setTimelineLoading(false));
   }, []);
 
   const grouped = grades.reduce((acc, g) => {
@@ -1012,7 +1023,7 @@ function GradesTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: '#1e2335' }}>
-                {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS'].map(
+                {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
                   (h) => (
                     <th key={h} style={s.th}>
                       {h}
@@ -1054,6 +1065,10 @@ function GradesTab() {
                 <td style={{ ...s.td, textAlign: 'center' }}>
                     {d.finals ?? '--'}
                 </td>
+
+        <td style={{ ...s.td }}>
+          {d.remarks || '--'}
+        </td>
 
                   
                 </tr>
@@ -1208,6 +1223,7 @@ function GradesTab() {
                         'Prelim',
                         'Midterm',
                         'Finals',
+                        'Status',
                         'Remarks',
                       ].map((h) => (
                         <th key={h} style={s.th}>
@@ -1296,6 +1312,10 @@ function GradesTab() {
                               </span>
                             )}
                           </td>
+
+                          <td style={{ ...s.td }}>
+                            {g.remarks || '--'}
+                          </td>
                         </tr>
                       );
                     })}
@@ -1304,6 +1324,48 @@ function GradesTab() {
               </div>
             );
           })}
+      </div>
+
+      {/* TIMELINE */}
+      <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+        <SectionHeader title="Grade History Timeline" right="Recent updates" />
+        {timelineLoading ? (
+          <div style={{ padding: 16, color: '#64748b', fontSize: 12 }}>
+            Loading history...
+          </div>
+        ) : timeline.length === 0 ? (
+          <div style={{ padding: 16, color: '#64748b', fontSize: 12 }}>
+            No grade changes recorded yet.
+          </div>
+        ) : (
+          <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {timeline.slice(0, 12).map((item) => (
+              <div key={item.id} style={{
+                background: '#1a2030',
+                border: '1px solid #2a3050',
+                borderRadius: 8,
+                padding: '10px 12px',
+                fontSize: 12,
+                color: '#e2e8f0',
+                display: 'flex',
+                justifyContent: 'space-between',
+                gap: 12,
+              }}>
+                <div>
+                  <strong>{item.action}</strong> · Grade ID {item.grade}
+                  {item.current?.remarks && (
+                    <div style={{ color: '#94a3b8', marginTop: 4 }}>
+                      Remarks: {item.current.remarks}
+                    </div>
+                  )}
+                </div>
+                <div style={{ color: '#64748b', fontSize: 11 }}>
+                  {new Date(item.created_at).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

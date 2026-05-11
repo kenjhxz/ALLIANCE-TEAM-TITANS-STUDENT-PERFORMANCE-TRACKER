@@ -4,8 +4,9 @@ from .views import (
     AcademicTermView, AcademicTermDetailView,
     SubjectOfferingView,
     StudentDisciplineRequestView, StudentScheduleSelectView,
-    AdminEnrollmentQueueView, GradeViewSet
-    , TeacherOfferingsView, TeacherOfferingEnrollmentsView
+    AdminEnrollmentQueueView, GradeViewSet,
+    TeacherOfferingsView, TeacherOfferingEnrollmentsView,
+    GradeReportView, GradeReportExportView, GradeReportExcelView
 )
 
 urlpatterns = [
@@ -33,7 +34,14 @@ urlpatterns = [
     path('grades/', GradeViewSet.as_view({'get': 'list', 'post': 'create'}), name='grades'),
     path('grades/<int:pk>/', GradeViewSet.as_view({'get': 'retrieve', 'patch': 'partial_update', 'put': 'update', 'delete': 'destroy'}), name='grade-detail'),
     path('grades/mine/', GradeViewSet.as_view({'get': 'mine'}), name='my-grades'),
+    path('grades/<int:pk>/history/', GradeViewSet.as_view({'get': 'history'}), name='grade-history'),
+    path('grades/timeline/', GradeViewSet.as_view({'get': 'timeline'}), name='grade-timeline'),
     path('grades/export/', GradeViewSet.as_view({'get': 'export'}), name='grades-export'),
+
+    # Reports
+    path('reports/grades/', GradeReportView.as_view(), name='grade-report'),
+    path('reports/grades/export/', GradeReportExportView.as_view(), name='grade-report-export'),
+    path('reports/grades/export-xlsx/', GradeReportExcelView.as_view(), name='grade-report-export-xlsx'),
 
     # Teacher-specific endpoints
     path('teacher/offerings/', TeacherOfferingsView.as_view(), name='teacher-offerings'),

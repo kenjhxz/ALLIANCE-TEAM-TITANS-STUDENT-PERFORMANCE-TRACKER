@@ -113,6 +113,19 @@ export default function Login({ preferredRole }) {
           {loading ? "Logging in..." : "Login"}
         </button>
 
+        <button
+          className="btn-secondary"
+          onClick={() => setForm(initialForm)}
+          disabled={loading}
+          style={{ marginTop: 8 }}
+        >
+          Clear Fields
+        </button>
+
+        <p className="footer-text" style={{ marginTop: "0.6rem" }}>
+          <a href="/forgot-password" className="link">Forgot password?</a>
+        </p>
+
         <div className="or-line">or</div>
 
         <p className="footer-text">

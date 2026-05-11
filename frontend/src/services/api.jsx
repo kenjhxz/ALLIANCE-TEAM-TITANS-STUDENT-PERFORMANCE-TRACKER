@@ -5,7 +5,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const publicRoutes = ['/auth/register/', '/auth/login/', '/auth/verify-email/'];
+  const publicRoutes = ['/auth/register/', '/auth/login/', '/auth/verify-email/', '/auth/password/forgot/', '/auth/password/reset/'];
   const isPublic = publicRoutes.some(route => config.url?.startsWith(route));
 
   const token = localStorage.getItem('token');
@@ -44,6 +44,9 @@ export const logout              = async ()        => {
   localStorage.removeItem('user');
 };
 export const resendVerification  = (email)         => api.post('/auth/resend-verification/', { email });
+export const changePassword      = (payload)       => api.post('/auth/password/change/', payload);
+export const requestPasswordReset = (email)        => api.post('/auth/password/forgot/', { email });
+export const confirmPasswordReset = (token, new_password) => api.post('/auth/password/reset/', { token, new_password });
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
 export const getMe               = ()              => api.get('/auth/me/');
@@ -98,7 +101,15 @@ export const getMyGrades   = ()              => api.get('/system/grades/mine/');
 export const fetchGrades   = (params)        => api.get('/system/grades/', { params });
 export const submitGrade   = (payload)       => api.post('/system/grades/', payload);
 export const updateGrade   = (id, payload)   => api.patch(`/system/grades/${id}/`, payload);
+export const deleteGrade   = (id)            => api.delete(`/system/grades/${id}/`);
 export const exportMyGrades = () => api.get('/system/grades/export/', { responseType: 'blob' });
+export const fetchGradeHistory = (gradeId) => api.get(`/system/grades/${gradeId}/history/`);
+export const fetchGradeTimeline = (params) => api.get('/system/grades/timeline/', { params });
+
+// ── SYSTEM: Reports (admin) ────────────────────────────────────────────────
+export const fetchGradeReport = (params) => api.get('/system/reports/grades/', { params });
+export const exportGradeReportCsv = (params) => api.get('/system/reports/grades/export/', { params, responseType: 'blob' });
+export const exportGradeReportExcel = (params) => api.get('/system/reports/grades/export-xlsx/', { params, responseType: 'blob' });
 
 // ── SYSTEM: Faculty & Students (admin) ───────────────────────────────────────
 export const adminCreateTeacher       = (payload)     => api.post('/auth/admin/create-teacher/', payload);
@@ -106,3 +117,5 @@ export const fetchTeachers            = ()            => api.get('/auth/admin/te
 export const updateTeacherDisciplines = (id, payload) => api.patch(`/auth/admin/teachers/${id}/`, payload);
 export const adminCreateStudent       = (payload)     => api.post('/auth/admin/create-student/', payload);
 export const fetchStudents            = ()            => api.get('/auth/admin/students/');
+export const fetchAuditLogs           = (params)      => api.get('/auth/admin/audit-logs/', { params });
+export const adminUpdateUser          = (userId, payload) => api.patch(`/auth/admin/users/${userId}/`, payload);

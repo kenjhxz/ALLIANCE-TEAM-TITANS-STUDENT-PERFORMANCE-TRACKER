@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     RegisterView, VerifyEmailView, LoginView, LogoutView,
     MeView, UpdateFCMTokenView, ResendVerificationView,
+    ChangePasswordView, PasswordResetRequestView, PasswordResetConfirmView, AuditLogView, AdminUserUpdateView,
     StudentProfileView, TeacherProfileView,
     AdminProfileView, AdminTeacherView, AdminStudentView)
 
@@ -15,6 +16,9 @@ urlpatterns = [
     path('login/',                LoginView.as_view(),             name='login'),
     path('logout/',               LogoutView.as_view(),            name='logout'),
     path('resend-verification/',  ResendVerificationView.as_view(),name='resend-verification'),
+    path('password/change/',      ChangePasswordView.as_view(),    name='change-password'),
+    path('password/forgot/',      PasswordResetRequestView.as_view(), name='password-forgot'),
+    path('password/reset/',       PasswordResetConfirmView.as_view(), name='password-reset'),
 
     #user
     path('me/',                   MeView.as_view(),                name='user-me'),
@@ -31,5 +35,7 @@ urlpatterns = [
     path('admin/create-teacher/', AdminTeacherView.as_view(), name='admin-create-teacher'),
     path('admin/teachers/', AdminTeacherView.as_view(), name='admin-list-teachers'),
     path('admin/create-student/', AdminStudentView.as_view(), name='admin-create-student'),
-    path('admin/students/', AdminTeacherView.as_view(), name='admin-list-students'),
+    path('admin/students/', AdminStudentView.as_view(), name='admin-list-students'),
+    path('admin/users/<int:user_id>/', AdminUserUpdateView.as_view(), name='admin-user-update'),
+    path('admin/audit-logs/', AuditLogView.as_view(), name='admin-audit-logs'),
 ]

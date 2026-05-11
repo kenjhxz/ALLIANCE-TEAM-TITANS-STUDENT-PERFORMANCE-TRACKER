@@ -53,3 +53,33 @@ def send_student_credentials_email(email, first_name, student_id, temp_password)
         recipient_list=[email],
         fail_silently=False,
     )
+
+
+def send_password_reset_email(email, token):
+    reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
+    send_mail(
+        subject="Reset your ORBIT password",
+        message=(
+            "We received a password reset request.\n\n"
+            f"Reset link: {reset_url}\n\n"
+            "If you did not request this, you can ignore this email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
+
+def send_password_reset_email(email, token):
+    reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
+    send_mail(
+        subject="Reset your ORBIT password",
+        message=(
+            "We received a password reset request for your account.\n\n"
+            f"Reset link: {reset_url}\n\n"
+            "If you did not request this, please ignore this email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )

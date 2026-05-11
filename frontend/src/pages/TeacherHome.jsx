@@ -6,6 +6,7 @@ import {
   fetchGrades,
   submitGrade,
   updateGrade,
+  deleteGrade,
   getTeacherProfile,
   logout as apiLogout,
 } from '../services/api';
@@ -325,6 +326,7 @@ export default function TeacherHome() {
           prelim: fmtGrade(existing?.prelim ?? ''),
           midterm: fmtGrade(existing?.midterm ?? ''),
           finals: fmtGrade(existing?.finals ?? ''),
+          remarks: existing?.remarks ?? '',
           grade_id: existing?.id ?? null,
         };
       });
@@ -369,6 +371,7 @@ export default function TeacherHome() {
       prelim: row.prelim === '' ? null : row.prelim,
       midterm: row.midterm === '' ? null : row.midterm,
       finals: row.finals,
+      remarks: row.remarks,
     };
 
     try {
@@ -384,6 +387,18 @@ export default function TeacherHome() {
       alert('Failed to save grade: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     } finally {
       setSavingId(null);
+    }
+  }
+
+  async function handleDeleteGrade(row) {
+    if (!row.grade_id) return;
+    if (!confirm('Delete this grade entry?')) return;
+    try {
+      await deleteGrade(row.grade_id);
+      await selectOffering(selected);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete grade: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
   }
 
@@ -510,6 +525,7 @@ export default function TeacherHome() {
                       <th style={shell.th}>Prelim</th>
                       <th style={shell.th}>Midterm</th>
                       <th style={shell.th}>Finals</th>
+                      <th style={shell.th}>Remarks</th>
                       <th style={shell.th}>State</th>
                       <th style={shell.th}>Action</th>
                     </tr>
@@ -566,6 +582,18 @@ export default function TeacherHome() {
                             {errors[row.enrollment_id]?.finals && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].finals}</div>}
                           </td>
                           <td style={shell.td}>
+                            <input
+                              value={row.remarks}
+                              onChange={(e) => {
+                                const copy = [...enrollments];
+                                copy[index].remarks = e.target.value;
+                                setEnrollments(copy);
+                              }}
+                              style={{ ...shell.input, maxWidth: 160 }}
+                              placeholder="Optional"
+                            />
+                          </td>
+                          <td style={shell.td}>
                             <span style={shell.badge(rowBadgeTone)}>{rowState}</span>
                           </td>
                           <td style={shell.td}>
@@ -576,6 +604,20 @@ export default function TeacherHome() {
                             >
                               {savingId === row.enrollment_id ? 'Saving…' : row.grade_id ? 'Update' : 'Post'}
                             </button>
+                            {row.grade_id && (
+                              <button
+                                onClick={() => handleDeleteGrade(row)}
+                                style={{
+                                  ...shell.actionBtn(false),
+                                  marginTop: 8,
+                                  border: '1px solid rgba(248, 113, 113, 0.45)',
+                                  background: 'rgba(127, 29, 29, 0.6)',
+                                  color: '#fecaca',
+                                }}
+                              >
+                                Delete
+                              </button>
+                            )}
                             {errors[row.enrollment_id]?._row && (
                               <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>
                                 {errors[row.enrollment_id]._row}

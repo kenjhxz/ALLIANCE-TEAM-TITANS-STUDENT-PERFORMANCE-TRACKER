@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile, TeacherProfile, EmailVerificationToken, AdminProfile
+from .models import User, StudentProfile, TeacherProfile, EmailVerificationToken, AdminProfile, PasswordResetToken, AuditLog
 from django.contrib.auth import authenticate
 from django.utils import timezone         
 from datetime import timedelta
@@ -115,9 +115,9 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
         fields = ['employee_id', 'user']
 
 class StudentProfileSerializer(serializers.ModelSerializer):
-    first_name   = serializers.CharField(source='user.first_name', read_only=True)
-    last_name    = serializers.CharField(source='user.last_name',  read_only=True)
-    middle_name  = serializers.CharField(source='user.middle_name', read_only=True)
+    first_name   = serializers.CharField(source='user.first_name', required=False)
+    last_name    = serializers.CharField(source='user.last_name',  required=False)
+    middle_name  = serializers.CharField(source='user.middle_name', required=False, allow_blank=True, allow_null=True)
     email        = serializers.EmailField(source='user.email',     read_only=True)
     program_name = serializers.CharField(source='program.name',    read_only=True)
     program_code = serializers.CharField(source='program.code',    read_only=True)
@@ -131,10 +131,39 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             'program_name', 'program_code', 'college_name',
         ]    
 
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+        instance.user.save()
+        return super().update(instance, validated_data)
+
 class UpdateFCMTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model  = User
         fields = ['fcm_token']
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, min_length=8)
+
+
+class AuditLogSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+
+    class Meta:
+        model = AuditLog
+        fields = ['id', 'user', 'user_email', 'action', 'ip_address', 'details', 'created_at']
 
 
 
@@ -204,12 +233,14 @@ class AdminCreateTeacherSerializer(serializers.ModelSerializer):
 class TeacherListSerializer(serializers.ModelSerializer):
     full_name   = serializers.SerializerMethodField()
     email       = serializers.EmailField(source='user.email', read_only=True)
+    user_id     = serializers.IntegerField(source='user.id', read_only=True)
+    is_active   = serializers.BooleanField(source='user.is_active', read_only=True)
     department  = serializers.StringRelatedField()
     disciplines = serializers.StringRelatedField(source='discipline', many=True) 
 
     class Meta:
         model  = TeacherProfile
-        fields = ['id', 'employee_id', 'full_name', 'email', 'department', 'disciplines']
+    fields = ['id', 'user_id', 'employee_id', 'full_name', 'email', 'is_active', 'department', 'disciplines']
 
     def get_full_name(self, obj):
         u = obj.user
@@ -271,6 +302,8 @@ class AdminCreateStudentSerializer(serializers.ModelSerializer):
 class StudentListSerializer(serializers.ModelSerializer):
     full_name          = serializers.SerializerMethodField()
     email              = serializers.EmailField(source='user.email', read_only=True)
+    user_id            = serializers.IntegerField(source='user.id', read_only=True)
+    is_active          = serializers.BooleanField(source='user.is_active', read_only=True)
     program_name       = serializers.CharField(source='program.name', read_only=True)
     college_name       = serializers.CharField(source='program.college.name', read_only=True)
     enrolled_subjects  = serializers.SerializerMethodField()
@@ -279,7 +312,7 @@ class StudentListSerializer(serializers.ModelSerializer):
     class Meta:
         model  = StudentProfile
         fields = [
-            'id', 'student_id', 'full_name', 'email',
+            'id', 'user_id', 'student_id', 'full_name', 'email', 'is_active',
             'program_name', 'college_name', 'year_level',
             'enrolled_subjects', 'date_joined',
         ]

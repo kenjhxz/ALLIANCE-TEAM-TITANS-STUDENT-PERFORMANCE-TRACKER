@@ -6,6 +6,8 @@ import VerifyEmail from "./pages/VerifyEmail";
 import AdminHome from "./pages/AdminHome";
 import StudentHome from "./pages/StudentHome";
 import TeacherHome from "./pages/TeacherHome"
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 
 const router = createBrowserRouter([
@@ -36,6 +38,14 @@ const router = createBrowserRouter([
   {
     path: "/verify-email/:token",
     element: <VerifyEmail />
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />
   },
   {
     path: "/adminhome",

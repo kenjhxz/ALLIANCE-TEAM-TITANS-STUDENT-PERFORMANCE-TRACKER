@@ -76,6 +76,34 @@ class EmailVerificationToken(models.Model):
     
     def __str__(self):
         return f'Token for {self.user.email}'
+
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_resets')
+    token = models.CharField(max_length=64, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f'Reset token for {self.user.email}'
+
+
+class AuditLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=120)
+    ip_address = models.CharField(max_length=45, blank=True)
+    details = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        who = self.user.email if self.user else 'system'
+        return f'{who} - {self.action}'
     
 
 class AdminProfile(models.Model):

@@ -13,16 +13,19 @@ from .serializers import (
     DegreeProgramSerializer, CollegeSerializer, DisciplineSerializer,
     SemesterLoadSerializer, AcademicTermSerializer,
     SubjectOfferingSerializer, AdminCreateOfferingSerializer,
-    EnrollmentSerializer, DisciplineRequestSerializer, ScheduleSelectSerializer, GradeSerializer
+    EnrollmentSerializer, DisciplineRequestSerializer, ScheduleSelectSerializer, GradeSerializer,
+    GradeHistorySerializer
 )
 from .models import (
     DegreeProgram, College, Discipline, SemesterLoad,
-    AcademicTerm, SubjectOffering, StudentEnrollment, Grade
+    AcademicTerm, SubjectOffering, StudentEnrollment, Grade, GradeHistory
 )
 from profiles.views import IsAdmin, IsStudent, IsAdminOrReadOnly, IsTeacher
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 import csv
+from profiles.models import AuditLog
+from openpyxl import Workbook
 
 # ── School setup ──────────────────────────────────────────────────────────────
 
@@ -455,10 +458,25 @@ class GradeViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         # Safe methods (GET, HEAD, OPTIONS) allowed for authenticated users.
-        # Unsafe methods (POST, PUT, PATCH, DELETE) require professor role.
+        # Unsafe methods (POST, PUT, PATCH, DELETE) require professor or admin role.
         if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
             return [IsAuthenticated()]
-        return [IsTeacher()]
+        if not self.request.user.is_authenticated:
+            return [IsAuthenticated()]
+        return [IsTeacher() if self.request.user.role == 'PROFESSOR' else IsAdmin()]
+
+    def _snapshot_grade(self, grade):
+        return {
+            'prelim': grade.prelim,
+            'midterm': grade.midterm,
+            'finals': grade.finals,
+            'remarks': grade.remarks,
+            'teacher': grade.teacher_id,
+            'student': grade.student_id,
+            'discipline': grade.discipline_id,
+            'term': grade.term_id,
+            'offering': grade.offering_id,
+        }
 
     def get_queryset(self):
         # Default queryset; allow filtering by student, offering, term, or teacher
@@ -491,30 +509,119 @@ class GradeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        # ensure the requester is a professor and set the teacher automatically
-        try:
-            teacher = self.request.user.teacherprofile
-        except Exception:
-            raise PermissionDenied('Teacher profile not found.')
+        # allow teacher to post their own grades; admins can override
+        user = self.request.user
+        if user.role == 'PROFESSOR':
+            try:
+                teacher = user.teacherprofile
+            except Exception:
+                raise PermissionDenied('Teacher profile not found.')
 
-        offering = serializer.validated_data.get('offering')
-        if offering and offering.teacher_id and offering.teacher_id != teacher.id:
-            # only the assigned teacher may post grades for this offering
-            raise PermissionDenied('You are not assigned to this offering.')
+            offering = serializer.validated_data.get('offering')
+            if offering and offering.teacher_id and offering.teacher_id != teacher.id:
+                raise PermissionDenied('You are not assigned to this offering.')
 
-        serializer.save(teacher=teacher)
+            grade = serializer.save(teacher=teacher)
+        else:
+            grade = serializer.save()
+
+        GradeHistory.objects.create(
+            grade=grade,
+            changed_by=user,
+            action=GradeHistory.Action.CREATED,
+            previous=None,
+            current=self._snapshot_grade(grade),
+        )
+        AuditLog.objects.create(
+            user=user,
+            action='GRADE_CREATED',
+            ip_address=self.request.META.get('REMOTE_ADDR', ''),
+            details={'grade_id': grade.id, 'student_id': grade.student_id},
+        )
 
     def perform_update(self, serializer):
-        try:
-            teacher = self.request.user.teacherprofile
-        except Exception:
-            raise PermissionDenied('Teacher profile not found.')
+        user = self.request.user
+        grade = self.get_object()
+        previous = self._snapshot_grade(grade)
 
-        offering = serializer.validated_data.get('offering', getattr(self.get_object(), 'offering', None))
-        if offering and offering.teacher_id and offering.teacher_id != teacher.id:
-            raise PermissionDenied('You are not assigned to this offering.')
+        if user.role == 'PROFESSOR':
+            try:
+                teacher = user.teacherprofile
+            except Exception:
+                raise PermissionDenied('Teacher profile not found.')
 
-        serializer.save(teacher=teacher)
+            offering = serializer.validated_data.get('offering', getattr(grade, 'offering', None))
+            if offering and offering.teacher_id and offering.teacher_id != teacher.id:
+                raise PermissionDenied('You are not assigned to this offering.')
+
+            grade = serializer.save(teacher=teacher)
+        else:
+            grade = serializer.save()
+
+        GradeHistory.objects.create(
+            grade=grade,
+            changed_by=user,
+            action=GradeHistory.Action.UPDATED,
+            previous=previous,
+            current=self._snapshot_grade(grade),
+        )
+        AuditLog.objects.create(
+            user=user,
+            action='GRADE_UPDATED',
+            ip_address=self.request.META.get('REMOTE_ADDR', ''),
+            details={'grade_id': grade.id, 'student_id': grade.student_id},
+        )
+
+    def perform_destroy(self, instance):
+        previous = self._snapshot_grade(instance)
+        user = self.request.user
+        grade_id = instance.id
+        student_id = instance.student_id
+        instance.delete()
+        GradeHistory.objects.create(
+            grade_id=grade_id,
+            changed_by=user,
+            action=GradeHistory.Action.DELETED,
+            previous=previous,
+            current=None,
+        )
+        AuditLog.objects.create(
+            user=user,
+            action='GRADE_DELETED',
+            ip_address=self.request.META.get('REMOTE_ADDR', ''),
+            details={'grade_id': grade_id, 'student_id': student_id},
+        )
+
+    @action(detail=True, methods=['get'], url_path='history')
+    def history(self, request, pk=None):
+        grade = self.get_object()
+        if request.user.role == 'STUDENT':
+            try:
+                student = request.user.studentprofile
+            except Exception:
+                return Response({'error': 'Student profile not found.'}, status=400)
+            if grade.student_id != student.id:
+                return Response({'error': 'Not allowed.'}, status=403)
+
+        history = grade.history.select_related('changed_by')
+        return Response(GradeHistorySerializer(history, many=True).data)
+
+    @action(detail=False, methods=['get'], url_path='timeline')
+    def timeline(self, request):
+        qs = GradeHistory.objects.select_related('grade', 'changed_by')
+        if request.user.role == 'STUDENT':
+            try:
+                student = request.user.studentprofile
+            except Exception:
+                return Response({'error': 'Student profile not found.'}, status=400)
+            qs = qs.filter(grade__student=student)
+        student_id = request.query_params.get('student')
+        if student_id:
+            qs = qs.filter(grade__student_id=student_id)
+        discipline_id = request.query_params.get('discipline')
+        if discipline_id:
+            qs = qs.filter(grade__discipline_id=discipline_id)
+        return Response(GradeHistorySerializer(qs[:500], many=True).data)
 
     @action(detail=False, methods=['get'], url_path='export', permission_classes=[IsStudent])
     def export(self, request):
@@ -570,3 +677,81 @@ class TeacherOfferingEnrollmentsView(APIView):
 
         enrollments = StudentEnrollment.objects.filter(offering=offering, status=StudentEnrollment.Status.ENROLLED).select_related('student__user', 'discipline')
         return Response(EnrollmentSerializer(enrollments, many=True).data)
+
+
+class GradeReportView(APIView):
+    permission_classes = [IsAdmin]
+
+    def _filter(self, params):
+        qs = Grade.objects.select_related('student__user', 'discipline', 'term', 'offering')
+        if params.get('term'):
+            qs = qs.filter(term_id=params.get('term'))
+        if params.get('student'):
+            qs = qs.filter(student_id=params.get('student'))
+        if params.get('discipline'):
+            qs = qs.filter(discipline_id=params.get('discipline'))
+        if params.get('program'):
+            qs = qs.filter(student__program_id=params.get('program'))
+        if params.get('year_level'):
+            qs = qs.filter(student__year_level=params.get('year_level'))
+        return qs
+
+    def get(self, request):
+        qs = self._filter(request.query_params)
+        data = GradeSerializer(qs, many=True).data
+        graded = [g for g in data if g.get('finals') is not None]
+        passing = len([g for g in graded if float(g['finals']) <= 3.0]) if graded else 0
+        summary = {
+            'total': len(data),
+            'graded': len(graded),
+            'passing': passing,
+            'failing': len(graded) - passing,
+        }
+        return Response({'summary': summary, 'results': data})
+
+
+class GradeReportExportView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = GradeReportView()._filter(request.query_params)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="grade_report.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Student', 'Discipline', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks'])
+        for g in qs:
+            writer.writerow([
+                g.student.student_id,
+                g.discipline.code,
+                str(g.term) if g.term else '',
+                g.prelim,
+                g.midterm,
+                g.finals,
+                g.remarks,
+            ])
+        return response
+
+
+class GradeReportExcelView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request):
+        qs = GradeReportView()._filter(request.query_params)
+        wb = Workbook()
+        ws = wb.active
+        ws.title = 'Grades'
+        ws.append(['Student', 'Discipline', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks'])
+        for g in qs:
+            ws.append([
+                g.student.student_id,
+                g.discipline.code,
+                str(g.term) if g.term else '',
+                g.prelim,
+                g.midterm,
+                g.finals,
+                g.remarks,
+            ])
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="grade_report.xlsx"'
+        wb.save(response)
+        return response

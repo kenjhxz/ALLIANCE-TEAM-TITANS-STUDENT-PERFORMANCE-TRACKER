@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from profiles.models import StudentProfile, TeacherProfile
 
 class College(models.Model):
@@ -140,6 +141,7 @@ class Grade(models.Model):
     prelim     = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     midterm    = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
     finals     = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    remarks    = models.TextField(blank=True)
 
     class Meta:
         unique_together = ['student', 'discipline', 'term']
@@ -156,3 +158,23 @@ class Grade(models.Model):
     @property
     def failed(self):
         return self.final_grade > 3.0
+
+
+class GradeHistory(models.Model):
+    class Action(models.TextChoices):
+        CREATED = 'CREATED', 'Created'
+        UPDATED = 'UPDATED', 'Updated'
+        DELETED = 'DELETED', 'Deleted'
+
+    grade       = models.ForeignKey(Grade, on_delete=models.CASCADE, related_name='history')
+    changed_by  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    action      = models.CharField(max_length=10, choices=Action.choices)
+    previous    = models.JSONField(null=True, blank=True)
+    current     = models.JSONField(null=True, blank=True)
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.grade_id} {self.action} at {self.created_at:%Y-%m-%d %H:%M}"
