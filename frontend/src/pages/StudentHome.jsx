@@ -91,13 +91,13 @@ const s = {
 };
 
 const STATUS_STYLE = {
-  PENDING:   { bg: '#2a2010', border: '#5a4a1a', color: '#f59e0b' },
-  APPROVED:  { bg: '#1a2a3a', border: '#1e4a6a', color: '#38bdf8' },
-  ENROLLED:  { bg: '#1a3a2a', border: '#2d5a3d', color: '#4ade80' },
-  DROPPED:   { bg: '#3a1a1a', border: '#5a2a2a', color: '#ef4444' },
-  REJECTED:  { bg: '#3a1a1a', border: '#5a2a2a', color: '#ef4444' },
-  WITHDRAWN: { bg: '#2a2a2a', border: '#3a3a3a', color: '#94a3b8' },
-  COMPLETED: { bg: '#1a2a1a', border: '#2a4a2a', color: '#86efac' },
+  PENDING:   { bg: 'var(--app-warning-bg)', border: 'var(--app-warning-border)', color: 'var(--app-warning)' },
+  APPROVED:  { bg: 'var(--app-info-bg)', border: 'var(--app-info-border)', color: 'var(--app-info)' },
+  ENROLLED:  { bg: 'var(--app-success-bg)', border: 'var(--app-success-border)', color: 'var(--app-success)' },
+  DROPPED:   { bg: 'var(--app-danger-bg)', border: 'var(--app-danger-border)', color: 'var(--app-danger)' },
+  REJECTED:  { bg: 'var(--app-danger-bg)', border: 'var(--app-danger-border)', color: 'var(--app-danger)' },
+  WITHDRAWN: { bg: 'var(--app-panel)', border: 'var(--app-border)', color: 'var(--app-muted)' },
+  COMPLETED: { bg: 'var(--app-success-bg)', border: 'var(--app-success-border)', color: 'var(--app-success)' },
 };
 
 function StatusBadge({ status }) {
@@ -209,14 +209,14 @@ function ProfileTab() {
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <div style={s.statCard}>
-          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#64748b' }}>Student ID</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: '#4ade80', fontFamily: 'monospace' }}>{profile?.student_id || '--'}</div>
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--app-muted)' }}>Student ID</div>
+          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-success)', fontFamily: 'monospace' }}>{profile?.student_id || '--'}</div>
         </div>
-        <StatCard label="Program"    value={profile?.program_code || '--'} sub={profile?.program_name}           accent="#e2e8f0" />
-        <StatCard label="Year Level" value={profile?.year_level ? `Year ${profile.year_level}` : '--'}           accent="#e2e8f0" />
-        <StatCard label="College"    value={profile?.college_name || '--'}                                        accent="#e2e8f0" />
-        <StatCard label="Enrolled"   value={enrolledCount}                 sub="subjects this term"              accent="#4ade80" />
-        <StatCard label="Units"      value={enrolledUnits}                 sub="enrolled units"                  accent="#4ade80" />
+        <StatCard label="Program"    value={profile?.program_code || '--'} sub={profile?.program_name}           accent="var(--app-text)" />
+        <StatCard label="Year Level" value={profile?.year_level ? `Year ${profile.year_level}` : '--'}           accent="var(--app-text)" />
+        <StatCard label="College"    value={profile?.college_name || '--'}                                        accent="var(--app-text)" />
+        <StatCard label="Enrolled"   value={enrolledCount}                 sub="subjects this term"              accent="var(--app-success)" />
+        <StatCard label="Units"      value={enrolledUnits}                 sub="enrolled units"                  accent="var(--app-success)" />
       </div>
 
       <div style={s.panels}>
@@ -340,22 +340,22 @@ function ProspectusTab() {
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <StatCard label="Subjects"  value={rows.length}    sub="this semester"  />
-        <StatCard label="Units"     value={total}          sub="total this sem"  accent="#4ade80" />
-        <StatCard label="Pending"   value={pendingCount}   sub="awaiting admin"  accent="#f59e0b" />
-        <StatCard label="Approved"  value={approvedCount}  sub="pick schedule"   accent="#38bdf8" />
-        <StatCard label="Enrolled"  value={enrolledCount}  sub="confirmed"       accent="#4ade80" />
+        <StatCard label="Units"     value={total}          sub="total this sem"  accent="var(--app-success)" />
+        <StatCard label="Pending"   value={pendingCount}   sub="awaiting admin"  accent="var(--app-warning)" />
+        <StatCard label="Approved"  value={approvedCount}  sub="pick schedule"   accent="var(--app-info)" />
+        <StatCard label="Enrolled"  value={enrolledCount}  sub="confirmed"       accent="var(--app-success)" />
       </div>
 
       {loading && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
-          <div style={{ fontSize: 13, color: '#64748b' }}>Loading...</div>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>Loading...</div>
         </div>
       )}
 
       {!loading && rows.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 200 }}>
           <div style={{ fontSize: 38, opacity: 0.25 }}>*</div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>No active term or no disciplines found for your program.</div>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>No active term or no disciplines found for your program.</div>
         </div>
       )}
 
@@ -371,7 +371,7 @@ function ProspectusTab() {
           />
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#1e2335' }}>
+              <tr style={{ background: 'var(--app-panel)' }}>
                 <th style={{ ...s.th, width: 36 }}></th>
                 {['Code', 'Subject', 'Units', 'Prerequisites', 'Status', 'Offer Code'].map((h) => (
                   <th key={h} style={s.th}>{h}</th>
@@ -387,8 +387,8 @@ function ProspectusTab() {
                     key={d.discipline_id}
                     onClick={() => !alreadyReq && toggleSelect(d.discipline_id)}
                     style={{
-                      background: isSelected ? '#0f2018' : i % 2 === 0 ? 'transparent' : '#1a1f30',
-                      borderBottom: '1px solid #1e2335',
+                      background: isSelected ? 'var(--app-accent-soft)' : i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
+                      borderBottom: '1px solid var(--app-border)',
                       cursor: alreadyReq ? 'default' : 'pointer',
                       opacity: alreadyReq ? 0.6 : 1,
                       transition: 'background 0.1s',
@@ -399,34 +399,34 @@ function ProspectusTab() {
                         <span style={{
                           width: 15, height: 15, borderRadius: 3,
                           display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          border: isSelected ? '1px solid #4ade80' : '1px solid #2a3050',
-                          background: isSelected ? '#4ade80' : 'transparent',
+                          border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
+                          background: isSelected ? 'var(--app-success)' : 'transparent',
                         }}>
-                          {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
+                          {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
                         </span>
                       )}
                     </td>
-                    <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>{d.code}</td>
-                    <td style={{ ...s.td, color: '#e2e8f0' }}>{d.name}</td>
-                    <td style={{ ...s.td, color: '#94a3b8', textAlign: 'center' }}>{d.units}</td>
+                    <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{d.code}</td>
+                    <td style={{ ...s.td, color: 'var(--app-text)' }}>{d.name}</td>
+                    <td style={{ ...s.td, color: 'var(--app-muted)', textAlign: 'center' }}>{d.units}</td>
                     <td style={{ ...s.td }}>
                       {d.prerequisites?.length > 0
                         ? (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                             {d.prerequisites.map((p) => (
-                              <span key={p} style={{ background: '#1e2335', border: '1px solid #2a3050', color: '#94a3b8', borderRadius: 4, padding: '1px 7px', fontSize: 11 }}>{p}</span>
+                              <span key={p} style={{ background: 'var(--app-panel)', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 4, padding: '1px 7px', fontSize: 11 }}>{p}</span>
                             ))}
                           </div>
                         )
-                        : <span style={{ color: '#64748b', fontSize: 11 }}>-</span>}
+                        : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>-</span>}
                     </td>
                     <td style={{ ...s.td }}>
                       {d.request_status
                         ? <StatusBadge status={d.request_status} />
-                        : <span style={{ color: '#64748b', fontSize: 11 }}>Not requested</span>}
+                        : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>Not requested</span>}
                     </td>
-                    <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>
-                      {d.offer_code || <span style={{ color: '#64748b' }}>-</span>}
+                    <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>
+                      {d.offer_code || <span style={{ color: 'var(--app-muted)' }}>-</span>}
                     </td>
                   </tr>
                 );
@@ -435,14 +435,14 @@ function ProspectusTab() {
           </table>
 
           {selected.length > 0 && (
-            <div style={{ padding: '14px 20px', borderTop: '1px solid #2a3050', display: 'flex', alignItems: 'center', gap: 12, background: '#131720' }}>
-              <span style={{ flex: 1, fontSize: 12, color: '#94a3b8' }}>
+            <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border)', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--app-card)' }}>
+              <span style={{ flex: 1, fontSize: 12, color: 'var(--app-muted)' }}>
                 {selected.length} subject{selected.length !== 1 ? 's' : ''} selected +
-                <span style={{ color: '#4ade80', fontWeight: 600 }}>+{selectedUnits} units</span>
+                <span style={{ color: 'var(--app-success)', fontWeight: 600 }}>+{selectedUnits} units</span>
               </span>
               <button
                 onClick={() => setSelected([])}
-                style={{ background: 'none', border: '1px solid #2a3050', color: '#94a3b8', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ background: 'none', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 Clear
               </button>
@@ -545,22 +545,22 @@ function EnrollmentTab() {
       </div>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        <StatCard label="Term"          value={activeTerm ? activeTerm.school_year : 'Closed'} sub={activeTerm ? `Semester ${activeTerm.semester}` : 'check back later'} accent={activeTerm ? '#4ade80' : '#94a3b8'} />
-        <StatCard label="Pending"       value={pendingCount}    sub="awaiting admin"         accent="#f59e0b" />
-        <StatCard label="Pick Schedule" value={approved.length} sub="approved, no slot yet"  accent="#38bdf8" />
-        <StatCard label="Enrolled"      value={enrolledCount}   sub="schedule confirmed"      accent="#4ade80" />
+        <StatCard label="Term"          value={activeTerm ? activeTerm.school_year : 'Closed'} sub={activeTerm ? `Semester ${activeTerm.semester}` : 'check back later'} accent={activeTerm ? 'var(--app-success)' : 'var(--app-muted)'} />
+        <StatCard label="Pending"       value={pendingCount}    sub="awaiting admin"         accent="var(--app-warning)" />
+        <StatCard label="Pick Schedule" value={approved.length} sub="approved, no slot yet"  accent="var(--app-info)" />
+        <StatCard label="Enrolled"      value={enrolledCount}   sub="schedule confirmed"      accent="var(--app-success)" />
       </div>
 
       {!activeTerm && (
         <div style={{ ...s.comingSoon, minHeight: 200 }}>
           <div style={{ fontSize: 40, opacity: 0.25 }}>*</div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>Enrollment is currently closed.</div>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>Enrollment is currently closed.</div>
         </div>
       )}
 
       {activeTerm && loadingMain && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
-          <div style={{ fontSize: 13, color: '#64748b' }}>Loading enrollment data...</div>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>Loading enrollment data...</div>
         </div>
       )}
 
@@ -574,27 +574,27 @@ function EnrollmentTab() {
                 const isOpen   = expandedEnr === item.enrollment_id;
                 const isActing = !!scheduling[item.enrollment_id];
                 return (
-                  <div key={item.id} style={{ borderBottom: '1px solid #1e2335' }}>
+                  <div key={item.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
                     <div
                       onClick={() => setExpandedEnr(isOpen ? null : item.enrollment_id)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', cursor: 'pointer', background: isOpen ? '#1a2535' : 'transparent', transition: 'background 0.15s' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', cursor: 'pointer', background: isOpen ? 'var(--app-accent-bg)' : 'transparent', transition: 'background 0.15s' }}
                     >
-                      <span style={{ background: '#1e2335', border: '1px solid #2a3050', color: '#94a3b8', borderRadius: 5, padding: '3px 10px', fontSize: 11, fontFamily: 'monospace', flexShrink: 0 }}>{item.discipline_code}</span>
-                      <span style={{ flex: 1, fontWeight: 500, fontSize: 14, color: '#e2e8f0' }}>{item.discipline_name}</span>
-                      <span style={{ fontSize: 12, color: '#64748b' }}>{item.units} units</span>
+                      <span style={{ background: 'var(--app-panel)', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 5, padding: '3px 10px', fontSize: 11, fontFamily: 'monospace', flexShrink: 0 }}>{item.discipline_code}</span>
+                      <span style={{ flex: 1, fontWeight: 500, fontSize: 14, color: 'var(--app-text)' }}>{item.discipline_name}</span>
+                      <span style={{ fontSize: 12, color: 'var(--app-muted)' }}>{item.units} units</span>
                       <StatusBadge status="APPROVED" />
-                      <span style={{ color: '#64748b', fontSize: 12 }}>{isOpen ? 'v' : '>'}</span>
+                      <span style={{ color: 'var(--app-muted)', fontSize: 12 }}>{isOpen ? 'v' : '>'}</span>
                     </div>
                     {isOpen && (
-                      <div style={{ padding: '0 20px 16px', background: '#151a28' }}>
+                      <div style={{ padding: '0 20px 16px', background: 'var(--app-card)' }}>
                         {item.offerings.length === 0
-                          ? <div style={{ padding: '12px 0', fontSize: 12, color: '#64748b' }}>No offerings posted yet.</div>
+                          ? <div style={{ padding: '12px 0', fontSize: 12, color: 'var(--app-muted)' }}>No offerings posted yet.</div>
                           : (
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, marginTop: 8 }}>
                               <thead>
-                                <tr style={{ background: '#1e2335' }}>
-                                  {['Offer Code', 'Teacher', 'Schedule', 'Room', 'Slots', ''].map((h) => (
-                                    <th key={h} style={{ ...s.th, background: 'transparent' }}>{h}</th>
+                                <tr style={{ background: 'var(--app-panel)' }}>
+                                  {['Offer Code', 'Teacher', 'Schedule', 'Room', 'Slots', ''].map((h, idx) => (
+                                    <th key={h} style={{ ...s.th, background: 'transparent', paddingRight: 20 }}>{h}</th>
                                   ))}
                                 </tr>
                               </thead>
@@ -602,20 +602,20 @@ function EnrollmentTab() {
                                 {item.offerings.map((o) => {
                                   const full = o.available_slots <= 0;
                                   return (
-                                    <tr key={o.id} style={{ borderBottom: '1px solid #1e2335' }}>
-                                      <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>{o.offer_code}</td>
-                                      <td style={{ ...s.td, color: '#e2e8f0' }}>{o.teacher_name || <span style={{ color: '#64748b' }}>TBA</span>}</td>
-                                      <td style={{ ...s.td, color: '#94a3b8' }}>{o.schedule}</td>
-                                      <td style={{ ...s.td, color: '#94a3b8' }}>{o.room || '--'}</td>
+                                    <tr key={o.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
+                                      <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{o.offer_code}</td>
+                                      <td style={{ ...s.td, color: 'var(--app-text)' }}>{o.teacher_name || <span style={{ color: 'var(--app-muted)' }}>TBA</span>}</td>
+                                      <td style={{ ...s.td, color: 'var(--app-muted)' }}>{o.schedule}</td>
+                                      <td style={{ ...s.td, color: 'var(--app-muted)' }}>{o.room || '--'}</td>
                                       <td style={{ ...s.td }}>
-                                        <span style={{ color: full ? '#ef4444' : '#4ade80', fontWeight: 600 }}>{o.current_slots}/{o.max_slots}</span>
-                                        <span style={{ color: '#64748b', fontSize: 11, marginLeft: 4 }}>({o.available_slots} open)</span>
+                                        <span style={{ color: full ? 'var(--app-danger)' : 'var(--app-success)', fontWeight: 600 }}>{o.current_slots}/{o.max_slots}</span>
+                                        <span style={{ color: 'var(--app-muted)', fontSize: 11, marginLeft: 4 }}>({o.available_slots} open)</span>
                                       </td>
                                       <td style={{ ...s.td }}>
                                         <button
                                           disabled={full || isActing}
                                           onClick={() => handleSelectSchedule(item.enrollment_id, o.id)}
-                                          style={{ background: full ? '#1e2335' : '#1a3a2a', border: `1px solid ${full ? '#2a3050' : '#4ade80'}`, color: full ? '#64748b' : '#4ade80', borderRadius: 5, padding: '4px 14px', fontSize: 11, fontWeight: 600, cursor: full ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+                                          style={{ background: full ? 'var(--app-panel)' : 'var(--app-success-bg)', border: `1px solid ${full ? 'var(--app-border)' : 'var(--app-success)'}`, color: full ? 'var(--app-muted)' : 'var(--app-success)', borderRadius: 5, padding: '4px 14px', fontSize: 11, fontWeight: 600, cursor: full ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
                                         >
                                           {isActing ? '...' : full ? 'Full' : 'Select'}
                                         </button>
@@ -641,12 +641,12 @@ function EnrollmentTab() {
               right={selected.length > 0 ? `${selected.length} selected - ${committedUnits + selectedUnits} units total` : undefined}
             />
             {prospectus.length === 0
-              ? <div style={{ ...s.comingSoon, minHeight: 120 }}><div style={{ fontSize: 13, color: '#94a3b8' }}>No subjects found for this term.</div></div>
+              ? <div style={{ ...s.comingSoon, minHeight: 120 }}><div style={{ fontSize: 13, color: 'var(--app-muted)' }}>No subjects found for this term.</div></div>
               : (
                 <>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
-                      <tr style={{ background: '#1e2335' }}>
+                      <tr style={{ background: 'var(--app-panel)' }}>
                         <th style={{ ...s.th, width: 36 }}></th>
                         {['Code', 'Subject', 'Units', 'Prerequisites', 'Status'].map((h) => (
                           <th key={h} style={s.th}>{h}</th>
@@ -663,8 +663,8 @@ function EnrollmentTab() {
                             key={d.discipline_id}
                             onClick={() => !alreadyReq && toggleSelect(d.discipline_id)}
                             style={{
-                              background: isSelected ? '#0f2018' : i % 2 === 0 ? 'transparent' : '#1a1f30',
-                              borderBottom: '1px solid #1e2335',
+                              background: isSelected ? 'var(--app-accent-soft)' : i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
+                              borderBottom: '1px solid var(--app-border)',
                               cursor: alreadyReq ? 'default' : 'pointer',
                               opacity: alreadyReq ? 0.6 : 1,
                               transition: 'background 0.1s',
@@ -675,26 +675,26 @@ function EnrollmentTab() {
                                 <span style={{
                                   width: 15, height: 15, borderRadius: 3,
                                   display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                  border: isSelected ? '1px solid #4ade80' : '1px solid #2a3050',
-                                  background: isSelected ? '#4ade80' : 'transparent',
+                                  border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
+                                  background: isSelected ? 'var(--app-success)' : 'transparent',
                                 }}>
-                                  {isSelected && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
+                                  {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
                                 </span>
                               )}
                             </td>
-                            <td style={{ ...s.td, fontFamily: 'monospace', color: '#4ade80', fontSize: 11 }}>{d.code}</td>
-                            <td style={{ ...s.td, color: '#e2e8f0' }}>{d.name}</td>
-                            <td style={{ ...s.td, color: '#94a3b8', textAlign: 'center' }}>{d.units}</td>
+                            <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{d.code}</td>
+                            <td style={{ ...s.td, color: 'var(--app-text)' }}>{d.name}</td>
+                            <td style={{ ...s.td, color: 'var(--app-muted)', textAlign: 'center' }}>{d.units}</td>
                             <td style={{ ...s.td }}>
                               {d.prerequisites?.length > 0
                                 ? (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                                     {d.prerequisites.map((p) => (
-                                      <span key={p} style={{ background: '#1e2335', border: '1px solid #2a3050', color: '#94a3b8', borderRadius: 4, padding: '1px 7px', fontSize: 11 }}>{p}</span>
+                                      <span key={p} style={{ background: 'var(--app-panel)', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 4, padding: '1px 7px', fontSize: 11 }}>{p}</span>
                                     ))}
                                   </div>
                                 )
-                                : <span style={{ color: '#64748b', fontSize: 11 }}>-</span>}
+                                : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>-</span>}
                             </td>
                             <td style={{ ...s.td }}>
                               {d.request_status
@@ -702,11 +702,11 @@ function EnrollmentTab() {
                                   <>
                                     <StatusBadge status={d.request_status} />
                                     {d.offer_code && (
-                                      <span style={{ marginLeft: 6, fontFamily: 'monospace', fontSize: 10, color: '#4ade80' }}>{d.offer_code}</span>
+                                      <span style={{ marginLeft: 6, fontFamily: 'monospace', fontSize: 10, color: 'var(--app-success)' }}>{d.offer_code}</span>
                                     )}
                                   </>
                                 )
-                                : <span style={{ color: '#64748b', fontSize: 11 }}>Not requested</span>}
+                                : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>Not requested</span>}
                             </td>
                           </tr>
                         );
@@ -715,14 +715,14 @@ function EnrollmentTab() {
                   </table>
 
                   {selected.length > 0 && (
-                    <div style={{ padding: '14px 20px', borderTop: '1px solid #2a3050', display: 'flex', alignItems: 'center', gap: 12, background: '#131720' }}>
-                      <span style={{ flex: 1, fontSize: 12, color: '#94a3b8' }}>
+                    <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border)', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--app-card)' }}>
+                      <span style={{ flex: 1, fontSize: 12, color: 'var(--app-muted)' }}>
                         {selected.length} subject{selected.length !== 1 ? 's' : ''} selected
-                        <span style={{ color: '#4ade80', fontWeight: 600 }}>+{selectedUnits} units</span>
+                        <span style={{ color: 'var(--app-success)', fontWeight: 600 }}>+{selectedUnits} units</span>
                       </span>
                       <button
                         onClick={() => setSelected([])}
-                        style={{ background: 'none', border: '1px solid #2a3050', color: '#94a3b8', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+                        style={{ background: 'none', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
                       >
                         Clear
                       </button>
@@ -837,12 +837,12 @@ function GradesTab() {
     : null;
 
   function gradeColor(val) {
-    if (val == null) return '#64748b';
+    if (val == null) return 'var(--app-muted)';
     const n = parseFloat(val);
-    if (n <= 1.5) return '#4ade80';
-    if (n <= 2.5) return '#38bdf8';
-    if (n <= 3.0) return '#f59e0b';
-    return '#ef4444';
+    if (n <= 1.5) return 'var(--app-success)';
+    if (n <= 2.5) return 'var(--app-info)';
+    if (n <= 3.0) return 'var(--app-warning)';
+    return 'var(--app-danger)';
   }
 
   async function handleExportCsv() {
@@ -925,9 +925,9 @@ function GradesTab() {
               padding: '7px 12px',
               fontSize: 13,
               borderRadius: 8,
-              border: '1px solid #2a3050',
-              background: '#1e2335',
-              color: '#e2e8f0',
+              border: '1px solid var(--app-border)',
+              background: 'var(--app-panel)',
+              color: 'var(--app-text)',
               cursor: exporting ? 'not-allowed' : 'pointer',
             }}
           >
@@ -940,8 +940,8 @@ function GradesTab() {
                 top: 44,
                 left: 0,
                 minWidth: 170,
-                border: '1px solid #2a3050',
-                background: '#111827',
+                border: '1px solid var(--app-border)',
+                background: 'var(--app-card)',
                 borderRadius: 8,
                 overflow: 'hidden',
                 zIndex: 5,
@@ -955,7 +955,7 @@ function GradesTab() {
                   textAlign: 'left',
                   padding: '10px 12px',
                   background: 'transparent',
-                  color: '#e2e8f0',
+                  color: 'var(--app-text)',
                   border: 'none',
                   cursor: 'pointer',
                   fontSize: 13,
@@ -970,9 +970,9 @@ function GradesTab() {
                   textAlign: 'left',
                   padding: '10px 12px',
                   background: 'transparent',
-                  color: '#e2e8f0',
+                  color: 'var(--app-text)',
                   border: 'none',
-                  borderTop: '1px solid #2a3050',
+                  borderTop: '1px solid var(--app-border)',
                   cursor: 'pointer',
                   fontSize: 13,
                 }}
@@ -990,25 +990,25 @@ function GradesTab() {
           label="GWA"
           value={gwa ?? '--'}
           sub="general weighted avg"
-          accent={gwa ? gradeColor(parseFloat(gwa)) : '#94a3b8'}
+          accent={gwa ? gradeColor(parseFloat(gwa)) : 'var(--app-muted)'}
         />
         <StatCard
           label="Units Earned"
           value={totalUnitsEarned}
           sub="passing units"
-          accent="#4ade80"
+          accent="var(--app-success)"
         />
         <StatCard
           label="Passed"
           value={allPassed.length}
           sub="subjects"
-          accent="#4ade80"
+          accent="var(--app-success)"
         />
         <StatCard
           label="Failed"
           value={allFailed.length}
           sub="below passing"
-          accent={allFailed.length ? '#ef4444' : '#94a3b8'}
+          accent={allFailed.length ? 'var(--app-danger)' : 'var(--app-muted)'}
         />
       </div>
 
@@ -1016,13 +1016,13 @@ function GradesTab() {
         <SectionHeader title="Currently Enrolled Subjects (Synced)" />
 
         {syncedEnrolled.length === 0 ? (
-          <div style={{ padding: 16, color: '#64748b', fontSize: 12 }}>
+          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
             No enrolled subjects found.
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ background: '#1e2335' }}>
+              <tr style={{ background: 'var(--app-panel)' }}>
                 {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
                   (h) => (
                     <th key={h} style={s.th}>
@@ -1040,7 +1040,7 @@ function GradesTab() {
                     style={{
                       ...s.td,
                       fontFamily: 'monospace',
-                      color: '#4ade80',
+                      color: 'var(--app-success)',
                     }}
                   >
                     {d.discipline_code || d.code}
@@ -1108,7 +1108,7 @@ function GradesTab() {
 
         {loading && (
           <div style={{ ...s.comingSoon, minHeight: 160 }}>
-            <div style={{ fontSize: 13, color: '#64748b' }}>
+            <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>
               Loading grades...
             </div>
           </div>
@@ -1154,8 +1154,8 @@ function GradesTab() {
                 <div
                   style={{
                     padding: '10px 20px',
-                    background: '#1a3a2a',
-                    borderBottom: '1px solid #2a3050',
+                    background: 'var(--app-accent-soft)',
+                    borderBottom: '1px solid var(--app-border)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 8,
@@ -1165,7 +1165,7 @@ function GradesTab() {
                     style={{
                       width: 6,
                       height: 6,
-                      background: '#4ade80',
+                      background: 'var(--app-success)',
                       borderRadius: '50%',
                     }}
                   />
@@ -1173,7 +1173,7 @@ function GradesTab() {
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: '#4ade80',
+                      color: 'var(--app-success)',
                     }}
                   >
                     {term}
@@ -1199,7 +1199,7 @@ function GradesTab() {
                     <span
                       style={{
                         fontSize: 11,
-                        color: '#64748b',
+                        color: 'var(--app-muted)',
                       }}
                     >
                       {tUnits} units earned
@@ -1215,7 +1215,7 @@ function GradesTab() {
                   }}
                 >
                   <thead>
-                    <tr style={{ background: '#1e2335' }}>
+                    <tr style={{ background: 'var(--app-panel)' }}>
                       {[
                         'Code',
                         'Subject',
@@ -1244,15 +1244,15 @@ function GradesTab() {
                           key={g.id}
                           style={{
                             background:
-                              i % 2 === 0 ? 'transparent' : '#1a1f30',
-                            borderBottom: '1px solid #1e2335',
+                              i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
+                            borderBottom: '1px solid var(--app-border)',
                           }}
                         >
                           <td
                             style={{
                               ...s.td,
                               fontFamily: 'monospace',
-                              color: '#4ade80',
+                              color: 'var(--app-success)',
                             }}
                           >
                             {g.discipline_code}
@@ -1296,15 +1296,15 @@ function GradesTab() {
 
                           <td style={{ ...s.td }}>
                             {fg == null ? (
-                              <span style={{ color: '#64748b' }}>
+                              <span style={{ color: 'var(--app-muted)' }}>
                                 In Progress
                               </span>
                             ) : (
                               <span
                                 style={{
                                   color: passed
-                                    ? '#4ade80'
-                                    : '#ef4444',
+                                    ? 'var(--app-success)'
+                                    : 'var(--app-danger)',
                                   fontWeight: 600,
                                 }}
                               >
@@ -1330,23 +1330,23 @@ function GradesTab() {
       <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
         <SectionHeader title="Grade History Timeline" right="Recent updates" />
         {timelineLoading ? (
-          <div style={{ padding: 16, color: '#64748b', fontSize: 12 }}>
+          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
             Loading history...
           </div>
         ) : timeline.length === 0 ? (
-          <div style={{ padding: 16, color: '#64748b', fontSize: 12 }}>
+          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
             No grade changes recorded yet.
           </div>
         ) : (
           <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {timeline.slice(0, 12).map((item) => (
               <div key={item.id} style={{
-                background: '#1a2030',
-                border: '1px solid #2a3050',
+                background: 'var(--app-card)',
+                border: '1px solid var(--app-border)',
                 borderRadius: 8,
                 padding: '10px 12px',
                 fontSize: 12,
-                color: '#e2e8f0',
+                color: 'var(--app-text)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 gap: 12,
@@ -1354,12 +1354,12 @@ function GradesTab() {
                 <div>
                   <strong>{item.action}</strong> · Grade ID {item.grade}
                   {item.current?.remarks && (
-                    <div style={{ color: '#94a3b8', marginTop: 4 }}>
+                    <div style={{ color: 'var(--app-muted)', marginTop: 4 }}>
                       Remarks: {item.current.remarks}
                     </div>
                   )}
                 </div>
-                <div style={{ color: '#64748b', fontSize: 11 }}>
+                <div style={{ color: 'var(--app-muted)', fontSize: 11 }}>
                   {new Date(item.created_at).toLocaleString()}
                 </div>
               </div>
@@ -1414,21 +1414,21 @@ export default function StudentHome() {
 
         <div style={s.sidebarFooter}>
           {profile && (
-            <div style={{ padding: '10px 12px', borderRadius: 8, background: '#1a2030', border: '1px solid #2a3050', display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0', lineHeight: 1.3 }}>
+            <div style={{ padding: '10px 12px', borderRadius: 8, background: 'var(--app-card)', border: '1px solid var(--app-border)', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-text)', lineHeight: 1.3 }}>
                 {profile.first_name} {profile.last_name}
               </div>
-              <div style={{ fontSize: 10, color: '#64748b', fontFamily: 'monospace' }}>
+              <div style={{ fontSize: 10, color: 'var(--app-muted)', fontFamily: 'monospace' }}>
                 {profile.student_id}
               </div>
               {profile.program_code && (
-                <div style={{ fontSize: 10, color: '#4ade80', marginTop: 2 }}>
+                <div style={{ fontSize: 10, color: 'var(--app-success)', marginTop: 2 }}>
                   {profile.program_code} - Year {profile.year_level}
                 </div>
               )}
             </div>
           )}
-          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: '#ef4444', border: '1px solid #3a1a1a', borderRadius: 50 }}>
+          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: 'var(--app-danger)', border: '1px solid var(--app-danger-border)', borderRadius: 50 }}>
             <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>L</span>
             Log Out
           </button>
