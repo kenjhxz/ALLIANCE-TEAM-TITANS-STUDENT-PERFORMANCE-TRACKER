@@ -21,6 +21,7 @@ from .models import (
     AcademicTerm, SubjectOffering, StudentEnrollment, Grade, GradeHistory
 )
 from profiles.views import IsAdmin, IsStudent, IsAdminOrReadOnly, IsTeacher
+from profiles.utils import create_notification
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 import csv
@@ -138,6 +139,25 @@ class SubjectOfferingView(generics.ListCreateAPIView):
         if params.get('year_level'): qs = qs.filter(discipline__year_level=params['year_level'])
         if params.get('semester'):   qs = qs.filter(discipline__semester=params['semester'])
         return qs
+
+    def perform_create(self, serializer):
+        offering = serializer.save()
+        if offering.teacher:
+            create_notification(
+                offering.teacher.user,
+                title='New subject offering assigned',
+                message=(
+                    f'You have been assigned to {offering.discipline.code} '
+                    f'({offering.discipline.name}) for {offering.term}.'
+                ),
+                category='OFFERING',
+                payload={
+                    'offering_id': offering.id,
+                    'discipline_id': offering.discipline_id,
+                    'term_id': offering.term_id,
+                    'offer_code': offering.offer_code,
+                },
+            )
 
 
 # ── ENROLLMENT: Stage 1 — Discipline request (Student) ───────────────────────
@@ -447,6 +467,21 @@ class AdminEnrollmentQueueView(APIView):
             enrollment.save()
             updated.append(enrollment.id)
 
+            create_notification(
+                enrollment.student.user,
+                title=f'Enrollment {action.lower()}',
+                message=(
+                    f'Your request for {enrollment.discipline.code} '
+                    f'({enrollment.discipline.name}) was {action.lower()}.'
+                ),
+                category='ENROLLMENT',
+                payload={
+                    'enrollment_id': enrollment.id,
+                    'discipline_id': enrollment.discipline_id,
+                    'status': action,
+                },
+            )
+
         return Response({'updated': updated, 'action': action})
 
 
@@ -477,6 +512,36 @@ class GradeViewSet(viewsets.ModelViewSet):
             'term': grade.term_id,
             'offering': grade.offering_id,
         }
+
+    def _notify_grade_change(self, grade, action):
+        recipients = [grade.student.user]
+        if grade.teacher and grade.teacher.user_id != grade.student.user_id:
+            recipients.append(grade.teacher.user)
+
+        title_map = {
+            'created': 'Grade posted',
+            'updated': 'Grade updated',
+            'deleted': 'Grade removed',
+        }
+        message_map = {
+            'created': f'{grade.discipline.code} has a new grade entry.',
+            'updated': f'{grade.discipline.code} grade values were updated.',
+            'deleted': f'{grade.discipline.code} grade entry was removed.',
+        }
+
+        for recipient in recipients:
+            create_notification(
+                recipient,
+                title=title_map[action],
+                message=message_map[action],
+                category='GRADE',
+                payload={
+                    'grade_id': grade.id,
+                    'discipline_id': grade.discipline_id,
+                    'term_id': grade.term_id,
+                    'action': action.upper(),
+                },
+            )
 
     def get_queryset(self):
         # Default queryset; allow filtering by student, offering, term, or teacher
@@ -532,6 +597,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             previous=None,
             current=self._snapshot_grade(grade),
         )
+        self._notify_grade_change(grade, 'created')
         AuditLog.objects.create(
             user=user,
             action='GRADE_CREATED',
@@ -565,6 +631,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             previous=previous,
             current=self._snapshot_grade(grade),
         )
+        self._notify_grade_change(grade, 'updated')
         AuditLog.objects.create(
             user=user,
             action='GRADE_UPDATED',
@@ -585,6 +652,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             previous=previous,
             current=None,
         )
+        grade.teacher and self._notify_grade_change(grade, 'deleted')
         AuditLog.objects.create(
             user=user,
             action='GRADE_DELETED',

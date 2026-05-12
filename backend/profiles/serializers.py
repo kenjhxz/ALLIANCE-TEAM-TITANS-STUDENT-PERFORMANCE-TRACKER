@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile, TeacherProfile, EmailVerificationToken, AdminProfile, PasswordResetToken, AuditLog
+from .models import User, StudentProfile, TeacherProfile, EmailVerificationToken, AdminProfile, PasswordResetToken, AuditLog, Notification
 from django.contrib.auth import authenticate
 from django.utils import timezone         
 from datetime import timedelta
@@ -166,6 +166,17 @@ class AuditLogSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'user_email', 'action', 'ip_address', 'details', 'created_at']
 
 
+class NotificationSerializer(serializers.ModelSerializer):
+    recipient_email = serializers.EmailField(source='recipient.email', read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = [
+            'id', 'recipient', 'recipient_email', 'title', 'message',
+            'category', 'payload', 'is_read', 'created_at',
+        ]
+
+
 
 
 #ADMIN SERIALZIERS FOR ADDING PROF AND STUDENT --------------------------------------------------------------------------------------------------
@@ -236,11 +247,11 @@ class TeacherListSerializer(serializers.ModelSerializer):
     user_id     = serializers.IntegerField(source='user.id', read_only=True)
     is_active   = serializers.BooleanField(source='user.is_active', read_only=True)
     department  = serializers.StringRelatedField()
-    disciplines = serializers.StringRelatedField(source='discipline', many=True) 
+    disciplines = serializers.StringRelatedField(many=True, read_only=True)
 
     class Meta:
         model  = TeacherProfile
-    fields = ['id', 'user_id', 'employee_id', 'full_name', 'email', 'is_active', 'department', 'disciplines']
+        fields = ['id', 'user_id', 'employee_id', 'full_name', 'email', 'is_active', 'department', 'disciplines']
 
     def get_full_name(self, obj):
         u = obj.user

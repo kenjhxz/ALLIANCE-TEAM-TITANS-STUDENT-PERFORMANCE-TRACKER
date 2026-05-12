@@ -21,13 +21,15 @@ def log_action(request, action, details=None, user=None):
     )
 
 from .models import User, StudentProfile, TeacherProfile, AdminProfile, EmailVerificationToken, PasswordResetToken, AuditLog
+from .models import Notification
 from .utils import send_verification_email, send_password_reset_email
 from .serializers import (
     RegisterSerializer, UserSerializer, LoginSerializer, StudentProfileSerializer, 
     TeacherProfileSerializer, UpdateFCMTokenSerializer, AdminProfileSerializer,
     #FOR ADMIN VIEW TO CREATE USERS
     AdminCreateTeacherSerializer, TeacherListSerializer, AdminCreateStudentSerializer, StudentListSerializer,
-    ChangePasswordSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, AuditLogSerializer
+    ChangePasswordSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer, AuditLogSerializer,
+    NotificationSerializer
 )
 
 # Create your views here.
@@ -328,7 +330,7 @@ class AdminStudentView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return StudentProfile.objects.select_related('user', 'program', 'program__college') \
-                                     .prefetch_related('enrolled_disciplines').all()
+                                     .prefetch_related('enrollments').all()
 
     def perform_create(self, serializer):
         user = serializer.save()
@@ -348,6 +350,36 @@ class AuditLogView(generics.ListAPIView):
         if email:
             qs = qs.filter(user__email__icontains=email)
         return qs
+
+
+class NotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Notification.objects.all() if request.user.role == 'ADMIN' else Notification.objects.filter(recipient=request.user)
+
+        recipient = request.query_params.get('recipient')
+        if request.user.role == 'ADMIN' and recipient:
+            qs = qs.filter(recipient__email__icontains=recipient)
+
+        if request.query_params.get('unread') in {'1', 'true', 'True'}:
+            qs = qs.filter(is_read=False)
+        return Response(NotificationSerializer(qs[:200], many=True).data)
+
+    def patch(self, request):
+        notification_ids = request.data.get('notification_ids')
+        mark_all = request.data.get('mark_all', False)
+
+        qs = Notification.objects.filter(recipient=request.user)
+        if mark_all:
+            qs.update(is_read=True)
+            return Response({'updated': 'all'})
+
+        if not notification_ids:
+            return Response({'error': 'notification_ids or mark_all is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        updated = qs.filter(id__in=notification_ids).update(is_read=True)
+        return Response({'updated': updated})
 
 
 class AdminUserUpdateView(APIView):

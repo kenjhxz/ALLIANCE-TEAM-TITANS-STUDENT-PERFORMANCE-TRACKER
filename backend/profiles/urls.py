@@ -4,7 +4,7 @@ from .views import (
     MeView, UpdateFCMTokenView, ResendVerificationView,
     ChangePasswordView, PasswordResetRequestView, PasswordResetConfirmView, AuditLogView, AdminUserUpdateView,
     StudentProfileView, TeacherProfileView,
-    AdminProfileView, AdminTeacherView, AdminStudentView)
+    AdminProfileView, AdminTeacherView, AdminStudentView, NotificationView)
 
 
 
@@ -38,4 +38,5 @@ urlpatterns = [
     path('admin/students/', AdminStudentView.as_view(), name='admin-list-students'),
     path('admin/users/<int:user_id>/', AdminUserUpdateView.as_view(), name='admin-user-update'),
     path('admin/audit-logs/', AuditLogView.as_view(), name='admin-audit-logs'),
+    path('notifications/', NotificationView.as_view(), name='notifications'),
 ]

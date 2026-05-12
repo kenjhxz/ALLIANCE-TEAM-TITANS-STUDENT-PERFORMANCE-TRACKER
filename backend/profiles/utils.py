@@ -70,6 +70,21 @@ def send_password_reset_email(email, token):
     )
 
 
+def create_notification(recipient, title, message, category='GENERAL', payload=None):
+    if not recipient:
+        return None
+
+    from .models import Notification
+
+    return Notification.objects.create(
+        recipient=recipient,
+        title=title,
+        message=message,
+        category=category,
+        payload=payload or {},
+    )
+
+
 def send_password_reset_email(email, token):
     reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
     send_mail(

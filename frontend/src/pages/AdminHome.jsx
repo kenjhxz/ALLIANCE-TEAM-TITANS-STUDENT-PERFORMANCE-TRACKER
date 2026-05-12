@@ -14,6 +14,7 @@ import {
   fetchGrades, updateGrade, deleteGrade, submitGrade,
   fetchGradeReport, exportGradeReportCsv, exportGradeReportExcel,
   fetchAuditLogs, adminUpdateUser, adminDeleteUser,
+  fetchNotifications,
   logout as apiLogout,
 } from '../services/api';
 import Logo from '../assets/Logo.png';
@@ -58,8 +59,8 @@ const s = {
     transition: 'all 0.18s',
   }),
   main: {
-    flex: 1, overflowY: 'auto', padding: '36px 40px',
-    display: 'flex', flexDirection: 'column', gap: 24,
+    flex: 1, overflowY: 'auto', padding: '24px 28px',
+    display: 'flex', flexDirection: 'column', gap: 20,
   },
   pageTitle: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
   pageSub:   { fontSize: 13, color: 'var(--app-muted)', marginTop: 4 },
@@ -93,6 +94,32 @@ const s = {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', minHeight: 320, gap: 12, color: 'var(--app-muted)', textAlign: 'center',
   },
+};
+
+const c = {
+  text: 'var(--app-text)',
+  muted: 'var(--app-muted)',
+  border: 'var(--app-border)',
+  card: 'var(--app-card)',
+  panel: 'var(--app-panel)',
+  accent: 'var(--app-accent)',
+  accentBg: 'var(--app-accent-bg)',
+  accentSoft: 'var(--app-accent-soft)',
+  shadowLg: 'var(--app-shadow-lg)',
+  rowAlt: 'rgba(148, 163, 184, 0.08)',
+  overlay: 'rgba(15, 23, 42, 0.16)',
+  danger: '#dc2626',
+  dangerBg: 'rgba(220, 38, 38, 0.08)',
+  dangerBorder: 'rgba(220, 38, 38, 0.24)',
+  info: '#2563eb',
+  infoBg: 'rgba(37, 99, 235, 0.08)',
+  infoBorder: 'rgba(37, 99, 235, 0.24)',
+  warning: '#d97706',
+  warningBg: 'rgba(245, 158, 11, 0.10)',
+  warningBorder: 'rgba(245, 158, 11, 0.26)',
+  purple: '#a855f7',
+  purpleBg: 'rgba(168, 85, 247, 0.10)',
+  purpleBorder: 'rgba(168, 85, 247, 0.26)',
 };
 
 
@@ -433,7 +460,7 @@ useEffect(() => {
                 </select>
               </Field>
             </div>
-            <Field label="Max Units">
+            <Field label="Units">
               <select style={s.input} value={semload.max_units}
                 onChange={(e) => setSemload({ ...semload, max_units: e.target.value })} required>
                 <option value="15">15</option>
@@ -481,7 +508,7 @@ useEffect(() => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: 'var(--app-panel)' }}>
-                    {['Year', 'Semester', 'Max Units', 'Disciplines'].map((h) => (
+                    {['Year', 'Semester', 'Units', 'Disciplines'].map((h) => (
                       <th key={h} style={{
                         padding: '8px 16px', textAlign: 'left', fontSize: 10, fontWeight: 600,
                         letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -501,7 +528,7 @@ useEffect(() => {
                           <span style={{
                             background: 'var(--app-accent-bg)', border: '1px solid var(--app-accent)', color: 'var(--app-accent)',
                             borderRadius: 4, padding: '2px 10px', fontSize: 12, fontWeight: 600,
-                          }}>{sl.max_units} units</span>
+                          }}>{sl.max_units}</span>
                         </td>
                         <td style={{ padding: '10px 16px' }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
@@ -602,7 +629,7 @@ function TeacherTab() {
         <div style={s.pageSub}>Create teacher accounts and view faculty assignments by department.</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ ...s.panel, maxWidth: 340, flex: '0 0 340px' }}>
           <PanelTitle>New Faculty Account</PanelTitle>
           <p style={s.hint}>A temporary password will be auto-generated and emailed to the teacher.</p>
@@ -649,7 +676,7 @@ function TeacherTab() {
           </form>
         </div>
 
-        <div style={{ flex: 1, minWidth: 320, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ flex: '1 1 0', minWidth: 320, maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <PanelTitle>Faculty by Department</PanelTitle>
             <div style={{ marginLeft: 'auto' }}>
@@ -664,51 +691,51 @@ function TeacherTab() {
           {deptKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 180 }}>
               <div style={{ fontSize: 36, opacity: 0.3 }}>*</div>
-              <div style={{ fontSize: 14, color: '#94a3b8' }}>No faculty added yet.</div>
+              <div style={{ fontSize: 14, color: c.muted }}>No faculty added yet.</div>
             </div>
           )}
 
           {deptKeys.map((dept) => (
             <div key={dept} style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
               <div style={{
-                padding: '10px 18px', background: '#1a3a2a', borderBottom: '1px solid #2a3050',
+                padding: '10px 18px', background: c.accentBg, borderBottom: '1px solid var(--app-border)',
                 fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+                color: c.accent, display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+                <span style={{ width: 6, height: 6, background: c.accent, borderRadius: '50%', display: 'inline-block' }} />
                 {dept}
-                <span style={{ marginLeft: 'auto', fontWeight: 400, color: '#64748b', fontSize: 11 }}>
+                <span style={{ marginLeft: 'auto', fontWeight: 400, color: c.muted, fontSize: 11 }}>
                   {grouped[dept].length} {grouped[dept].length === 1 ? 'faculty' : 'faculty members'}
                 </span>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
-                    {['Name', 'Employee ID', 'Email', 'Disciplines'].map((h) => (
+                  <tr style={{ background: 'var(--app-panel)' }}>
+                    {['Name', 'Employee ID', 'Email', 'Disciplines'].map((h, index) => (
                       <th key={h} style={{
-                        padding: '8px 16px', textAlign: 'left', fontSize: 10, fontWeight: 600,
+                        padding: '8px 16px', textAlign: index === 0 ? 'left' : 'center', fontSize: 10, fontWeight: 600,
                         letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: '#64748b', borderBottom: '1px solid #2a3050',
+                        color: c.muted, borderBottom: '1px solid var(--app-border)',
                       }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {grouped[dept].map((t, i) => (
-                    <tr key={t.employee_id} style={{ background: i % 2 === 0 ? 'transparent' : '#1a1f30', borderBottom: '1px solid #1e2335' }}>
-                      <td style={{ padding: '10px 16px', fontWeight: 500, color: '#e2e8f0' }}>{t.full_name}</td>
-                      <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: '#94a3b8', fontSize: 12 }}>{t.employee_id}</td>
-                      <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>{t.email}</td>
-                      <td style={{ padding: '10px 16px' }}>
+                    <tr key={t.employee_id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)', borderBottom: '1px solid var(--app-border)' }}>
+                      <td style={{ padding: '10px 16px', fontWeight: 500, color: c.text, textAlign: 'left' }}>{t.full_name}</td>
+                      <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: c.muted, fontSize: 12, textAlign: 'center' }}>{t.employee_id}</td>
+                      <td style={{ padding: '10px 16px', color: c.muted, fontSize: 12, textAlign: 'center' }}>{t.email}</td>
+                      <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                           {t.disciplines?.length > 0
                             ? t.disciplines.map((d) => (
                                 <span key={d} style={{
-                                  background: '#1a3a2a', border: '1px solid #2d5a3d',
-                                  color: '#4ade80', borderRadius: 4, padding: '2px 7px', fontSize: 11,
+                                  background: c.accentBg, border: '1px solid var(--app-accent)',
+                                  color: c.accent, borderRadius: 4, padding: '2px 7px', fontSize: 11,
                                 }}>{d}</span>
                               ))
-                            : <span style={{ color: '#64748b', fontSize: 12 }}>-</span>}
+                            : <span style={{ color: c.muted, fontSize: 12 }}>-</span>}
                         </div>
                       </td>
                     </tr>
@@ -796,7 +823,7 @@ function StudentTab() {
         <div style={s.pageSub}>Create student accounts. Students select their own subjects after logging in.</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div style={{ ...s.panel, maxWidth: 340, flex: '0 0 340px' }}>
           <PanelTitle>New Student Account</PanelTitle>
           <p style={s.hint}>A temporary password will be emailed. Student selects subjects on first login.</p>
@@ -852,7 +879,7 @@ function StudentTab() {
           </form>
         </div>
 
-        <div style={{ flex: 1, minWidth: 320, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ flex: '1 1 0', minWidth: 320, maxWidth: 1040, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <PanelTitle>Students by Program</PanelTitle>
             <div style={{ marginLeft: 'auto' }}>
@@ -867,31 +894,31 @@ function StudentTab() {
           {progKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 180 }}>
               <div style={{ fontSize: 36, opacity: 0.3 }}>*</div>
-              <div style={{ fontSize: 14, color: '#94a3b8' }}>No students enrolled yet.</div>
+              <div style={{ fontSize: 14, color: c.muted }}>No students enrolled yet.</div>
             </div>
           )}
 
           {progKeys.map((prog) => (
             <div key={prog} style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
               <div style={{
-                padding: '10px 18px', background: '#1a3a2a', borderBottom: '1px solid #2a3050',
+                padding: '10px 18px', background: c.accentBg, borderBottom: '1px solid var(--app-border)',
                 fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+                color: c.accent, display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+                <span style={{ width: 6, height: 6, background: c.accent, borderRadius: '50%', display: 'inline-block' }} />
                 {prog}
-                <span style={{ marginLeft: 'auto', fontWeight: 400, color: '#64748b', fontSize: 11 }}>
+                <span style={{ marginLeft: 'auto', fontWeight: 400, color: c.muted, fontSize: 11 }}>
                   {grouped[prog].length} {grouped[prog].length === 1 ? 'student' : 'students'}
                 </span>
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
-                    {['Name', 'Student ID', 'Email', 'Year', 'Enrolled', 'Subjects'].map((h) => (
+                  <tr style={{ background: 'var(--app-panel)' }}>
+                    {['Name', 'Student ID', 'Email', 'Year', 'Enrolled', 'Subjects'].map((h, index) => (
                       <th key={h} style={{
-                        padding: '8px 16px', textAlign: 'left', fontSize: 10, fontWeight: 600,
+                        padding: '8px 16px', textAlign: index === 0 ? 'left' : 'center', fontSize: 10, fontWeight: 600,
                         letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: '#64748b', borderBottom: '1px solid #2a3050',
+                        color: c.muted, borderBottom: '1px solid var(--app-border)',
                       }}>{h}</th>
                     ))}
                   </tr>
@@ -903,19 +930,19 @@ function StudentTab() {
                     const semKeys    = Object.keys(semGroups).sort();
                     return (
                       <React.Fragment key={st.student_id}>
-                        <tr style={{ background: i % 2 === 0 ? 'transparent' : '#1a1f30', borderBottom: isExpanded ? 'none' : '1px solid #1e2335' }}>
-                          <td style={{ padding: '10px 16px', fontWeight: 500, color: '#e2e8f0' }}>{st.full_name}</td>
-                          <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: '#94a3b8', fontSize: 12 }}>{st.student_id}</td>
-                          <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>{st.email}</td>
-                          <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>Year {st.year_level}</td>
-                          <td style={{ padding: '10px 16px', color: '#94a3b8', fontSize: 12 }}>
+                        <tr style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)', borderBottom: isExpanded ? 'none' : '1px solid var(--app-border)' }}>
+                          <td style={{ padding: '10px 16px', fontWeight: 500, color: c.text, textAlign: 'left' }}>{st.full_name}</td>
+                          <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: c.muted, fontSize: 12, textAlign: 'center' }}>{st.student_id}</td>
+                          <td style={{ padding: '10px 16px', color: c.muted, fontSize: 12, textAlign: 'center' }}>{st.email}</td>
+                          <td style={{ padding: '10px 16px', color: c.muted, fontSize: 12, textAlign: 'center' }}>Year {st.year_level}</td>
+                          <td style={{ padding: '10px 16px', color: c.muted, fontSize: 12, textAlign: 'center' }}>
                             {st.date_joined ? new Date(st.date_joined).toLocaleDateString() : '-'}
                           </td>
-                          <td style={{ padding: '10px 16px' }}>
+                          <td style={{ padding: '10px 16px', textAlign: 'center' }}>
                             <button onClick={() => setExpandedStudent(isExpanded ? null : st.student_id)} style={{
-                              background: isExpanded ? '#1a3a2a' : '#1e2335',
-                              border: `1px solid ${isExpanded ? '#4ade80' : '#2a3050'}`,
-                              color: isExpanded ? '#4ade80' : '#94a3b8',
+                              background: isExpanded ? c.accentBg : 'var(--app-panel)',
+                              border: `1px solid ${isExpanded ? 'var(--app-accent)' : 'var(--app-border)'}`,
+                              color: isExpanded ? c.accent : c.muted,
                               borderRadius: 5, padding: '3px 10px', fontSize: 11,
                               cursor: 'pointer', fontFamily: 'inherit',
                             }}>
@@ -924,24 +951,24 @@ function StudentTab() {
                           </td>
                         </tr>
                         {isExpanded && (
-                          <tr style={{ background: '#161b2a', borderBottom: '1px solid #1e2335' }}>
+                          <tr style={{ background: 'var(--app-panel)', borderBottom: '1px solid var(--app-border)' }}>
                             <td colSpan={6} style={{ padding: '12px 24px 16px' }}>
                               {semKeys.length === 0
-                                ? <span style={{ color: '#64748b', fontSize: 12 }}>No subjects enrolled yet.</span>
+                                ? <span style={{ color: c.muted, fontSize: 12 }}>No subjects enrolled yet.</span>
                                 : (
                                   <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
                                     {semKeys.map((key) => {
                                       const { year_level, semester, items } = semGroups[key];
                                       return (
                                         <div key={key}>
-                                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginBottom: 6 }}>
+                                          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: c.muted, marginBottom: 6 }}>
                                             Year {year_level} - Sem {semester}
                                           </div>
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                                             {items.map((sub) => (
                                               <span key={sub.id} style={{
-                                                background: '#1a3a2a', border: '1px solid #2d5a3d',
-                                                color: '#4ade80', borderRadius: 4, padding: '3px 8px', fontSize: 11,
+                                                background: c.accentBg, border: '1px solid var(--app-accent)',
+                                                color: c.accent, borderRadius: 4, padding: '3px 8px', fontSize: 11,
                                               }}>{sub.name}</span>
                                             ))}
                                           </div>
@@ -1002,7 +1029,7 @@ function CreateTermModal({ onClose, onCreated }) {
       <div
         onClick={onClose}
         style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+          position: 'fixed', inset: 0, background: c.overlay,
           zIndex: 100, backdropFilter: 'blur(2px)',
         }}
       />
@@ -1010,22 +1037,22 @@ function CreateTermModal({ onClose, onCreated }) {
         position: 'fixed', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 101,
-        background: '#181c27', border: '1px solid #2a3050',
+        background: c.card, border: '1px solid var(--app-border)',
         borderRadius: 12, padding: 28, width: 400, maxWidth: '90vw',
         display: 'flex', flexDirection: 'column', gap: 16,
-        boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+        boxShadow: c.shadowLg,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{
             fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
-            textTransform: 'uppercase', color: '#4ade80',
+            textTransform: 'uppercase', color: c.accent,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
-            <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+            <span style={{ width: 6, height: 6, background: c.accent, borderRadius: '50%', display: 'inline-block' }} />
             New Academic Term
           </div>
           <button onClick={onClose} style={{
-            background: 'none', border: 'none', color: '#64748b',
+            background: 'none', border: 'none', color: c.muted,
             fontSize: 18, cursor: 'pointer', lineHeight: 1,
           }}>x</button>
         </div>
@@ -1065,29 +1092,29 @@ function CreateTermModal({ onClose, onCreated }) {
             style={{
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '10px 14px', borderRadius: 7, cursor: 'pointer',
-              background: form.is_active ? '#1a3a2a' : '#1e2335',
-              border: `1px solid ${form.is_active ? '#4ade80' : '#2a3050'}`,
+              background: form.is_active ? c.accentBg : 'var(--app-panel)',
+              border: `1px solid ${form.is_active ? 'var(--app-accent)' : 'var(--app-border)'}`,
               transition: 'all 0.15s',
             }}
           >
             <div style={{
               width: 32, height: 18, borderRadius: 9,
-              background: form.is_active ? '#4ade80' : '#2a3050',
+              background: form.is_active ? 'var(--app-accent)' : 'var(--app-border)',
               position: 'relative', transition: 'background 0.2s', flexShrink: 0,
             }}>
               <div style={{
                 position: 'absolute', top: 2,
                 left: form.is_active ? 16 : 2,
                 width: 14, height: 14, borderRadius: '50%',
-                background: form.is_active ? '#0f1117' : '#64748b',
+                background: form.is_active ? c.card : c.muted,
                 transition: 'left 0.2s',
               }} />
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 500, color: form.is_active ? '#4ade80' : '#94a3b8' }}>
+              <div style={{ fontSize: 13, fontWeight: 500, color: form.is_active ? c.accent : c.muted }}>
                 {form.is_active ? 'Active Term' : 'Inactive'}
               </div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>
+              <div style={{ fontSize: 11, color: c.muted }}>
                 Setting as active will deactivate all other terms
               </div>
             </div>
@@ -1109,12 +1136,12 @@ const emptyOfferingForm = () => ({
 
 
 const STATUS_COLORS = {
-  PENDING:   { bg: '#1e2335', border: '#2a3050',  color: '#94a3b8' },
-  APPROVED:  { bg: '#1a3a2a', border: '#2d5a3d',  color: '#4ade80' },
-  REJECTED:  { bg: '#3a1a1a', border: '#5a2d2d',  color: '#f87171' },
-  ENROLLED:  { bg: '#1a2a3a', border: '#2d4a5a',  color: '#60a5fa' },
-  DROPPED:   { bg: '#2a2a1a', border: '#4a4a2d',  color: '#fbbf24' },
-  WITHDRAWN: { bg: '#2a1a2a', border: '#4a2d4a',  color: '#c084fc' },
+  PENDING:   { bg: 'var(--app-panel)', border: 'var(--app-border)',  color: 'var(--app-muted)' },
+  APPROVED:  { bg: c.accentBg, border: 'var(--app-accent)',  color: c.accent },
+  REJECTED:  { bg: c.dangerBg, border: c.dangerBorder,  color: c.danger },
+  ENROLLED:  { bg: c.infoBg, border: c.infoBorder,  color: c.info },
+  DROPPED:   { bg: c.warningBg, border: c.warningBorder,  color: c.warning },
+  WITHDRAWN: { bg: c.purpleBg, border: c.purpleBorder,  color: c.purple },
 };
 
 function ApprovalQueue() {
@@ -1185,7 +1212,7 @@ function ApprovalQueue() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 18, fontWeight: 600, color: '#e2e8f0', letterSpacing: '-0.01em' }}>
+        <div style={{ fontSize: 18, fontWeight: 600, color: c.text, letterSpacing: '-0.01em' }}>
           Enrollment Requests
         </div>
 
@@ -1197,8 +1224,8 @@ function ApprovalQueue() {
             return (
               <button key={st} onClick={() => setStatusFilter(st)} style={{
                 background: active ? sc.bg : 'transparent',
-                border:     `1px solid ${active ? sc.border : '#2a3050'}`,
-                color:      active ? sc.color : '#64748b',
+                border:     `1px solid ${active ? sc.border : 'var(--app-border)'}`,
+                color:      active ? sc.color : c.muted,
                 borderRadius: 20, padding: '4px 12px',
                 fontSize: 11, fontWeight: 600, letterSpacing: '0.06em',
                 cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
@@ -1212,11 +1239,11 @@ function ApprovalQueue() {
         {/* Bulk actions - PENDING only, when something is selected */}
         {isPending && selected.size > 0 && (
           <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: '#64748b' }}>{selected.size} selected</span>
+            <span style={{ fontSize: 12, color: c.muted }}>{selected.size} selected</span>
             <button onClick={() => handleAction('APPROVED')} disabled={submitting} style={{
-              background: submitting ? '#1e2335' : '#1a3a2a',
-              border:     `1px solid ${submitting ? '#2a3050' : '#4ade80'}`,
-              color:      submitting ? '#64748b' : '#4ade80',
+              background: submitting ? 'var(--app-panel)' : c.accentBg,
+              border:     `1px solid ${submitting ? 'var(--app-border)' : 'var(--app-accent)'}`,
+              color:      submitting ? c.muted : c.accent,
               borderRadius: 7, padding: '7px 16px',
               fontSize: 12, fontWeight: 600,
               cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
@@ -1224,9 +1251,9 @@ function ApprovalQueue() {
               {submitting ? 'Working...' : 'Approve'}
             </button>
             <button onClick={() => handleAction('REJECTED')} disabled={submitting} style={{
-              background: submitting ? '#1e2335' : '#3a1a1a',
-              border:     `1px solid ${submitting ? '#2a3050' : '#f87171'}`,
-              color:      submitting ? '#64748b' : '#f87171',
+              background: submitting ? 'var(--app-panel)' : c.dangerBg,
+              border:     `1px solid ${submitting ? 'var(--app-border)' : c.dangerBorder}`,
+              color:      submitting ? c.muted : c.danger,
               borderRadius: 7, padding: '7px 16px',
               fontSize: 12, fontWeight: 600,
               cursor: submitting ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
@@ -1241,8 +1268,8 @@ function ApprovalQueue() {
           title="Refresh"
           style={{
             marginLeft: (isPending && selected.size > 0) ? 0 : 'auto',
-            background: 'transparent', border: '1px solid #2a3050',
-            color: '#64748b', borderRadius: 7, padding: '6px 10px',
+            background: 'transparent', border: '1px solid var(--app-border)',
+            color: c.muted, borderRadius: 7, padding: '6px 10px',
             fontSize: 13, cursor: 'pointer',
           }}
         >R</button>
@@ -1250,14 +1277,14 @@ function ApprovalQueue() {
 
       {loading && (
         <div style={{ ...s.comingSoon, minHeight: 140 }}>
-          <div style={{ fontSize: 13, color: '#64748b' }}>Loading...</div>
+          <div style={{ fontSize: 13, color: c.muted }}>Loading...</div>
         </div>
       )}
 
       {!loading && queue.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
           <div style={{ fontSize: 36, opacity: 0.25 }}>*</div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>
+          <div style={{ fontSize: 13, color: c.muted }}>
             No {statusFilter.toLowerCase()} enrollment requests.
           </div>
         </div>
@@ -1269,12 +1296,12 @@ function ApprovalQueue() {
           {/* Year divider */}
           <div style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.14em',
-            textTransform: 'uppercase', color: '#4ade80',
+            textTransform: 'uppercase', color: c.accent,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            <span style={{ width: 24, height: 1, background: '#2a3050', display: 'inline-block' }} />
+            <span style={{ width: 24, height: 1, background: 'var(--app-border)', display: 'inline-block' }} />
             Year {yl}
-            <span style={{ flex: 1, height: 1, background: '#2a3050', display: 'inline-block' }} />
+            <span style={{ flex: 1, height: 1, background: 'var(--app-border)', display: 'inline-block' }} />
           </div>
 
           {/* Programs */}
@@ -1293,22 +1320,22 @@ function ApprovalQueue() {
                   onClick={() => setExpandedKey(isExpanded ? null : groupKey)}
                   style={{
                     padding: '11px 18px',
-                    background: isExpanded ? '#1a2535' : '#181c27',
-                    borderBottom: isExpanded ? '1px solid #2a3050' : 'none',
+                    background: isExpanded ? c.accentBg : 'var(--app-card)',
+                    borderBottom: isExpanded ? '1px solid var(--app-border)' : 'none',
                     display: 'flex', alignItems: 'center', gap: 10,
                     cursor: 'pointer', transition: 'background 0.15s',
                   }}
                 >
                   <span style={{
-                    background: '#1e2335', border: '1px solid #2a3050',
-                    color: '#94a3b8', borderRadius: 5,
+                    background: 'var(--app-panel)', border: '1px solid var(--app-border)',
+                    color: c.muted, borderRadius: 5,
                     padding: '3px 10px', fontSize: 11, fontFamily: 'monospace', flexShrink: 0,
                   }}>{prog}</span>
 
-                  <span style={{ fontSize: 13, color: '#94a3b8', flex: 1 }}>
+                  <span style={{ fontSize: 13, color: c.muted, flex: 1 }}>
                     {Object.keys(disciplines).length}{' '}
                     {Object.keys(disciplines).length === 1 ? 'discipline' : 'disciplines'}
-                    <span style={{ color: '#64748b', marginLeft: 6, fontSize: 12 }}>
+                    <span style={{ color: c.muted, marginLeft: 6, fontSize: 12 }}>
                       - {totalCount} {totalCount === 1 ? 'request' : 'requests'}
                     </span>
                   </span>
@@ -1319,9 +1346,9 @@ function ApprovalQueue() {
                       onClick={(e) => { e.stopPropagation(); toggleGroup(allIds); }}
                       style={{
                         fontSize: 11,
-                        color:      selCount === totalCount ? '#4ade80' : '#64748b',
-                        border:     `1px solid ${selCount === totalCount ? '#4ade80' : '#2a3050'}`,
-                        background: selCount === totalCount ? '#1a3a2a' : 'transparent',
+                        color:      selCount === totalCount ? c.accent : c.muted,
+                        border:     `1px solid ${selCount === totalCount ? 'var(--app-accent)' : 'var(--app-border)'}`,
+                        background: selCount === totalCount ? c.accentBg : 'transparent',
                         borderRadius: 5, padding: '3px 10px',
                         cursor: 'pointer', flexShrink: 0,
                       }}
@@ -1330,7 +1357,7 @@ function ApprovalQueue() {
                     </div>
                   )}
 
-                  <span style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
+                  <span style={{ color: c.muted, fontSize: 12, flexShrink: 0 }}>
                     {isExpanded ? 'v' : '>'}
                   </span>
                 </div>
@@ -1344,24 +1371,24 @@ function ApprovalQueue() {
 
                       return (
                         <div key={discLabel} style={{
-                          borderTop: di > 0 ? '1px solid #1e2335' : 'none',
+                          borderTop: di > 0 ? '1px solid var(--app-border)' : 'none',
                         }}>
                           {/* Discipline sub-header */}
                           <div style={{
-                            padding: '9px 20px', background: '#1a2030',
+                            padding: '9px 20px', background: 'var(--app-panel)',
                             display: 'flex', alignItems: 'center', gap: 10,
                           }}>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0', flex: 1 }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, color: c.text, flex: 1 }}>
                               {discLabel}
                             </span>
                             <span style={{
-                              fontSize: 11, color: '#64748b',
-                              background: '#1e2335', border: '1px solid #2a3050',
+                              fontSize: 11, color: c.muted,
+                              background: 'var(--app-card)', border: '1px solid var(--app-border)',
                               borderRadius: 4, padding: '2px 8px',
                             }}>
                               {enrollments[0]?.units ?? '?'} units
                             </span>
-                            <span style={{ fontSize: 11, color: '#64748b' }}>
+                            <span style={{ fontSize: 11, color: c.muted }}>
                               {enrollments.length} {enrollments.length === 1 ? 'student' : 'students'}
                             </span>
                             {/* Select-all for discipline - PENDING only */}
@@ -1370,9 +1397,9 @@ function ApprovalQueue() {
                                 onClick={() => toggleGroup(discIds)}
                                 style={{
                                   fontSize: 10,
-                                  color:      allDiscSel ? '#4ade80' : '#64748b',
-                                  border:     `1px solid ${allDiscSel ? '#4ade80' : '#2a3050'}`,
-                                  background: allDiscSel ? '#1a3a2a' : 'transparent',
+                                  color:      allDiscSel ? c.accent : c.muted,
+                                  border:     `1px solid ${allDiscSel ? 'var(--app-accent)' : 'var(--app-border)'}`,
+                                  background: allDiscSel ? c.accentBg : 'transparent',
                                   borderRadius: 4, padding: '2px 8px',
                                   cursor: 'pointer', flexShrink: 0,
                                 }}
@@ -1394,9 +1421,9 @@ function ApprovalQueue() {
                                     onClick={() => isPending && toggleOne(enr.id)}
                                     style={{
                                       background: isSel
-                                        ? '#162a1e'
-                                        : i % 2 === 0 ? 'transparent' : '#141824',
-                                      borderBottom: '1px solid #1a1f2e',
+                                        ? c.accentSoft
+                                        : i % 2 === 0 ? 'transparent' : c.rowAlt,
+                                      borderBottom: '1px solid var(--app-border)',
                                       cursor: isPending ? 'pointer' : 'default',
                                       transition: 'background 0.1s',
                                     }}
@@ -1406,22 +1433,22 @@ function ApprovalQueue() {
                                       <td style={{ width: 40, padding: '10px 0 10px 20px' }}>
                                         <div style={{
                                           width: 15, height: 15, borderRadius: 3, flexShrink: 0,
-                                          border:     isSel ? '1px solid #4ade80' : '1px solid #2a3050',
-                                          background: isSel ? '#4ade80' : 'transparent',
+                                          border:     isSel ? '1px solid var(--app-accent)' : '1px solid var(--app-border)',
+                                          background: isSel ? 'var(--app-accent)' : 'transparent',
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         }}>
-                                          {isSel && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
+                                          {isSel && <span style={{ fontSize: 9, color: c.card, fontWeight: 700 }}>x</span>}
                                         </div>
                                       </td>
                                     )}
 
-                                    <td style={{ padding: '10px 16px', fontWeight: 500, color: '#e2e8f0' }}>
+                                    <td style={{ padding: '10px 16px', fontWeight: 500, color: c.text }}>
                                       {enr.student_name}
                                     </td>
-                                    <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: '#64748b', fontSize: 11 }}>
+                                    <td style={{ padding: '10px 16px', fontFamily: 'monospace', color: c.muted, fontSize: 11 }}>
                                       {enr.student_id_no}
                                     </td>
-                                    <td style={{ padding: '10px 16px', color: '#64748b', fontSize: 11 }}>
+                                    <td style={{ padding: '10px 16px', color: c.muted, fontSize: 11 }}>
                                       {enr.enrolled_at
                                         ? new Date(enr.enrolled_at).toLocaleDateString('en-PH', {
                                             month: 'short', day: 'numeric',
@@ -1582,10 +1609,14 @@ function OfferingsTab() {
         <div style={s.pageSub}>
           Select a term, program, and semester - then add schedule offerings per discipline.
         </div>
+        <div style={{ ...s.hint, marginTop: 8 }}>
+          To assign an existing teacher, open a discipline card and use the Existing Teacher dropdown in the Add New Offering section.
+        </div>
       </div>
 
       <div style={{
         ...s.panel,
+        flex: '0 0 auto',
         flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end', padding: '18px 24px',
       }}>
         <div style={{ minWidth: 200, flex: 1 }}>
@@ -1748,7 +1779,7 @@ function OfferingsTab() {
                                 </td>
                                 <td style={{ padding: '8px 14px' }}>
                                   <span style={{
-                                    color: o.available_slots > 0 ? 'var(--app-accent)' : '#dc2626',
+                                    color: o.available_slots > 0 ? 'var(--app-accent)' : c.danger,
                                     fontWeight: 600,
                                   }}>
                                     {o.current_slots}/{o.max_slots}
@@ -1776,7 +1807,7 @@ function OfferingsTab() {
                         <span style={{ width: 5, height: 5, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
                         Add New Offering
                         {!selTerm && (
-                          <span style={{ color: '#ef4444', fontWeight: 400, fontSize: 10, marginLeft: 8 }}>
+                          <span style={{ color: c.danger, fontWeight: 400, fontSize: 10, marginLeft: 8 }}>
                             - select a term above first
                           </span>
                         )}
@@ -1787,18 +1818,21 @@ function OfferingsTab() {
                         style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}
                       >
                         <div style={{ minWidth: 180, flex: 1 }}>
-                          <label style={s.label}>Teacher (optional)</label>
+                          <label style={s.label}>Existing Teacher</label>
                           <select style={s.input} value={form.teacher}
                             onChange={(e) => setForm(disc.id, 'teacher', e.target.value)}>
-                            <option value="">-- TBA --</option>
+                            <option value="">-- Select an existing teacher --</option>
                             {teachers.map((t) => (
                               <option key={t.id} value={t.id}>{t.full_name}</option>
                             ))}
                           </select>
+                          <div style={{ marginTop: 6, fontSize: 11, color: 'var(--app-muted)' }}>
+                            Pick a teacher here to assign this offering to an existing faculty account.
+                          </div>
                         </div>
 
                         <div style={{ minWidth: 180, flex: 2 }}>
-                          <label style={s.label}>Schedule <span style={{ color: '#ef4444' }}>*</span></label>
+                          <label style={s.label}>Schedule <span style={{ color: c.danger }}>*</span></label>
                           <input
                             style={s.input} type="text"
                             placeholder="e.g. MWF 7:30-9:00 AM"
@@ -1849,7 +1883,7 @@ function OfferingsTab() {
 
       <div style={{
         height: 1,
-        background: 'linear-gradient(to right, transparent, #2a3050, transparent)',
+        background: 'linear-gradient(to right, transparent, var(--app-border), transparent)',
         margin: '4px 0',
       }} />
 
@@ -1864,6 +1898,8 @@ function UserManagementTab() {
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   async function reloadUsers() {
     const [tRes, sRes] = await Promise.all([fetchTeachers(), fetchStudents()]);
@@ -1899,30 +1935,38 @@ function UserManagementTab() {
     const defaultLast = parts.length > 1 ? parts[parts.length - 1] : '';
     const defaultMiddle = parts.length > 2 ? parts.slice(1, -1).join(' ') : '';
 
-    const firstName = window.prompt('First name', defaultFirst);
-    if (firstName === null) return;
-    const middleName = window.prompt('Middle name (optional)', defaultMiddle);
-    if (middleName === null) return;
-    const lastName = window.prompt('Last name', defaultLast);
-    if (lastName === null) return;
-    const email = window.prompt('Email', row.email || '');
-    if (email === null) return;
+    setEditingUser({
+      user_id: row.user_id,
+      first_name: defaultFirst,
+      middle_name: defaultMiddle,
+      last_name: defaultLast,
+      email: row.email || '',
+    });
+  }
 
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+  async function saveEditingUser(e) {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    if (!editingUser.first_name.trim() || !editingUser.last_name.trim() || !editingUser.email.trim()) {
       alert('First name, last name, and email are required.');
       return;
     }
 
+    setEditSaving(true);
     try {
-      await adminUpdateUser(row.user_id, {
-        first_name: firstName.trim(),
-        middle_name: middleName.trim(),
-        last_name: lastName.trim(),
-        email: email.trim(),
+      await adminUpdateUser(editingUser.user_id, {
+        first_name: editingUser.first_name.trim(),
+        middle_name: editingUser.middle_name.trim(),
+        last_name: editingUser.last_name.trim(),
+        email: editingUser.email.trim(),
       });
       await reloadUsers();
+      setEditingUser(null);
     } catch (err) {
       alert('Failed to update user: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
+    } finally {
+      setEditSaving(false);
     }
   }
 
@@ -1953,6 +1997,64 @@ function UserManagementTab() {
         />
       </div>
 
+      {editingUser && (
+        <div style={{ ...s.panel, maxWidth: 420 }}>
+          <PanelTitle>Edit User Account</PanelTitle>
+          <p style={s.hint}>Update the account details here instead of using pop-up prompts.</p>
+          <form onSubmit={saveEditingUser} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Field label="First Name">
+                <input
+                  style={s.input}
+                  type="text"
+                  value={editingUser.first_name}
+                  onChange={(e) => setEditingUser((prev) => ({ ...prev, first_name: e.target.value }))}
+                  required
+                />
+              </Field>
+              <Field label="Middle">
+                <input
+                  style={s.input}
+                  type="text"
+                  value={editingUser.middle_name}
+                  onChange={(e) => setEditingUser((prev) => ({ ...prev, middle_name: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <Field label="Last Name">
+              <input
+                style={s.input}
+                type="text"
+                value={editingUser.last_name}
+                onChange={(e) => setEditingUser((prev) => ({ ...prev, last_name: e.target.value }))}
+                required
+              />
+            </Field>
+            <Field label="Email">
+              <input
+                style={s.input}
+                type="email"
+                value={editingUser.email}
+                onChange={(e) => setEditingUser((prev) => ({ ...prev, email: e.target.value }))}
+                required
+              />
+            </Field>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="submit" style={s.submitBtn(editSaving)} disabled={editSaving}>
+                {editSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                type="button"
+                style={{ ...s.submitBtn(false), borderColor: 'var(--app-border)', color: 'var(--app-muted)' }}
+                onClick={() => setEditingUser(null)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {loading ? (
         <div style={s.comingSoon}>Loading users...</div>
       ) : (
@@ -1960,11 +2062,11 @@ function UserManagementTab() {
           <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
             <SectionHeader title="Faculty Accounts" />
             {teachers.filter(matches).length === 0 ? (
-              <div style={{ padding: 16, color: '#64748b' }}>No teachers found.</div>
+              <div style={{ padding: 16, color: c.muted }}>No teachers found.</div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
+                  <tr style={{ background: 'var(--app-panel)' }}>
                     {['Name', 'Email', 'Employee ID', 'Department', 'Status', 'Action'].map((h) => (
                       <th key={h} style={s.th}>{h}</th>
                     ))}
@@ -1993,7 +2095,7 @@ function UserManagementTab() {
                             {t.is_active ? 'Deactivate' : 'Activate'}
                           </button>
                           <button
-                            style={{ ...s.submitBtn(false), borderColor: '#ef4444', color: '#ef4444' }}
+                            style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
                             onClick={() => deleteUser(t.user_id, `${t.full_name} (${t.email})`)}
                           >
                             Delete
@@ -2010,11 +2112,11 @@ function UserManagementTab() {
           <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
             <SectionHeader title="Student Accounts" />
             {students.filter(matches).length === 0 ? (
-              <div style={{ padding: 16, color: '#64748b' }}>No students found.</div>
+              <div style={{ padding: 16, color: c.muted }}>No students found.</div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
+                  <tr style={{ background: 'var(--app-panel)' }}>
                     {['Name', 'Email', 'Student ID', 'Program', 'Status', 'Action'].map((h) => (
                       <th key={h} style={s.th}>{h}</th>
                     ))}
@@ -2043,7 +2145,7 @@ function UserManagementTab() {
                             {st.is_active ? 'Deactivate' : 'Activate'}
                           </button>
                           <button
-                            style={{ ...s.submitBtn(false), borderColor: '#ef4444', color: '#ef4444' }}
+                            style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
                             onClick={() => deleteUser(st.user_id, `${st.full_name} (${st.email})`)}
                           >
                             Delete
@@ -2064,10 +2166,15 @@ function UserManagementTab() {
 
 
 function GradeManagementTab() {
-  const [filters, setFilters] = useState({ student: '', term: '' });
+  const [filters, setFilters] = useState({ student: '', term: '', discipline: '' });
+  const [disciplines, setDisciplines] = useState([]);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savingId, setSavingId] = useState(null);
+
+  useEffect(() => {
+    fetchDiscipline().then(({ data }) => setDisciplines(data || [])).catch(console.error);
+  }, []);
 
   async function loadGrades() {
     setLoading(true);
@@ -2075,6 +2182,7 @@ function GradeManagementTab() {
       const { data } = await fetchGrades({
         student: filters.student || undefined,
         term: filters.term || undefined,
+        discipline: filters.discipline || undefined,
       });
       setGrades(data || []);
     } catch (err) {
@@ -2120,7 +2228,7 @@ function GradeManagementTab() {
 
       <div style={{ ...s.panel, maxWidth: 520 }}>
         <PanelTitle>Search Filters</PanelTitle>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input
             style={s.input}
             placeholder="Student Profile ID"
@@ -2133,6 +2241,16 @@ function GradeManagementTab() {
             value={filters.term}
             onChange={(e) => setFilters({ ...filters, term: e.target.value })}
           />
+          <select
+            style={s.input}
+            value={filters.discipline}
+            onChange={(e) => setFilters({ ...filters, discipline: e.target.value })}
+          >
+            <option value="">All Subjects</option>
+            {disciplines.map((d) => (
+              <option key={d.id} value={d.id}>{d.code} - {d.name}</option>
+            ))}
+          </select>
         </div>
         <button style={s.submitBtn(false)} onClick={loadGrades}>Search</button>
       </div>
@@ -2146,17 +2264,18 @@ function GradeManagementTab() {
           <SectionHeader title="Grade Entries" />
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
-              <tr style={{ background: '#1e2335' }}>
-                {['Student', 'Discipline', 'Prelim', 'Midterm', 'Finals', 'Remarks', 'Action'].map((h) => (
+              <tr style={{ background: 'var(--app-panel)' }}>
+                {['Student', 'Subject', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks', 'Action'].map((h) => (
                   <th key={h} style={s.th}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {grades.map((row, idx) => (
-                <tr key={row.id} style={{ background: idx % 2 === 0 ? 'transparent' : '#1a1f30' }}>
+                <tr key={row.id} style={{ background: idx % 2 === 0 ? 'transparent' : c.rowAlt }}>
                   <td style={s.td}>{row.student_name} ({row.student_id_no})</td>
-                  <td style={s.td}>{row.discipline_code}</td>
+                  <td style={s.td}>{row.discipline_code} - {row.discipline_name}</td>
+                  <td style={s.td}>{row.term_label || row.term || '--'}</td>
                   <td style={s.td}>
                     <input
                       style={s.input}
@@ -2210,7 +2329,7 @@ function GradeManagementTab() {
                       {savingId === row.id ? 'Saving...' : 'Save'}
                     </button>
                     <button
-                      style={{ ...s.submitBtn(false), marginLeft: 8, borderColor: '#ef4444', color: '#ef4444' }}
+                      style={{ ...s.submitBtn(false), marginLeft: 8, borderColor: c.danger, color: c.danger }}
                       onClick={() => handleDelete(row)}
                     >
                       Delete
@@ -2222,6 +2341,82 @@ function GradeManagementTab() {
           </table>
         </div>
       )}
+    </>
+  );
+}
+
+
+function NotificationsTab() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+
+  async function loadNotifications() {
+    setLoading(true);
+    try {
+      const { data } = await fetchNotifications(showUnreadOnly ? { unread: '1' } : undefined);
+      setNotifications(data || []);
+    } catch (err) {
+      alert('Failed to load notifications.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadNotifications().catch(console.error);
+  }, [showUnreadOnly]);
+
+  return (
+    <>
+      <div>
+        <div style={s.pageTitle}>Notifications</div>
+        <div style={s.pageSub}>Recent system updates for admin actions, offerings, enrollment, and grades.</div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 420 }}>
+        <PanelTitle>Filter</PanelTitle>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--app-muted)', fontSize: 13 }}>
+          <input
+            type="checkbox"
+            checked={showUnreadOnly}
+            onChange={(e) => setShowUnreadOnly(e.target.checked)}
+          />
+          Show unread only
+        </label>
+        <button style={s.submitBtn(false)} onClick={loadNotifications}>Refresh</button>
+      </div>
+
+      <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+        <SectionHeader title="Recent Notifications" right={`${notifications.length} items`} />
+        {loading ? (
+          <div style={{ padding: 16, color: 'var(--app-muted)' }}>Loading notifications...</div>
+        ) : notifications.length === 0 ? (
+          <div style={{ padding: 16, color: 'var(--app-muted)' }}>No notifications found.</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: 'var(--app-panel)' }}>
+                {['Status', 'Recipient', 'Category', 'Title', 'Message', 'When'].map((h) => (
+                  <th key={h} style={s.th}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {notifications.map((item) => (
+                <tr key={item.id}>
+                  <td style={s.td}>{item.is_read ? 'Read' : 'Unread'}</td>
+                  <td style={s.td}>{item.recipient_email || '--'}</td>
+                  <td style={s.td}>{item.category}</td>
+                  <td style={s.td}>{item.title}</td>
+                  <td style={s.td}>{item.message}</td>
+                  <td style={s.td}>{new Date(item.created_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </>
   );
 }
@@ -2445,7 +2640,7 @@ function ReportsTab() {
             <div style={{ maxHeight: 460, overflow: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
+                  <tr style={{ background: 'var(--app-panel)' }}>
                     {['Student', 'Subject', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks'].map((h) => (
                       <th key={h} style={s.th}>{h}</th>
                     ))}
@@ -2467,7 +2662,7 @@ function ReportsTab() {
               </table>
             </div>
           ) : (
-            <div style={{ padding: 16, color: '#64748b' }}>No grade rows found for the selected filters.</div>
+            <div style={{ padding: 16, color: c.muted }}>No grade rows found for the selected filters.</div>
           )}
         </div>
       )}
@@ -2518,11 +2713,11 @@ function AuditLogTab() {
       <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
         <SectionHeader title="Recent Activity" />
         {logs.length === 0 ? (
-          <div style={{ padding: 16, color: '#64748b' }}>No logs found.</div>
+          <div style={{ padding: 16, color: c.muted }}>No logs found.</div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
-              <tr style={{ background: '#1e2335' }}>
+              <tr style={{ background: 'var(--app-panel)' }}>
                 {['Action', 'User', 'IP', 'When'].map((h) => (
                   <th key={h} style={s.th}>{h}</th>
                 ))}
@@ -2547,13 +2742,14 @@ function AuditLogTab() {
 
 //  Main component
 const TABS = [
-  { key: 'school',    label: 'School Setup',      icon: '🏫' },
+  { key: 'school',    label: 'School Setup',       icon: '🏫' },
   { key: 'teacher',   label: 'Add Teacher',        icon: '👨‍🏫' },
   { key: 'student',   label: 'Add Student',        icon: '🎓' },
   { key: 'offerings', label: 'Subject Offerings',  icon: '📅' },
-  { key: 'users',     label: 'User Management',    icon: '🧑‍💼' },
+  { key: 'users',     label: 'User Management',    icon: '🧑' },
   { key: 'grades',    label: 'Grade Overrides',    icon: '🧾' },
   { key: 'reports',   label: 'Reports',            icon: '📈' },
+  { key: 'notifications', label: 'Notifications',  icon: '🔔' },
   { key: 'audit',     label: 'Audit Logs',         icon: '🕵️' },
 ];
 
@@ -2592,7 +2788,7 @@ export default function AdminHome() {
           </button>
         ))}
         <div style={s.sidebarFooter}>
-          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: '#ef4444', border: '1px solid #3a1a1a' }}>
+          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: c.danger, border: `1px solid ${c.dangerBorder}` }}>
             <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>⏻</span>
             Log Out
           </button>
@@ -2606,6 +2802,7 @@ export default function AdminHome() {
         {activeTab === 'users'     && <UserManagementTab />}
         {activeTab === 'grades'    && <GradeManagementTab />}
         {activeTab === 'reports'   && <ReportsTab />}
+        {activeTab === 'notifications' && <NotificationsTab />}
         {activeTab === 'audit'     && <AuditLogTab />}
       </div>
     </div>

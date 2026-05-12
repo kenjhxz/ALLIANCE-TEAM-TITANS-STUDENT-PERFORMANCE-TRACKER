@@ -120,3 +120,7 @@ export const fetchStudents            = ()            => api.get('/auth/admin/st
 export const fetchAuditLogs           = (params)      => api.get('/auth/admin/audit-logs/', { params });
 export const adminUpdateUser          = (userId, payload) => api.patch(`/auth/admin/users/${userId}/`, payload);
 export const adminDeleteUser          = (userId)      => api.delete(`/auth/admin/users/${userId}/`);
+
+// ── SYSTEM: Notifications ───────────────────────────────────────────────────
+export const fetchNotifications       = (params)      => api.get('/auth/notifications/', { params });
+export const markNotificationsRead    = (payload)     => api.patch('/auth/notifications/', payload);
