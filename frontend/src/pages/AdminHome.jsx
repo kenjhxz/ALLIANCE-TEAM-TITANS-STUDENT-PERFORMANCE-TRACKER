@@ -1,5 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   addCollege, addDegreeProgram, addDiscipline,
   fetchCollege, fetchProgram, fetchDiscipline,
@@ -11,7 +13,7 @@ import {
   getEnrollmentQueue, approveRejectEnrollments,
   fetchGrades, updateGrade, deleteGrade, submitGrade,
   fetchGradeReport, exportGradeReportCsv, exportGradeReportExcel,
-  fetchAuditLogs, adminUpdateUser,
+  fetchAuditLogs, adminUpdateUser, adminDeleteUser,
   logout as apiLogout,
 } from '../services/api';
 import Logo from '../assets/Logo.png';
@@ -151,18 +153,18 @@ function MultiSelect({ options, selected, onChange, placeholder, groupKey = 'pro
 
   return (
     <div style={{
-      background: '#1e2335', border: '1px solid #2a3050', borderRadius: 7,
+      background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 7,
       maxHeight: 200, overflowY: 'auto', padding: '4px 0',
     }}>
       {options.length === 0 && (
-        <div style={{ padding: '10px 12px', fontSize: 12, color: '#64748b' }}>{placeholder}</div>
+        <div style={{ padding: '10px 12px', fontSize: 12, color: 'var(--app-muted)' }}>{placeholder}</div>
       )}
       {Object.entries(grouped).map(([groupName, items]) => (
         <div key={groupName}>
           <div style={{
             padding: '5px 12px 3px', fontSize: 10, fontWeight: 700,
             letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: '#64748b', borderTop: '1px solid #2a3050',
+            color: 'var(--app-muted)', borderTop: '1px solid var(--app-border)',
           }}>{groupName}</div>
           {items.map((opt) => {
             const active = selected.includes(opt.id);
@@ -170,20 +172,20 @@ function MultiSelect({ options, selected, onChange, placeholder, groupKey = 'pro
               <div key={opt.id} onClick={() => toggle(opt.id)} style={{
                 padding: '7px 12px', cursor: 'pointer', fontSize: 13,
                 display: 'flex', alignItems: 'center', gap: 8,
-                background: active ? '#1a3a2a' : 'transparent',
-                color: active ? '#4ade80' : '#e2e8f0', transition: 'background 0.12s',
+                background: active ? 'var(--app-accent-bg)' : 'transparent',
+                color: active ? 'var(--app-accent)' : 'var(--app-text)', transition: 'background 0.12s',
               }}>
                 <span style={{
                   width: 14, height: 14, borderRadius: 3, flexShrink: 0,
-                  border: active ? '1px solid #4ade80' : '1px solid #2a3050',
-                  background: active ? '#4ade80' : 'transparent',
+                  border: active ? '1px solid var(--app-accent)' : '1px solid var(--app-border)',
+                  background: active ? 'var(--app-accent)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  {active && <span style={{ fontSize: 9, color: '#0f1117', fontWeight: 700 }}>x</span>}
+                  {active && <span style={{ fontSize: 9, color: 'var(--app-card)', fontWeight: 700 }}>x</span>}
                 </span>
                 {opt.name}
                 {opt.year_level && opt.semester && (
-                  <span style={{ fontSize: 10, color: '#64748b', marginLeft: 'auto' }}>
+                  <span style={{ fontSize: 10, color: 'var(--app-muted)', marginLeft: 'auto' }}>
                     Y{opt.year_level}S{opt.semester}
                   </span>
                 )}
@@ -462,28 +464,28 @@ useEffect(() => {
           {filteredLoadKeys.length === 0 && (
             <div style={{ ...s.comingSoon, minHeight: 140 }}>
               <div style={{ fontSize: 32, opacity: 0.3 }}>*</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>No semester loads configured yet.</div>
+              <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>No semester loads configured yet.</div>
             </div>
           )}
 
           {filteredLoadKeys.map((progName) => (
             <div key={progName} style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
               <div style={{
-                padding: '10px 18px', background: '#1a3a2a', borderBottom: '1px solid #2a3050',
+                padding: '10px 18px', background: 'var(--app-accent-bg)', borderBottom: '1px solid var(--app-border)',
                 fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6,
+                color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
               }}>
-                <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+                <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
                 {progName}
               </div>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead>
-                  <tr style={{ background: '#1e2335' }}>
+                  <tr style={{ background: 'var(--app-panel)' }}>
                     {['Year', 'Semester', 'Max Units', 'Disciplines'].map((h) => (
                       <th key={h} style={{
                         padding: '8px 16px', textAlign: 'left', fontSize: 10, fontWeight: 600,
                         letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: '#64748b', borderBottom: '1px solid #2a3050',
+                        color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)',
                       }}>{h}</th>
                     ))}
                   </tr>
@@ -492,12 +494,12 @@ useEffect(() => {
                   {groupedLoads[progName]
                     .sort((a, b) => a.year_level - b.year_level || a.semester - b.semester)
                     .map((sl, i) => (
-                      <tr key={sl.id} style={{ background: i % 2 === 0 ? 'transparent' : '#1a1f30', borderBottom: '1px solid #1e2335' }}>
-                        <td style={{ padding: '10px 16px', color: '#e2e8f0' }}>Year {sl.year_level}</td>
-                        <td style={{ padding: '10px 16px', color: '#94a3b8' }}>{sl.semester === 1 ? '1st Semester' : '2nd Semester'}</td>
+                      <tr key={sl.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)', borderBottom: '1px solid var(--app-border)' }}>
+                        <td style={{ padding: '10px 16px', color: 'var(--app-text)' }}>Year {sl.year_level}</td>
+                        <td style={{ padding: '10px 16px', color: 'var(--app-muted)' }}>{sl.semester === 1 ? '1st Semester' : '2nd Semester'}</td>
                         <td style={{ padding: '10px 16px' }}>
                           <span style={{
-                            background: '#1a3a2a', border: '1px solid #2d5a3d', color: '#4ade80',
+                            background: 'var(--app-accent-bg)', border: '1px solid var(--app-accent)', color: 'var(--app-accent)',
                             borderRadius: 4, padding: '2px 10px', fontSize: 12, fontWeight: 600,
                           }}>{sl.max_units} units</span>
                         </td>
@@ -506,13 +508,13 @@ useEffect(() => {
                             {sl.disciplines?.length > 0
                               ? sl.disciplines.map(d => (
                                   <span key={d.id} style={{
-                                    background: '#1e2335', border: '1px solid #2a3050',
-                                    color: '#94a3b8', borderRadius: 4, padding: '2px 8px', fontSize: 11,
+                                    background: 'var(--app-panel)', border: '1px solid var(--app-border)',
+                                    color: 'var(--app-muted)', borderRadius: 4, padding: '2px 8px', fontSize: 11,
                                   }}>
-                                    {d.code} - {d.name} <span style={{ color: '#4ade80' }}>({d.units}u)</span>
+                                    {d.code} - {d.name} <span style={{ color: 'var(--app-accent)' }}>({d.units}u)</span>
                                   </span>
                                 ))
-                              : <span style={{ color: '#64748b', fontSize: 12 }}>No disciplines yet</span>
+                              : <span style={{ color: 'var(--app-muted)', fontSize: 12 }}>No disciplines yet</span>
                             }
                           </div>
                         </td>
@@ -1601,8 +1603,8 @@ function OfferingsTab() {
               onClick={() => setShowTermModal(true)}
               title="Create new term"
               style={{
-                background: '#1e2335', border: '1px solid #2a3050',
-                color: '#4ade80', borderRadius: 7,
+                background: 'var(--app-panel)', border: '1px solid var(--app-border)',
+                color: 'var(--app-accent)', borderRadius: 7,
                 padding: '0 12px', fontSize: 18, cursor: 'pointer',
                 flexShrink: 0, lineHeight: 1,
               }}
@@ -1649,7 +1651,7 @@ function OfferingsTab() {
       {!filtersReady && (
         <div style={{ ...s.comingSoon, minHeight: 220 }}>
           <div style={{ fontSize: 40, opacity: 0.25 }}>*</div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>
             Select a program, year level, and semester to manage offerings.
           </div>
         </div>
@@ -1658,7 +1660,7 @@ function OfferingsTab() {
       {filtersReady && disciplines.length === 0 && (
         <div style={{ ...s.comingSoon, minHeight: 160 }}>
           <div style={{ fontSize: 36, opacity: 0.25 }}>*</div>
-          <div style={{ fontSize: 13, color: '#94a3b8' }}>
+          <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>
             No disciplines found for this program / year / semester combo.
           </div>
         </div>
@@ -1678,36 +1680,36 @@ function OfferingsTab() {
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 12,
                   padding: '14px 20px',
-                  background: isExpanded ? '#1a2535' : 'transparent',
-                  borderBottom: isExpanded ? '1px solid #2a3050' : 'none',
+                  background: isExpanded ? 'var(--app-panel)' : 'transparent',
+                  borderBottom: isExpanded ? '1px solid var(--app-border)' : 'none',
                   cursor: 'pointer', transition: 'background 0.15s',
                 }}
                   onClick={() => setExpandedDisc(isExpanded ? null : disc.id)}
                 >
                   <span style={{
-                    background: '#1e2335', border: '1px solid #2a3050',
-                    color: '#94a3b8', borderRadius: 5,
+                    background: 'var(--app-panel)', border: '1px solid var(--app-border)',
+                    color: 'var(--app-muted)', borderRadius: 5,
                     padding: '3px 10px', fontSize: 11, fontFamily: 'monospace', flexShrink: 0,
                   }}>{disc.code}</span>
 
-                  <span style={{ fontWeight: 500, fontSize: 14, color: '#e2e8f0', flex: 1 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14, color: 'var(--app-text)', flex: 1 }}>
                     {disc.name}
                   </span>
 
-                  <span style={{ fontSize: 12, color: '#64748b', flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, color: 'var(--app-muted)', flexShrink: 0 }}>
                     {disc.units} {disc.units === 1 ? 'unit' : 'units'}
                   </span>
 
                   <span style={{
-                    background: discOfferings.length > 0 ? '#1a3a2a' : '#1e2335',
-                    border: `1px solid ${discOfferings.length > 0 ? '#2d5a3d' : '#2a3050'}`,
-                    color: discOfferings.length > 0 ? '#4ade80' : '#64748b',
+                    background: discOfferings.length > 0 ? 'var(--app-accent-bg)' : 'var(--app-panel)',
+                    border: `1px solid ${discOfferings.length > 0 ? 'var(--app-accent)' : 'var(--app-border)'}`,
+                    color: discOfferings.length > 0 ? 'var(--app-accent)' : 'var(--app-muted)',
                     borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 600, flexShrink: 0,
                   }}>
                     {discOfferings.length} {discOfferings.length === 1 ? 'offering' : 'offerings'}
                   </span>
 
-                  <span style={{ color: '#64748b', fontSize: 12, flexShrink: 0 }}>
+                  <span style={{ color: 'var(--app-muted)', fontSize: 12, flexShrink: 0 }}>
                     {isExpanded ? 'v' : '>'}
                   </span>
                 </div>
@@ -1718,12 +1720,12 @@ function OfferingsTab() {
                       <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                           <thead>
-                            <tr style={{ background: '#1e2335' }}>
+                            <tr style={{ background: 'var(--app-panel)' }}>
                               {['Offer Code', 'Teacher', 'Schedule', 'Room', 'Slots'].map((h) => (
                                 <th key={h} style={{
                                   padding: '7px 14px', textAlign: 'left', fontSize: 10,
                                   fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
-                                  color: '#64748b', borderBottom: '1px solid #2a3050',
+                                  color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)',
                                 }}>{h}</th>
                               ))}
                             </tr>
@@ -1731,27 +1733,27 @@ function OfferingsTab() {
                           <tbody>
                             {discOfferings.map((o, i) => (
                               <tr key={o.id} style={{
-                                background: i % 2 === 0 ? 'transparent' : '#1a1f30',
-                                borderBottom: '1px solid #1e2335',
+                                background: i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
+                                borderBottom: '1px solid var(--app-border)',
                               }}>
-                                <td style={{ padding: '8px 14px', fontFamily: 'monospace', color: '#4ade80', fontSize: 12 }}>
+                                <td style={{ padding: '8px 14px', fontFamily: 'monospace', color: 'var(--app-accent)', fontSize: 12 }}>
                                   {o.offer_code}
                                 </td>
-                                <td style={{ padding: '8px 14px', color: '#e2e8f0' }}>
-                                  {o.teacher_name || <span style={{ color: '#64748b' }}>-</span>}
+                                <td style={{ padding: '8px 14px', color: 'var(--app-text)' }}>
+                                  {o.teacher_name || <span style={{ color: 'var(--app-muted)' }}>-</span>}
                                 </td>
-                                <td style={{ padding: '8px 14px', color: '#94a3b8' }}>{o.schedule}</td>
-                                <td style={{ padding: '8px 14px', color: '#94a3b8' }}>
-                                  {o.room || <span style={{ color: '#64748b' }}>-</span>}
+                                <td style={{ padding: '8px 14px', color: 'var(--app-muted)' }}>{o.schedule}</td>
+                                <td style={{ padding: '8px 14px', color: 'var(--app-muted)' }}>
+                                  {o.room || <span style={{ color: 'var(--app-muted)' }}>-</span>}
                                 </td>
                                 <td style={{ padding: '8px 14px' }}>
                                   <span style={{
-                                    color: o.available_slots > 0 ? '#4ade80' : '#ef4444',
+                                    color: o.available_slots > 0 ? 'var(--app-accent)' : '#dc2626',
                                     fontWeight: 600,
                                   }}>
                                     {o.current_slots}/{o.max_slots}
                                   </span>
-                                  <span style={{ color: '#64748b', fontSize: 11, marginLeft: 4 }}>
+                                  <span style={{ color: 'var(--app-muted)', fontSize: 11, marginLeft: 4 }}>
                                     ({o.available_slots} open)
                                   </span>
                                 </td>
@@ -1763,15 +1765,15 @@ function OfferingsTab() {
                     )}
 
                     <div style={{
-                      background: '#1a2535', border: '1px solid #2a3050',
+                      background: 'var(--app-panel)', border: '1px solid var(--app-border)',
                       borderRadius: 8, padding: '16px 18px',
                     }}>
                       <div style={{
                         fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-                        textTransform: 'uppercase', color: '#4ade80', marginBottom: 14,
+                        textTransform: 'uppercase', color: 'var(--app-accent)', marginBottom: 14,
                         display: 'flex', alignItems: 'center', gap: 6,
                       }}>
-                        <span style={{ width: 5, height: 5, background: '#4ade80', borderRadius: '50%', display: 'inline-block' }} />
+                        <span style={{ width: 5, height: 5, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
                         Add New Offering
                         {!selTerm && (
                           <span style={{ color: '#ef4444', fontWeight: 400, fontSize: 10, marginLeft: 8 }}>
@@ -1863,12 +1865,14 @@ function UserManagementTab() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
+  async function reloadUsers() {
+    const [tRes, sRes] = await Promise.all([fetchTeachers(), fetchStudents()]);
+    setTeachers(tRes.data || []);
+    setStudents(sRes.data || []);
+  }
+
   useEffect(() => {
-    Promise.all([fetchTeachers(), fetchStudents()])
-      .then(([tRes, sRes]) => {
-        setTeachers(tRes.data || []);
-        setStudents(sRes.data || []);
-      })
+    reloadUsers()
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
@@ -1883,11 +1887,52 @@ function UserManagementTab() {
   async function toggleActive(userId, isActive) {
     try {
       await adminUpdateUser(userId, { is_active: !isActive });
-      const [tRes, sRes] = await Promise.all([fetchTeachers(), fetchStudents()]);
-      setTeachers(tRes.data || []);
-      setStudents(sRes.data || []);
+      await reloadUsers();
     } catch (err) {
       alert('Failed to update user: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
+    }
+  }
+
+  async function editUser(row) {
+    const parts = (row.full_name || '').trim().split(/\s+/).filter(Boolean);
+    const defaultFirst = parts[0] || '';
+    const defaultLast = parts.length > 1 ? parts[parts.length - 1] : '';
+    const defaultMiddle = parts.length > 2 ? parts.slice(1, -1).join(' ') : '';
+
+    const firstName = window.prompt('First name', defaultFirst);
+    if (firstName === null) return;
+    const middleName = window.prompt('Middle name (optional)', defaultMiddle);
+    if (middleName === null) return;
+    const lastName = window.prompt('Last name', defaultLast);
+    if (lastName === null) return;
+    const email = window.prompt('Email', row.email || '');
+    if (email === null) return;
+
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      alert('First name, last name, and email are required.');
+      return;
+    }
+
+    try {
+      await adminUpdateUser(row.user_id, {
+        first_name: firstName.trim(),
+        middle_name: middleName.trim(),
+        last_name: lastName.trim(),
+        email: email.trim(),
+      });
+      await reloadUsers();
+    } catch (err) {
+      alert('Failed to update user: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
+    }
+  }
+
+  async function deleteUser(userId, label) {
+    if (!confirm(`Delete ${label}? This will permanently remove the account and related profile data.`)) return;
+    try {
+      await adminDeleteUser(userId);
+      await reloadUsers();
+    } catch (err) {
+      alert('Failed to delete user: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
   }
 
@@ -1934,12 +1979,26 @@ function UserManagementTab() {
                       <td style={s.td}>{t.department || '--'}</td>
                       <td style={s.td}>{t.is_active ? 'Active' : 'Inactive'}</td>
                       <td style={s.td}>
-                        <button
-                          style={s.submitBtn(false)}
-                          onClick={() => toggleActive(t.user_id, t.is_active)}
-                        >
-                          {t.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            style={s.submitBtn(false)}
+                            onClick={() => editUser(t)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            style={s.submitBtn(false)}
+                            onClick={() => toggleActive(t.user_id, t.is_active)}
+                          >
+                            {t.is_active ? 'Deactivate' : 'Activate'}
+                          </button>
+                          <button
+                            style={{ ...s.submitBtn(false), borderColor: '#ef4444', color: '#ef4444' }}
+                            onClick={() => deleteUser(t.user_id, `${t.full_name} (${t.email})`)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1970,12 +2029,26 @@ function UserManagementTab() {
                       <td style={s.td}>{st.program_name || '--'}</td>
                       <td style={s.td}>{st.is_active ? 'Active' : 'Inactive'}</td>
                       <td style={s.td}>
-                        <button
-                          style={s.submitBtn(false)}
-                          onClick={() => toggleActive(st.user_id, st.is_active)}
-                        >
-                          {st.is_active ? 'Deactivate' : 'Activate'}
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            style={s.submitBtn(false)}
+                            onClick={() => editUser(st)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            style={s.submitBtn(false)}
+                            onClick={() => toggleActive(st.user_id, st.is_active)}
+                          >
+                            {st.is_active ? 'Deactivate' : 'Activate'}
+                          </button>
+                          <button
+                            style={{ ...s.submitBtn(false), borderColor: '#ef4444', color: '#ef4444' }}
+                            onClick={() => deleteUser(st.user_id, `${st.full_name} (${st.email})`)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -2155,7 +2228,7 @@ function GradeManagementTab() {
 
 
 function ReportsTab() {
-  const [filters, setFilters] = useState({ term: '', program: '', year_level: '' });
+  const [filters, setFilters] = useState({ term: '', program: '', year_level: '', student: '', discipline: '' });
   const [report, setReport] = useState(null);
   const [programs, setPrograms] = useState([]);
 
@@ -2166,6 +2239,70 @@ function ReportsTab() {
   async function loadReport() {
     const { data } = await fetchGradeReport(filters);
     setReport(data);
+  }
+
+  function handlePrint() {
+    if (!report) return;
+
+    const win = window.open('', '_blank', 'width=1100,height=800');
+    if (!win) {
+      alert('Popup blocked. Please allow popups to print the report.');
+      return;
+    }
+
+    const rows = (report.results || []).map((row) => `
+      <tr>
+        <td>${row.student_id_no || row.student || '--'}</td>
+        <td>${row.student_name || '--'}</td>
+        <td>${row.discipline_code || '--'}</td>
+        <td>${row.discipline_name || '--'}</td>
+        <td>${row.term_label || row.term || '--'}</td>
+        <td>${row.prelim ?? '--'}</td>
+        <td>${row.midterm ?? '--'}</td>
+        <td>${row.finals ?? '--'}</td>
+        <td>${row.remarks || '--'}</td>
+      </tr>
+    `).join('');
+
+    win.document.write(`
+      <html>
+        <head>
+          <title>Grade Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+            h1 { margin: 0 0 8px; font-size: 22px; }
+            .meta { color: #4b5563; font-size: 12px; margin-bottom: 18px; }
+            .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+            .card { border: 1px solid #d1d5db; border-radius: 8px; padding: 12px 14px; min-width: 110px; }
+            .label { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #6b7280; }
+            .value { font-size: 22px; font-weight: 700; margin-top: 6px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #d1d5db; padding: 8px 10px; text-align: left; vertical-align: top; }
+            th { background: #f3f4f6; }
+          </style>
+        </head>
+        <body>
+          <h1>Grade Summary Report</h1>
+          <div class="meta">Generated ${new Date().toLocaleString()}</div>
+          <div class="stats">
+            <div class="card"><div class="label">Total</div><div class="value">${report.summary.total}</div></div>
+            <div class="card"><div class="label">Graded</div><div class="value">${report.summary.graded}</div></div>
+            <div class="card"><div class="label">Passing</div><div class="value">${report.summary.passing}</div></div>
+            <div class="card"><div class="label">Failing</div><div class="value">${report.summary.failing}</div></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th><th>Student</th><th>Code</th><th>Subject</th><th>Term</th><th>Prelim</th><th>Midterm</th><th>Finals</th><th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="9">No rows found.</td></tr>'}</tbody>
+          </table>
+          <script>window.onload = () => { window.print(); window.close(); };</script>
+        </body>
+      </html>
+    `);
+    win.document.close();
   }
 
   async function handleExportCsv() {
@@ -2190,6 +2327,44 @@ function ReportsTab() {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
+  }
+
+  function handleExportPdf() {
+    if (!report) {
+      alert('Generate a report first.');
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(14);
+    doc.text('Grade Summary Report', 14, 14);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 20);
+    doc.text(
+      `Total: ${report.summary.total} | Graded: ${report.summary.graded} | Passing: ${report.summary.passing} | Failing: ${report.summary.failing}`,
+      14,
+      26,
+    );
+
+    autoTable(doc, {
+      startY: 32,
+      head: [['Student ID', 'Student', 'Code', 'Subject', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks']],
+      body: (report.results || []).map((row) => [
+        row.student_id_no || row.student || '--',
+        row.student_name || '--',
+        row.discipline_code || '--',
+        row.discipline_name || '--',
+        row.term_label || row.term || '--',
+        row.prelim ?? '--',
+        row.midterm ?? '--',
+        row.finals ?? '--',
+        row.remarks || '--',
+      ]),
+      styles: { fontSize: 8.5, cellPadding: 2 },
+      headStyles: { fillColor: [30, 35, 53] },
+    });
+
+    doc.save('grade_report.pdf');
   }
 
   return (
@@ -2231,8 +2406,28 @@ function ReportsTab() {
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button style={s.submitBtn(false)} onClick={loadReport}>Generate</button>
+          <button style={s.submitBtn(!report)} onClick={handleExportPdf} disabled={!report}>Export PDF</button>
           <button style={s.submitBtn(false)} onClick={handleExportCsv}>Export CSV</button>
           <button style={s.submitBtn(false)} onClick={handleExportExcel}>Export Excel</button>
+          <button style={s.submitBtn(false)} onClick={handlePrint} disabled={!report}>Print Report</button>
+        </div>
+      </div>
+
+      <div style={{ ...s.panel, maxWidth: 720 }}>
+        <PanelTitle>More Filters</PanelTitle>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input
+            style={s.input}
+            placeholder="Student ID"
+            value={filters.student}
+            onChange={(e) => setFilters({ ...filters, student: e.target.value })}
+          />
+          <input
+            style={s.input}
+            placeholder="Discipline ID"
+            value={filters.discipline}
+            onChange={(e) => setFilters({ ...filters, discipline: e.target.value })}
+          />
         </div>
       </div>
 
@@ -2245,6 +2440,35 @@ function ReportsTab() {
             <StatCard label="Passing" value={report.summary.passing} />
             <StatCard label="Failing" value={report.summary.failing} />
           </div>
+          <SectionHeader title="Results" right={`${report.results?.length || 0} rows`} />
+          {report.results?.length ? (
+            <div style={{ maxHeight: 460, overflow: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: '#1e2335' }}>
+                    {['Student', 'Subject', 'Term', 'Prelim', 'Midterm', 'Finals', 'Remarks'].map((h) => (
+                      <th key={h} style={s.th}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.results.map((row) => (
+                    <tr key={row.id}>
+                      <td style={s.td}>{row.student_name} ({row.student_id_no})</td>
+                      <td style={s.td}>{row.discipline_code} - {row.discipline_name}</td>
+                      <td style={s.td}>{row.term_label || row.term || '--'}</td>
+                      <td style={s.td}>{row.prelim ?? '--'}</td>
+                      <td style={s.td}>{row.midterm ?? '--'}</td>
+                      <td style={s.td}>{row.finals ?? '--'}</td>
+                      <td style={s.td}>{row.remarks || '--'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ padding: 16, color: '#64748b' }}>No grade rows found for the selected filters.</div>
+          )}
         </div>
       )}
     </>

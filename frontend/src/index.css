@@ -1,33 +1,38 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
+  --text: #475569;
+  --text-h: #0f172a;
+  --bg: #f8fafc;
+  --border: #dbe4f0;
+  --code-bg: #eef2f7;
+  --accent: #0f766e;
+  --accent-bg: rgba(15, 118, 110, 0.1);
+  --accent-border: rgba(15, 118, 110, 0.34);
+  --social-bg: rgba(248, 250, 252, 0.82);
   --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    rgba(15, 23, 42, 0.08) 0 12px 24px -12px, rgba(15, 23, 42, 0.05) 0 4px 10px -6px;
 
-  --app-bg-gradient: radial-gradient(circle at 20% 20%, #1a2638 0%, #0b0f16 45%, #0b0f16 100%);
-  --app-panel: #0f1522;
-  --app-card: rgba(15, 22, 35, 0.95);
-  --app-text: #e2e8f0;
-  --app-muted: #94a3b8;
-  --app-border: rgba(42, 48, 80, 0.9);
-  --app-accent: #4ade80;
-  --app-accent-soft: rgba(74, 222, 128, 0.18);
-  --app-accent-bg: rgba(26, 58, 42, 0.9);
+  --app-bg-gradient: radial-gradient(circle at 14% 10%, #ffffff 0%, #f1f5f9 42%, #e2e8f0 100%);
+  --app-panel: #eef4fa;
+  --app-card: rgba(255, 255, 255, 0.92);
+  --app-text: #0f172a;
+  --app-muted: #52607a;
+  --app-border: rgba(148, 163, 184, 0.4);
+  --app-accent: #0f766e;
+  --app-accent-soft: rgba(15, 118, 110, 0.12);
+  --app-accent-bg: rgba(15, 118, 110, 0.1);
+  --app-surface: rgba(255, 255, 255, 0.92);
+  --app-surface-strong: #ffffff;
+  --app-shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.08);
+  --app-shadow-md: 0 18px 42px rgba(15, 23, 42, 0.12);
+  --app-shadow-lg: 0 30px 70px rgba(15, 23, 42, 0.16);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --sans: 'Space Grotesk', 'DM Sans', 'Segoe UI', sans-serif;
+  --heading: 'Space Grotesk', 'DM Sans', 'Segoe UI', sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -42,27 +47,33 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
+    --text: #94a3b8;
+    --text-h: #f8fafc;
+    --bg: #0f172a;
+    --border: #223049;
+    --code-bg: #172033;
+    --accent: #34d399;
+    --accent-bg: rgba(52, 211, 153, 0.14);
+    --accent-border: rgba(52, 211, 153, 0.38);
+    --social-bg: rgba(17, 24, 39, 0.55);
     --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+      rgba(0, 0, 0, 0.35) 0 14px 24px -10px, rgba(0, 0, 0, 0.22) 0 6px 16px -8px;
 
-    --app-bg-gradient: radial-gradient(circle at 20% 20%, #1a2638 0%, #0b0f16 45%, #0b0f16 100%);
-    --app-panel: #0f1522;
-    --app-card: rgba(15, 22, 35, 0.95);
+    --app-bg-gradient: radial-gradient(circle at 20% 20%, #132238 0%, #0b1220 46%, #050816 100%);
+    --app-panel: #0f172a;
+    --app-card: rgba(15, 23, 42, 0.92);
     --app-text: #e2e8f0;
     --app-muted: #94a3b8;
-    --app-border: rgba(42, 48, 80, 0.9);
-    --app-accent: #4ade80;
-    --app-accent-soft: rgba(74, 222, 128, 0.18);
-    --app-accent-bg: rgba(26, 58, 42, 0.9);
+    --app-border: rgba(51, 65, 85, 0.9);
+    --app-accent: #34d399;
+    --app-accent-soft: rgba(52, 211, 153, 0.16);
+    --app-accent-bg: rgba(15, 61, 45, 0.84);
+    --app-surface: rgba(15, 23, 42, 0.9);
+    --app-surface-strong: #0b1220;
+    --app-shadow-sm: 0 8px 18px rgba(0, 0, 0, 0.28);
+    --app-shadow-md: 0 18px 42px rgba(0, 0, 0, 0.34);
+    --app-shadow-lg: 0 30px 70px rgba(0, 0, 0, 0.42);
+    color-scheme: dark;
   }
 
   #social .button-icon {
@@ -86,6 +97,9 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: var(--app-bg-gradient);
+  color: var(--app-text);
 }
 
 #root {
@@ -97,6 +111,7 @@ body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background: var(--app-bg-gradient);
 }
 
 h1,

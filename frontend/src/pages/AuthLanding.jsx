@@ -24,7 +24,7 @@ const cards = [
 
 export default function AuthLanding() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--app-bg-gradient)', color: 'var(--app-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'DM Sans', 'Segoe UI', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'var(--app-bg-gradient)', color: 'var(--app-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'Space Grotesk', 'DM Sans', 'Segoe UI', sans-serif" }}>
       <div style={{ width: 'min(1040px, 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28 }}>
         <div style={{ textAlign: 'center', maxWidth: 720 }}>
           <img src={Logo} alt="Alliance Team Titans logo" style={{ width: 56, height: 56, marginBottom: 10 }} />
@@ -36,7 +36,7 @@ export default function AuthLanding() {
         <div style={{ width: '100%', display: 'grid', gap: 20, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', alignItems: 'stretch', marginTop: 6 }}>
           {cards.map((card) => (
             <Link key={card.title} to={card.to} style={{ textDecoration: 'none', color: 'inherit' }}>
-              <div style={{ height: '100%', padding: 26, borderRadius: 18, border: '1px solid var(--app-border)', background: 'var(--app-card)', boxShadow: '0 12px 40px rgba(0,0,0,0.22)', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: '100%', padding: 26, borderRadius: 20, border: '1px solid var(--app-border)', background: 'var(--app-card)', boxShadow: 'var(--app-shadow-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', backdropFilter: 'blur(14px)' }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: card.accent, boxShadow: `0 0 18px ${card.accent}`, margin: '0 auto 16px' }} />
                 <h2 style={{ margin: '0 0 10px', fontSize: 22 }}>{card.title}</h2>
                 <p style={{ margin: '0 0 22px', color: 'var(--app-muted)', lineHeight: 1.5, flexGrow: 1 }}>{card.desc}</p>

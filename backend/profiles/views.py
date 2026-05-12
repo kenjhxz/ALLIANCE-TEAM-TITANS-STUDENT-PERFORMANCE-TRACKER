@@ -382,3 +382,20 @@ class AdminUserUpdateView(APIView):
 
         log_action(request, 'ADMIN_UPDATE_USER', {'user_id': user_id, 'fields': list(request.data.keys())}, user=request.user)
         return Response(UserSerializer(user).data)
+
+    def delete(self, request, user_id):
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'error': 'User not found.'}, status=404)
+
+        if request.user.id == user.id:
+            return Response({'error': 'You cannot delete your own account.'}, status=400)
+
+        log_action(
+            request,
+            'ADMIN_DELETE_USER',
+            {'user_id': user_id, 'email': user.email, 'role': user.role},
+            user=request.user,
+        )
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

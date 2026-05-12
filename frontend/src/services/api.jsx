@@ -119,3 +119,4 @@ export const adminCreateStudent       = (payload)     => api.post('/auth/admin/c
 export const fetchStudents            = ()            => api.get('/auth/admin/students/');
 export const fetchAuditLogs           = (params)      => api.get('/auth/admin/audit-logs/', { params });
 export const adminUpdateUser          = (userId, payload) => api.patch(`/auth/admin/users/${userId}/`, payload);
+export const adminDeleteUser          = (userId)      => api.delete(`/auth/admin/users/${userId}/`);

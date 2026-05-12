@@ -28,14 +28,13 @@ export default function Login({ preferredRole }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event?.preventDefault();
     if (!validate()) return;
     setLoading(true);
     try {
       const data = await login(form);
-      console.log("login response:", data);
       const role = data.user?.role;
-      console.log("role:", role); 
 
       if (role === "STUDENT") navigate("/studenthome");
       else if (role === "PROFESSOR") navigate("/teacherhome");
@@ -43,14 +42,16 @@ export default function Login({ preferredRole }) {
       else navigate("/");
 
     } catch (err) {
-      if (err.response?.data) {
-        const msg =
-          err.response.data.non_field_errors?.[0] ||
-          "Invalid email or password.";
-        setErrors({ password: msg });
-      } else {
-        setErrors({ password: "Connection failed. Is Django running?" });
-      }
+      const responseData = err.response?.data;
+      const msg =
+        responseData?.non_field_errors?.[0] ||
+        responseData?.detail ||
+        responseData?.error ||
+        responseData?.message ||
+        "Invalid email or password.";
+
+      if (responseData) setErrors({ password: msg });
+      else setErrors({ password: "Connection failed. Is Django running?" });
     } finally {
       setLoading(false);
     }
@@ -73,48 +74,49 @@ export default function Login({ preferredRole }) {
           <Link className={`role-btn ${preferredRole === 'ADMIN' ? 'role-active' : ''}`} to="/login/admin">🛡️ Admin</Link>
         </div>
 
-        <div className="login-field">
-          <label className="login-label">Email</label>
-          <div className="login-input">
-            <span className="login-icon">@</span>
-            <input
-              className={`login-text ${errors.email ? "finput-error" : ""}`}
-              type="email"
-              placeholder="you@email.com"
-              value={form.email}
-              onChange={(e) => set("email", e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            />
+        <form onSubmit={handleSubmit}>
+          <div className="login-field">
+            <label className="login-label">Email</label>
+            <div className="login-input">
+              <span className="login-icon">@</span>
+              <input
+                className={`login-text ${errors.email ? "finput-error" : ""}`}
+                type="email"
+                placeholder="you@email.com"
+                value={form.email}
+                onChange={(e) => set("email", e.target.value)}
+              />
+            </div>
+            {errors.email && <span className="error-msg">{errors.email}</span>}
           </div>
-          {errors.email && <span className="error-msg">{errors.email}</span>}
-        </div>
 
-        <div className="login-field">
-          <label className="login-label">Password</label>
-          <div className="login-input">
-            <span className="login-icon">*</span>
-            <input
-              className={`login-text ${errors.password ? "finput-error" : ""}`}
-              type="password"
-              placeholder="••••••••"
-              value={form.password}
-              onChange={(e) => set("password", e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            />
+          <div className="login-field">
+            <label className="login-label">Password</label>
+            <div className="login-input">
+              <span className="login-icon">*</span>
+              <input
+                className={`login-text ${errors.password ? "finput-error" : ""}`}
+                type="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={(e) => set("password", e.target.value)}
+              />
+            </div>
+            {errors.password && <span className="error-msg">{errors.password}</span>}
           </div>
-          {errors.password && <span className="error-msg">{errors.password}</span>}
-        </div>
 
-        <button
-          className="btn-primary"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
         <button
           className="btn-secondary"
+          type="button"
           onClick={() => setForm(initialForm)}
           disabled={loading}
           style={{ marginTop: 8 }}
@@ -123,34 +125,24 @@ export default function Login({ preferredRole }) {
         </button>
 
         <p className="footer-text" style={{ marginTop: "0.6rem" }}>
-          <a href="/forgot-password" className="link">Forgot password?</a>
+          <Link to="/forgot-password" className="link">Forgot password?</Link>
         </p>
 
         <div className="or-line">or</div>
 
         <p className="footer-text">
           No account yet?{" "}
-          <a href="/signup" className="link">Sign up free</a>
+          <Link to="/signup" className="link">Sign up free</Link>
         </p>
         <p className="footer-text" style={{ marginTop: "0.4rem" }}>
           Need a different role login?{" "}
-          <a href="/" className="link">Choose login path</a>
+          <Link to="/" className="link">Choose login path</Link>
         </p>
         <p className="footer-text" style={{ marginTop: "0.4rem" }}>
           Didn't get the email?{" "}
-          <a href="/verify-email/resend" className="link">Resend verification</a>
+          <Link to="/verify-email/resend" className="link">Resend verification</Link>
         </p>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, error, children }) {
-  return (
-    <div className="field">
-      <label className="flabel">{label}</label>
-      {children}
-      {error && <span className="error-msg">{error}</span>}
     </div>
   );
 }
