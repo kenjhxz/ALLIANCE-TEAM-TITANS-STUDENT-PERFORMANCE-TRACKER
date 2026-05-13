@@ -100,13 +100,14 @@ def create_notification(recipient, title, message, category='GENERAL', payload=N
     )
 
 
-def send_grade_update_email(email, student_name, discipline_code, term_label, updated_by):
+def send_grade_update_email(email, student_name, discipline_code, term_label, updated_by, action='updated'):
+    action_label = 'posted' if action == 'created' else 'updated'
     send_mail(
-        subject=f"Grade updated: {discipline_code}",
+        subject=f"Grade {action_label}: {discipline_code}",
         message=(
             f"Hello {student_name},\n\n"
-            f"Your grade for {discipline_code} ({term_label}) was updated by {updated_by}.\n"
-            "Please log in to ORBIT to view the updated record.\n\n"
+            f"Your grade for {discipline_code} ({term_label}) was {action_label} by {updated_by}.\n"
+            "Please log in to ORBIT to view the record.\n\n"
             f"{settings.FRONTEND_URL}/login"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,

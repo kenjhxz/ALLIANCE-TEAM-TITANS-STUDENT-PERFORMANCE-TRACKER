@@ -14,6 +14,8 @@ import {
   exportMyGrades,
   changePassword,
   fetchGradeTimeline,
+  fetchNotifications,
+  markNotificationsRead,
 } from '../services/api';
 import Logo from '../assets/Logo.png';
 
@@ -78,6 +80,79 @@ const s = {
     fontSize: 13, fontWeight: 600, padding: '10px 16px', borderRadius: 7,
     cursor: disabled ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginTop: 2,
   }),
+  notifButton: {
+    position: 'relative',
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    border: '1px solid var(--app-border)',
+    background: 'var(--app-panel)',
+    color: 'var(--app-text)',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 18,
+  },
+  notifBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 999,
+    background: 'var(--app-danger)',
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: '2px solid var(--app-card)',
+  },
+  notifPanel: {
+    position: 'absolute',
+    top: 46,
+    right: 0,
+    width: 320,
+    maxHeight: 380,
+    overflow: 'auto',
+    border: '1px solid var(--app-border)',
+    background: 'var(--app-card)',
+    borderRadius: 12,
+    boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
+    zIndex: 20,
+  },
+  notifHeader: {
+    padding: '12px 14px',
+    borderBottom: '1px solid var(--app-border)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  notifTitle: {
+    fontSize: 11,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    fontWeight: 700,
+    color: 'var(--app-accent)',
+  },
+  notifItem: {
+    padding: '10px 14px',
+    borderBottom: '1px solid var(--app-border)',
+    display: 'flex',
+    gap: 10,
+  },
+  notifDot: {
+    width: 8,
+    height: 8,
+    borderRadius: '50%',
+    marginTop: 6,
+    flexShrink: 0,
+    background: 'var(--app-success)',
+  },
+  notifTime: { fontSize: 10, color: 'var(--app-muted)', marginTop: 4 },
   statCard: {
     background: 'var(--app-panel)', border: '1px solid var(--app-border)', borderRadius: 8,
     padding: '14px 18px', flex: 1, minWidth: 120, display: 'flex', flexDirection: 'column', gap: 4,
@@ -1383,6 +1458,22 @@ export default function StudentHome() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
   const [profile,   setProfile]   = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(true);
+  const notifRef = useRef(null);
+
+  const loadNotifications = useCallback(async () => {
+    setNotifLoading(true);
+    try {
+      const { data } = await fetchNotifications();
+      setNotifications(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setNotifLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const token    = localStorage.getItem('token');
@@ -1393,6 +1484,33 @@ export default function StudentHome() {
       .then(({ data }) => setProfile(data))
       .catch(console.error);
   }, [navigate]);
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  async function handleMarkAllRead() {
+    try {
+      await markNotificationsRead({ mark_all: true });
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function formatNotifTime(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+  }
 
   function handleLogout() {
     localStorage.removeItem('token');
@@ -1436,6 +1554,64 @@ export default function StudentHome() {
       </div>
 
       <div style={s.main}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ position: 'relative' }} ref={notifRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setNotifOpen((prev) => {
+                  const next = !prev;
+                  if (next) loadNotifications();
+                  return next;
+                });
+              }}
+              style={s.notifButton}
+              aria-label="Notifications"
+            >
+              🔔
+              {unreadCount > 0 && <span style={s.notifBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
+            </button>
+            {notifOpen && (
+              <div style={s.notifPanel}>
+                <div style={s.notifHeader}>
+                  <div style={s.notifTitle}>Notifications</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={loadNotifications}
+                      style={{ background: 'transparent', border: '1px solid var(--app-border)', borderRadius: 8, padding: '4px 8px', fontSize: 11, color: 'var(--app-muted)', cursor: 'pointer' }}
+                    >
+                      Refresh
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleMarkAllRead}
+                      style={{ background: 'transparent', border: '1px solid var(--app-border)', borderRadius: 8, padding: '4px 8px', fontSize: 11, color: 'var(--app-muted)', cursor: 'pointer' }}
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+                </div>
+                {notifLoading ? (
+                  <div style={{ padding: 14, fontSize: 12, color: 'var(--app-muted)' }}>Loading notifications…</div>
+                ) : notifications.length === 0 ? (
+                  <div style={{ padding: 14, fontSize: 12, color: 'var(--app-muted)' }}>No notifications yet.</div>
+                ) : (
+                  notifications.slice(0, 8).map((note) => (
+                    <div key={note.id} style={{ ...s.notifItem, background: note.is_read ? 'transparent' : 'var(--app-panel)' }}>
+                      <span style={{ ...s.notifDot, opacity: note.is_read ? 0.35 : 1 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-text)' }}>{note.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--app-muted)', marginTop: 4 }}>{note.message}</div>
+                        <div style={s.notifTime}>{formatNotifTime(note.created_at)}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
         {activeTab === 'profile'    && <ProfileTab />}
         {activeTab === 'prospectus' && <ProspectusTab />}
         {activeTab === 'enrollment' && <EnrollmentTab />}

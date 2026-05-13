@@ -79,6 +79,18 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyStudentView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        student_id = request.data.get('student_id')
+        if not student_id:
+            return Response({'student_id': 'Student ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        exists = StudentProfile.objects.filter(student_id=student_id).exists()
+        return Response({'exists': exists})
     
 
 class VerifyEmailView(APIView):

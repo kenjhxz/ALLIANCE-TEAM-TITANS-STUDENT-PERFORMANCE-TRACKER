@@ -44,6 +44,7 @@ export const logout              = async ()        => {
   localStorage.removeItem('user');
 };
 export const resendVerification  = (email)         => api.post('/auth/resend-verification/', { email });
+export const verifyStudent       = (student_id)   => api.post('/auth/verify-student/', { student_id });
 export const changePassword      = (payload)       => api.post('/auth/password/change/', payload);
 export const requestPasswordReset = (email)        => api.post('/auth/password/forgot/', { email });
 export const confirmPasswordReset = (token, new_password) => api.post('/auth/password/reset/', { token, new_password });

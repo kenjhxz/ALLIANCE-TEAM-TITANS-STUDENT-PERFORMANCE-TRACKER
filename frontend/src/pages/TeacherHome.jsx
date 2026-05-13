@@ -249,9 +249,9 @@ const shell = {
     textAlign: 'center',
   },
   actionBtn: (disabled) => ({
-    border: '1px solid rgba(74, 222, 128, 0.45)',
-    background: disabled ? 'rgba(15, 17, 23, 0.7)' : 'linear-gradient(180deg, rgba(26, 58, 42, 0.95), rgba(22, 101, 52, 0.85))',
-    color: disabled ? 'var(--app-muted)' : '#d1fae5',
+    border: '1px solid var(--app-border)',
+    background: disabled ? 'var(--app-panel)' : 'var(--app-accent-bg)',
+    color: disabled ? 'var(--app-muted)' : 'var(--app-accent)',
     borderRadius: 10,
     padding: '9px 12px',
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -568,14 +568,14 @@ export default function TeacherHome() {
                       const rowState = row.grade_id ? 'Updated' : 'New';
                       const rowBadgeTone = row.grade_id ? 'blue' : 'green';
                       return (
-                        <tr key={row.enrollment_id} style={{ background: index % 2 === 0 ? 'transparent' : 'rgba(15, 17, 23, 0.45)' }}>
+                        <tr key={row.enrollment_id} style={{ background: index % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.2)' }}>
                           <td style={{ ...shell.td, textAlign: 'left' }}>
                             <div style={shell.studentCell}>
-                              <div style={{ fontWeight: 700 }}>{row.student_name}</div>
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>{row.student_name}</div>
                             </div>
                           </td>
                           <td style={{ ...shell.td, ...shell.studentIdCell }}>
-                            <span style={{ fontFamily: 'monospace', color: '#86efac' }}>{row.student_id_no}</span>
+                            <span style={{ fontFamily: 'monospace', color: '#16a34a', fontWeight: 600 }}>{row.student_id_no}</span>
                           </td>
                           <td style={{ ...shell.td, ...shell.centerCell }}>
                             <input
@@ -645,9 +645,9 @@ export default function TeacherHome() {
                                 style={{
                                   ...shell.actionBtn(false),
                                   marginTop: 8,
-                                  border: '1px solid rgba(248, 113, 113, 0.45)',
-                                  background: 'rgba(127, 29, 29, 0.6)',
-                                  color: '#fecaca',
+                                  border: '1px solid rgba(220, 38, 38, 0.35)',
+                                  background: 'rgba(220, 38, 38, 0.12)',
+                                  color: '#b91c1c',
                                 }}
                               >
                                 Delete

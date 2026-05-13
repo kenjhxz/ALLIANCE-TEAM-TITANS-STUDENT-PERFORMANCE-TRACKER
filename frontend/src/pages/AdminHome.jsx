@@ -1826,9 +1826,6 @@ function OfferingsTab() {
                               <option key={t.id} value={t.id}>{t.full_name}</option>
                             ))}
                           </select>
-                          <div style={{ marginTop: 6, fontSize: 11, color: 'var(--app-muted)' }}>
-                            Pick a teacher here to assign this offering to an existing faculty account.
-                          </div>
                         </div>
 
                         <div style={{ minWidth: 180, flex: 2 }}>
@@ -1862,10 +1859,16 @@ function OfferingsTab() {
                           </select>
                         </div>
 
-                        <div style={{ flexShrink: 0 }}>
+                        <div style={{ flexShrink: 0, paddingTop: 2 }}>
                           <button
                             type="submit"
-                            style={{ ...s.submitBtn(!canSubmit), padding: '9px 20px', whiteSpace: 'nowrap' }}
+                            style={{
+                              ...s.submitBtn(!canSubmit),
+                              padding: '9px 20px',
+                              minHeight: 38,
+                              lineHeight: '20px',
+                              whiteSpace: 'nowrap',
+                            }}
                             disabled={!canSubmit}
                           >
                             {isSubmitting ? 'Adding...' : '+ Add Offering'}
@@ -2374,21 +2377,41 @@ function NotificationsTab() {
         <div style={s.pageSub}>Recent system updates for admin actions, offerings, enrollment, and grades.</div>
       </div>
 
-      <div style={{ ...s.panel, maxWidth: 420 }}>
-        <PanelTitle>Filter</PanelTitle>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--app-muted)', fontSize: 13 }}>
-          <input
-            type="checkbox"
-            checked={showUnreadOnly}
-            onChange={(e) => setShowUnreadOnly(e.target.checked)}
-          />
-          Show unread only
-        </label>
-        <button style={s.submitBtn(false)} onClick={loadNotifications}>Refresh</button>
-      </div>
-
       <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-        <SectionHeader title="Recent Notifications" right={`${notifications.length} items`} />
+        <SectionHeader
+          title="Recent Notifications"
+          right={(
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <select
+                style={{
+                  ...s.input,
+                  width: 'auto',
+                  fontSize: 12,
+                  padding: '6px 10px',
+                }}
+                value={showUnreadOnly ? 'unread' : 'all'}
+                onChange={(e) => setShowUnreadOnly(e.target.value === 'unread')}
+              >
+                <option value="all">All</option>
+                <option value="unread">Unread only</option>
+              </select>
+              <button
+                style={{
+                  ...s.submitBtn(false),
+                  marginTop: 0,
+                  padding: '6px 12px',
+                  fontSize: 12,
+                }}
+                onClick={loadNotifications}
+              >
+                Refresh
+              </button>
+              <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>
+                {notifications.length} items
+              </span>
+            </div>
+          )}
+        />
         {loading ? (
           <div style={{ padding: 16, color: 'var(--app-muted)' }}>Loading notifications...</div>
         ) : notifications.length === 0 ? (
@@ -2691,50 +2714,52 @@ function AuditLogTab() {
         <div style={s.pageSub}>Track administrative actions and grade changes.</div>
       </div>
 
-      <div style={{ ...s.panel, maxWidth: 520 }}>
-        <PanelTitle>Search Logs</PanelTitle>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <input
-            style={s.input}
-            placeholder="Action"
-            value={filters.action}
-            onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-          />
-          <input
-            style={s.input}
-            placeholder="User email"
-            value={filters.email}
-            onChange={(e) => setFilters({ ...filters, email: e.target.value })}
-          />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'flex-start' }}>
+        <div style={{ ...s.panel, flex: '0 0 320px', maxWidth: 320 }}>
+          <PanelTitle>Search Logs</PanelTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <input
+              style={s.input}
+              placeholder="Action"
+              value={filters.action}
+              onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+            />
+            <input
+              style={s.input}
+              placeholder="User email"
+              value={filters.email}
+              onChange={(e) => setFilters({ ...filters, email: e.target.value })}
+            />
+          </div>
+          <button style={{ ...s.submitBtn(false), marginTop: 10 }} onClick={loadLogs}>Search</button>
         </div>
-        <button style={s.submitBtn(false)} onClick={loadLogs}>Search</button>
-      </div>
 
-      <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-        <SectionHeader title="Recent Activity" />
-        {logs.length === 0 ? (
-          <div style={{ padding: 16, color: c.muted }}>No logs found.</div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-            <thead>
-              <tr style={{ background: 'var(--app-panel)' }}>
-                {['Action', 'User', 'IP', 'When'].map((h) => (
-                  <th key={h} style={s.th}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {logs.slice(0, 200).map((log) => (
-                <tr key={log.id}>
-                  <td style={s.td}>{log.action}</td>
-                  <td style={s.td}>{log.user_email || '--'}</td>
-                  <td style={s.td}>{log.ip_address || '--'}</td>
-                  <td style={s.td}>{new Date(log.created_at).toLocaleString()}</td>
+  <div style={{ ...s.panel, flex: '1 1 520px', padding: 0, overflow: 'hidden', minWidth: 0 }}>
+          <SectionHeader title="Recent Activity" />
+          {logs.length === 0 ? (
+            <div style={{ padding: 16, color: c.muted }}>No logs found.</div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+              <thead>
+                <tr style={{ background: 'var(--app-panel)' }}>
+                  {['Action', 'User', 'IP', 'When'].map((h) => (
+                    <th key={h} style={s.th}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {logs.slice(0, 200).map((log) => (
+                  <tr key={log.id}>
+                    <td style={s.td}>{log.action}</td>
+                    <td style={s.td}>{log.user_email || '--'}</td>
+                    <td style={s.td}>{log.ip_address || '--'}</td>
+                    <td style={s.td}>{new Date(log.created_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </>
   );

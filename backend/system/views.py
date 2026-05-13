@@ -523,6 +523,12 @@ class GradeViewSet(viewsets.ModelViewSet):
         if grade.teacher and grade.teacher.user_id != grade.student.user_id:
             recipients.append(grade.teacher.user)
 
+        term_label = str(grade.term) if grade.term else 'Current term'
+        student_name = ''
+        if grade.student and grade.student.user:
+            student_user = grade.student.user
+            student_name = f"{student_user.first_name} {student_user.last_name}".strip() or 'Student'
+
         title_map = {
             'created': 'Grade posted',
             'updated': 'Grade updated',
@@ -535,10 +541,20 @@ class GradeViewSet(viewsets.ModelViewSet):
         }
 
         for recipient in recipients:
+            if grade.teacher and recipient.id == grade.teacher.user_id:
+                teacher_message = (
+                    f"Student: {student_name} · {grade.discipline.code} ({term_label})"
+                    if action != 'deleted'
+                    else f"Grade removed for {student_name} · {grade.discipline.code} ({term_label})"
+                )
+                message = teacher_message
+            else:
+                message = message_map[action]
+
             create_notification(
                 recipient,
                 title=title_map[action],
-                message=message_map[action],
+                message=message,
                 category='GRADE',
                 payload={
                     'grade_id': grade.id,
@@ -548,11 +564,9 @@ class GradeViewSet(viewsets.ModelViewSet):
                 },
             )
 
-        if action == 'updated' and grade.teacher and grade.student and grade.student.user:
+        if action in ('created', 'updated') and grade.teacher and grade.student and grade.student.user:
             student_user = grade.student.user
             teacher_user = grade.teacher.user
-            term_label = str(grade.term) if grade.term else 'Current term'
-            student_name = f"{student_user.first_name} {student_user.last_name}".strip()
             updated_by = f"{teacher_user.first_name} {teacher_user.last_name}".strip()
             if student_user.email:
                 send_grade_update_email(
@@ -561,6 +575,7 @@ class GradeViewSet(viewsets.ModelViewSet):
                     discipline_code=grade.discipline.code,
                     term_label=term_label,
                     updated_by=updated_by or 'Instructor',
+                    action=action,
                 )
 
     def get_queryset(self):

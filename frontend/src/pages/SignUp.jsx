@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { register } from "../services/api";
+import { register, verifyStudent } from "../services/api";
 import Logo from "../assets/Logo.png";
 
 const initialForm = {
@@ -17,7 +17,6 @@ const initialForm = {
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -28,8 +27,7 @@ export default function SignUp() {
     setErrors((e) => ({ ...e, [field]: "" }));
   };
 
-  // Step 1 validation
-  const validateStep1 = () => {
+  const validateForm = () => {
     const e = {};
     if (!form.email)
       e.email = "Email is required.";
@@ -38,13 +36,6 @@ export default function SignUp() {
     if (!form.first_name) e.first_name = "First name is required.";
     if (!form.last_name) e.last_name = "Last name is required.";
         
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
-
-  // Step 2 validation
-  const validateStep2 = () => {
-    const e = {};
     if (!form.password)
       e.password = "Password is required.";
     else if (form.password.length < 8)
@@ -57,14 +48,18 @@ export default function SignUp() {
     return Object.keys(e).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep1()) setStep(2);
-  };
-
 const handleSubmit = async () => {
-  if (!validateStep2()) return;
+  if (!validateForm()) return;
   setLoading(true);
   try {
+    if (form.role === "STUDENT") {
+      const { data } = await verifyStudent(form.student_id);
+      if (!data?.exists) {
+        setErrors({ student_id: "Student ID not found. Please contact the registrar." });
+        return;
+      }
+    }
+
     const { student_id, employee_id, ...base } = form;
     const payload = { ...base };
     if (form.role === "STUDENT")   payload.student_id  = student_id;
@@ -80,10 +75,8 @@ const handleSubmit = async () => {
         serverErrors[key] = Array.isArray(data[key]) ? data[key][0] : data[key];
       });
       setErrors(serverErrors);
-      setStep(1);
     } else {
       setErrors({ email: "Connection failed. Is Django running?" });
-      setStep(1);
     }
   } finally {
     setLoading(false);
@@ -120,28 +113,15 @@ const handleSubmit = async () => {
         <div className="card signup-card">
           <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
 
-          <div className="steps">
-            <div className={`step-dot ${step >= 1 ? "active" : ""}`} />
-            <div className="step-line" />
-            <div className={`step-dot ${step >= 2 ? "active" : ""}`} />
-          </div>
-
-          <div className="eyebrow">
-            {step === 1 ? "Step 1 of 2" : "Step 2 of 2"}
-          </div>
-
           <div className="card-title">
-            {step === 1 ? <>Create your account<i>.</i></> : <>Secure your account<i>.</i></>}
+            <>Create your account<i>.</i></>
           </div>
 
           <div className="card-sub">
-            {step === 1
-              ? "Tell us a little about yourself."
-              : "Set a strong password to protect your account."}
+            Tell us a little about yourself and set a strong password.
           </div>
 
-          {step === 1 && (
-            <div className="form">
+          <div className="form">
 
               <div className="field">
                 <label className="flabel">I am a</label>
@@ -212,14 +192,6 @@ const handleSubmit = async () => {
                 </Field>
                 )}
 
-             <button className="btn-primary" onClick={handleNext}>
-                Continue →
-              </button>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="form">
               <Field label="Password" error={errors.password}>
                 <input className={`finput ${errors.password ? "finput-error" : ""}`}
                   type="password"
@@ -235,15 +207,11 @@ const handleSubmit = async () => {
               </Field>
 
               <div className="btn-row">
-                <button className="btn-ghost" onClick={() => setStep(1)}>
-                  ← Back
-                </button>
                 <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
                   {loading ? "Creating account..." : "Create account"}
                 </button>
               </div>
             </div>
-          )}
 
         </div>
       </div>

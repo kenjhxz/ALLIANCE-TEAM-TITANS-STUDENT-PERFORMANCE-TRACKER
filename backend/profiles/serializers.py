@@ -43,6 +43,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         if field and not data.get(field):
             raise serializers.ValidationError({field: f"This field is required for {role}."})
 
+        if role == User.Role.STUDENT:
+            student_id = data.get('student_id')
+            if student_id and StudentProfile.objects.filter(student_id=student_id).exists():
+                raise serializers.ValidationError({
+                    'student_id': 'Student ID already exists. Please contact the registrar if this is incorrect.'
+                })
+
         return data
 
     def create(self, validated_data):

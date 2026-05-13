@@ -557,6 +557,30 @@
   border-color: var(--app-accent);
 }
 
+.btn-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--app-muted);
+  font-weight: 600;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: border 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-ghost:hover {
+  color: var(--app-text);
+  border-color: var(--app-accent);
+  transform: translateY(-1px);
+}
+
 .error-msg {
   color: #fca5a5;
   font-size: 11px;
