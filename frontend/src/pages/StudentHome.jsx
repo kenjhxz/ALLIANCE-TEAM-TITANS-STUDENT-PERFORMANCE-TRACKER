@@ -161,8 +161,8 @@ const s = {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', minHeight: 260, gap: 12, color: 'var(--app-muted)', textAlign: 'center',
   },
-  th: { padding: '8px 14px', textAlign: 'left', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)' },
-  td: { padding: '10px 14px', borderBottom: '1px solid var(--app-border)' },
+  th: { padding: '8px 14px', textAlign: 'center', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)' },
+  td: { padding: '10px 14px', borderBottom: '1px solid var(--app-border)', textAlign: 'left' },
 };
 
 const STATUS_STYLE = {
