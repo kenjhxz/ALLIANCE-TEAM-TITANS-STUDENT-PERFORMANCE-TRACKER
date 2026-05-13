@@ -21,7 +21,7 @@ from .models import (
     AcademicTerm, SubjectOffering, StudentEnrollment, Grade, GradeHistory
 )
 from profiles.views import IsAdmin, IsStudent, IsAdminOrReadOnly, IsTeacher
-from profiles.utils import create_notification
+from profiles.utils import create_notification, send_grade_update_email
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
 import csv
@@ -501,10 +501,15 @@ class GradeViewSet(viewsets.ModelViewSet):
         return [IsTeacher() if self.request.user.role == 'PROFESSOR' else IsAdmin()]
 
     def _snapshot_grade(self, grade):
+        def normalize(value):
+            try:
+                return float(value) if value is not None else None
+            except (TypeError, ValueError):
+                return value
         return {
-            'prelim': grade.prelim,
-            'midterm': grade.midterm,
-            'finals': grade.finals,
+            'prelim': normalize(grade.prelim),
+            'midterm': normalize(grade.midterm),
+            'finals': normalize(grade.finals),
             'remarks': grade.remarks,
             'teacher': grade.teacher_id,
             'student': grade.student_id,
@@ -542,6 +547,21 @@ class GradeViewSet(viewsets.ModelViewSet):
                     'action': action.upper(),
                 },
             )
+
+        if action == 'updated' and grade.teacher and grade.student and grade.student.user:
+            student_user = grade.student.user
+            teacher_user = grade.teacher.user
+            term_label = str(grade.term) if grade.term else 'Current term'
+            student_name = f"{student_user.first_name} {student_user.last_name}".strip()
+            updated_by = f"{teacher_user.first_name} {teacher_user.last_name}".strip()
+            if student_user.email:
+                send_grade_update_email(
+                    email=student_user.email,
+                    student_name=student_name or 'Student',
+                    discipline_code=grade.discipline.code,
+                    term_label=term_label,
+                    updated_by=updated_by or 'Instructor',
+                )
 
     def get_queryset(self):
         # Default queryset; allow filtering by student, offering, term, or teacher
@@ -652,7 +672,7 @@ class GradeViewSet(viewsets.ModelViewSet):
             previous=previous,
             current=None,
         )
-        grade.teacher and self._notify_grade_change(grade, 'deleted')
+        instance.teacher and self._notify_grade_change(instance, 'deleted')
         AuditLog.objects.create(
             user=user,
             action='GRADE_DELETED',

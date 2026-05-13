@@ -36,6 +36,11 @@ export default function Login({ preferredRole }) {
       const data = await login(form);
       const role = data.user?.role;
 
+      if (preferredRole && role !== preferredRole) {
+        setErrors({ password: `This account is not a ${preferredRole.toLowerCase()} account.` });
+        return;
+      }
+
       if (role === "STUDENT") navigate("/studenthome");
       else if (role === "PROFESSOR") navigate("/teacherhome");
       else if (role === "ADMIN") navigate("/adminhome");
@@ -61,6 +66,10 @@ export default function Login({ preferredRole }) {
 
   return (
     <div className="login-shell">
+      <style>{`
+        html, body { height: 100%; overflow: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+        body::-webkit-scrollbar, html::-webkit-scrollbar { width: 0; height: 0; }
+      `}</style>
       <div className="login-card">
         <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
         <div className="login-title">Login</div>
@@ -109,6 +118,7 @@ export default function Login({ preferredRole }) {
             className="btn-primary"
             type="submit"
             disabled={loading}
+            style={{ width: '100%' }}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -119,9 +129,9 @@ export default function Login({ preferredRole }) {
           type="button"
           onClick={() => setForm(initialForm)}
           disabled={loading}
-          style={{ marginTop: 8 }}
+            style={{ marginTop: 8, width: '100%' }}
         >
-          Clear Fields
+            Clear
         </button>
 
         <p className="footer-text" style={{ marginTop: "0.6rem" }}>

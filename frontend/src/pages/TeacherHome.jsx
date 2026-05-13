@@ -109,7 +109,7 @@ const shell = {
     width: '100%',
     textAlign: 'left',
     padding: '10px 14px',
-    borderRadius: 50,
+    borderRadius: 14,
     border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
     background: active ? 'var(--app-accent-bg)' : 'transparent',
     color: active ? 'var(--app-accent)' : 'var(--app-muted)',
@@ -130,13 +130,13 @@ const shell = {
     fontWeight: 700,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
-    color: tone === 'blue' ? '#bae6fd' : tone === 'amber' ? '#fde68a' : '#86efac',
+    color: tone === 'blue' ? '#e0f2fe' : tone === 'amber' ? '#fde68a' : '#86efac',
     background:
       tone === 'blue'
-        ? 'rgba(30, 64, 175, 0.22)'
+        ? 'rgba(20, 43, 121, 0.65)'
         : tone === 'amber'
-          ? 'rgba(146, 64, 14, 0.22)'
-          : 'rgba(22, 101, 52, 0.22)',
+          ? 'rgba(96, 42, 12, 0.6)'
+          : 'rgba(22, 101, 52, 0.32)',
     border: '1px solid rgba(255,255,255,0.08)',
   }),
   hero: {
@@ -218,7 +218,19 @@ const shell = {
   td: {
     padding: '12px 16px',
     borderTop: '1px solid var(--app-border)',
-    verticalAlign: 'top',
+    verticalAlign: 'middle',
+  },
+  studentCell: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    paddingLeft: 0,
+    lineHeight: 1.35,
+    textAlign: 'left',
+  },
+  studentIdCell: {
+    paddingLeft: 12,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
@@ -230,6 +242,11 @@ const shell = {
     padding: '8px 10px',
     outline: 'none',
     boxSizing: 'border-box',
+    margin: '0 auto',
+    display: 'block',
+  },
+  centerCell: {
+    textAlign: 'center',
   },
   actionBtn: (disabled) => ({
     border: '1px solid rgba(74, 222, 128, 0.45)',
@@ -240,6 +257,8 @@ const shell = {
     cursor: disabled ? 'not-allowed' : 'pointer',
     fontWeight: 700,
     minWidth: 88,
+    margin: '0 auto',
+    display: 'block',
   }),
   helperText: { color: 'var(--app-muted)', fontSize: 12, lineHeight: 1.5 },
   emptyState: {
@@ -503,7 +522,11 @@ export default function TeacherHome() {
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
                 Roster & Grade Editor
               </div>
-              {selected && <span style={shell.badge('amber')}>{enrollments.length} enrolled</span>}
+              {selected && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 18 }}>
+                  <span style={shell.badge('amber')}>{enrollments.length} enrolled</span>
+                </div>
+              )}
             </div>
             <div style={{ padding: '14px 18px 0' }}>
               <div style={shell.helperText}>Enter any term grade. Existing grades can be updated directly.</div>
@@ -518,16 +541,26 @@ export default function TeacherHome() {
             ) : (
               <div style={shell.tableWrap}>
                 <table style={shell.table}>
+                  <colgroup>
+                    <col style={{ width: '22%' }} />
+                    <col style={{ width: '14%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '14%' }} />
+                    <col style={{ width: '10%' }} />
+                    <col style={{ width: '10%' }} />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th style={shell.th}>Student</th>
-                      <th style={shell.th}>Student ID</th>
-                      <th style={shell.th}>Prelim</th>
-                      <th style={shell.th}>Midterm</th>
-                      <th style={shell.th}>Finals</th>
-                      <th style={shell.th}>Remarks</th>
-                      <th style={shell.th}>State</th>
-                      <th style={shell.th}>Action</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Student ID</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Prelim</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Midterm</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Finals</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Remarks</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>State</th>
+                      <th style={{ ...shell.th, ...shell.centerCell }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -536,13 +569,15 @@ export default function TeacherHome() {
                       const rowBadgeTone = row.grade_id ? 'blue' : 'green';
                       return (
                         <tr key={row.enrollment_id} style={{ background: index % 2 === 0 ? 'transparent' : 'rgba(15, 17, 23, 0.45)' }}>
-                          <td style={shell.td}>
-                            <div style={{ fontWeight: 700 }}>{row.student_name}</div>
+                          <td style={{ ...shell.td, textAlign: 'left' }}>
+                            <div style={shell.studentCell}>
+                              <div style={{ fontWeight: 700 }}>{row.student_name}</div>
+                            </div>
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.studentIdCell }}>
                             <span style={{ fontFamily: 'monospace', color: '#86efac' }}>{row.student_id_no}</span>
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <input
                               value={row.prelim}
                               onChange={(e) => {
@@ -555,7 +590,7 @@ export default function TeacherHome() {
                             />
                             {errors[row.enrollment_id]?.prelim && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].prelim}</div>}
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <input
                               value={row.midterm}
                               onChange={(e) => {
@@ -568,7 +603,7 @@ export default function TeacherHome() {
                             />
                             {errors[row.enrollment_id]?.midterm && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].midterm}</div>}
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <input
                               value={row.finals}
                               onChange={(e) => {
@@ -581,7 +616,7 @@ export default function TeacherHome() {
                             />
                             {errors[row.enrollment_id]?.finals && <div style={{ color: '#fca5a5', fontSize: 11, marginTop: 6 }}>{errors[row.enrollment_id].finals}</div>}
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <input
                               value={row.remarks}
                               onChange={(e) => {
@@ -593,10 +628,10 @@ export default function TeacherHome() {
                               placeholder="Optional"
                             />
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <span style={shell.badge(rowBadgeTone)}>{rowState}</span>
                           </td>
-                          <td style={shell.td}>
+                          <td style={{ ...shell.td, ...shell.centerCell }}>
                             <button
                               onClick={() => handleSubmitGrade(row)}
                               disabled={savingId === row.enrollment_id}

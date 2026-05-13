@@ -60,6 +60,21 @@ def send_password_reset_email(email, token):
     send_mail(
         subject="Reset your ORBIT password",
         message=(
+            "We received a request to reset your ORBIT password.\n\n"
+            f"Reset link: {reset_url}\n\n"
+            "If you didn't request this, you can ignore this email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
+
+
+def send_password_reset_email(email, token):
+    reset_url = f"{settings.FRONTEND_URL}/reset-password/{token}"
+    send_mail(
+        subject="Reset your ORBIT password",
+        message=(
             "We received a password reset request.\n\n"
             f"Reset link: {reset_url}\n\n"
             "If you did not request this, you can ignore this email."
@@ -82,6 +97,21 @@ def create_notification(recipient, title, message, category='GENERAL', payload=N
         message=message,
         category=category,
         payload=payload or {},
+    )
+
+
+def send_grade_update_email(email, student_name, discipline_code, term_label, updated_by):
+    send_mail(
+        subject=f"Grade updated: {discipline_code}",
+        message=(
+            f"Hello {student_name},\n\n"
+            f"Your grade for {discipline_code} ({term_label}) was updated by {updated_by}.\n"
+            "Please log in to ORBIT to view the updated record.\n\n"
+            f"{settings.FRONTEND_URL}/login"
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=True,
     )
 
 

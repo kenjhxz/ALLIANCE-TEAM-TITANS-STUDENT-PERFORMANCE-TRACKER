@@ -24,8 +24,12 @@ const cards = [
 
 export default function AuthLanding() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--app-bg-gradient)', color: 'var(--app-text)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '36px 24px 24px', fontFamily: "'Space Grotesk', 'DM Sans', 'Segoe UI', sans-serif" }}>
-      <div style={{ width: 'min(1040px, 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, marginTop: 4 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--app-bg-gradient)', color: 'var(--app-text)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '36px 24px 24px', fontFamily: "'Space Grotesk', 'DM Sans', 'Segoe UI', sans-serif", overflow: 'hidden', scrollbarWidth: 'none' }}>
+      <style>{`
+        html, body { height: 100%; overflow: hidden; scrollbar-width: none; -ms-overflow-style: none; }
+        body::-webkit-scrollbar, html::-webkit-scrollbar { width: 0; height: 0; }
+      `}</style>
+      <div style={{ width: 'min(1040px, 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 28, marginTop: 28 }}>
         <div style={{ textAlign: 'center', maxWidth: 720 }}>
           <img src={Logo} alt="Alliance Team Titans logo" style={{ width: 56, height: 56, marginBottom: 10 }} />
           <div style={{ textTransform: 'uppercase', letterSpacing: '0.24em', color: 'var(--app-muted)', fontSize: 12, marginBottom: 8 }}>Alliance Team Titans</div>

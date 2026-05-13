@@ -69,6 +69,7 @@ class GradeSerializer(serializers.ModelSerializer):
     units           = serializers.IntegerField(source='discipline.units', read_only=True)
 
     teacher_name = serializers.SerializerMethodField()
+    teacher = serializers.PrimaryKeyRelatedField(read_only=True)
 
     semester   = serializers.IntegerField(source='discipline.semester', read_only=True)
     year_level = serializers.IntegerField(source='discipline.year_level', read_only=True)
@@ -104,6 +105,7 @@ class GradeSerializer(serializers.ModelSerializer):
             'offering',
             'offer_code',
         ]
+        validators = []
 
     def validate(self, attrs):
         values = {}
@@ -132,6 +134,20 @@ class GradeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'discipline': 'Selected discipline does not match the offering discipline.'})
 
         return attrs
+
+    def create(self, validated_data):
+        # If a grade already exists for this student/discipline/term, update it instead.
+        existing = Grade.objects.filter(
+            student=validated_data.get('student'),
+            discipline=validated_data.get('discipline'),
+            term=validated_data.get('term'),
+        ).first()
+        if existing:
+            for key, value in validated_data.items():
+                setattr(existing, key, value)
+            existing.save()
+            return existing
+        return super().create(validated_data)
 
     def get_term_label(self, obj):
         if obj.term:

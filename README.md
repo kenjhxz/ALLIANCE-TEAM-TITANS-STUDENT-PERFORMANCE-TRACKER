@@ -79,6 +79,29 @@ Install these before running the app:
    python manage.py runserver
    ```
 
+### Environment Variables
+Create a `.env` file inside `backend/` with at least the following:
+```
+SECRET_KEY=your-django-secret-key
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+FRONTEND_URL=http://localhost:5173
+EMAIL_HOST_USER=your_gmail_address
+EMAIL_HOST_PASSWORD=your_gmail_app_password
+DEFAULT_FROM_EMAIL=your_gmail_address
+```
+
+### Windows PowerShell Quick Start
+Use the virtual environment Python to avoid missing dependency errors:
+```powershell
+cd D:\jias2a03\spt_final\backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
+
 Backend package install command:
 ```bash
 pip install -r requirements.txt
@@ -117,6 +140,11 @@ npm install axios
 Use two terminals:
 - Backend: `cd backend` then `python manage.py runserver`
 - Frontend: `cd frontend` then `npm run dev`
+
+If you see `ModuleNotFoundError: No module named 'openpyxl'`, reinstall backend requirements:
+```bash
+pip install -r backend/requirements.txt
+```
 
 If your team uses the seed data for testing:
 ```bash
