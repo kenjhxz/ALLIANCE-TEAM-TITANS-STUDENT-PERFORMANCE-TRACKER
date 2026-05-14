@@ -34,7 +34,7 @@ const shell = {
   },
   logo: {
     fontFamily: 'monospace',
-    fontSize: 12,
+    fontSize: 16,
     color: 'var(--app-accent)',
     letterSpacing: '0.08em',
     marginBottom: 16,
@@ -44,8 +44,8 @@ const shell = {
     gap: 8,
   },
   logoImg: {
-    width: 22,
-    height: 22,
+    width: 28,
+    height: 28,
     objectFit: 'contain',
   },
   logoDot: {
@@ -151,7 +151,7 @@ const shell = {
     flex: '1 1 100%',
     maxWidth: 760,
   },
-  title: { margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
+  title: { margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.01em' },
   subtitle: { margin: '4px 0 0', color: 'var(--app-muted)', maxWidth: 720, lineHeight: 1.5, fontSize: 13 },
   statsGrid: {
     display: 'grid',
@@ -180,7 +180,7 @@ const shell = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: 700,
     letterSpacing: '0.14em',
     textTransform: 'uppercase',

@@ -318,8 +318,20 @@
   height: 520px;
   background: radial-gradient(circle, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0));
   bottom: -160px;
-  right: -120px;
-  animation-delay: 2s;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  border-right: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+table th:last-child,
+table td:last-child {
+  border-right: none;
 }
 
 .auth-grid {

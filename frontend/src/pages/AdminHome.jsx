@@ -37,11 +37,11 @@ const s = {
     gap: 6,
   },
   logo: {
-    fontFamily: 'monospace', fontSize: 12, color: 'var(--app-accent)',
+    fontFamily: 'monospace', fontSize: 16, color: 'var(--app-accent)',
     letterSpacing: '0.08em', marginBottom: 28, paddingLeft: 4,
     display: 'flex', alignItems: 'center', gap: 8,
   },
-  logoImg: { width: 22, height: 22, objectFit: 'contain' },
+  logoImg: { width: 28, height: 28, objectFit: 'contain' },
   logoDot: {
     width: 8, height: 8, background: 'var(--app-accent)', borderRadius: '50%',
     boxShadow: '0 0 8px var(--app-accent)', flexShrink: 0,
@@ -62,7 +62,7 @@ const s = {
     flex: 1, overflowY: 'auto', padding: '24px 28px',
     display: 'flex', flexDirection: 'column', gap: 20,
   },
-  pageTitle: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
+  pageTitle: { fontSize: 26, fontWeight: 600, letterSpacing: '-0.01em' },
   pageSub:   { fontSize: 13, color: 'var(--app-muted)', marginTop: 4 },
   panels:    { display: 'flex', gap: 20, flexWrap: 'wrap' },
   panel: {
@@ -70,8 +70,20 @@ const s = {
     padding: 24, flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column', gap: 14,
   },
   panelTitle: {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+    fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
     color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
+  },
+  tabNav: {
+    display: 'flex', gap: 8, padding: '12px 16px', background: 'var(--app-panel)', borderBottom: '1px solid var(--app-border)',
+  },
+  tabButton: (active) => ({
+    padding: '10px 14px', borderRadius: 999, border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent', color: active ? 'var(--app-accent)' : 'var(--app-muted)',
+    fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s', whiteSpace: 'nowrap', flexShrink: 0,
+  }),
+  tabPanel: {
+    padding: 20,
+    overflowX: 'auto',
   },
   hint:  { fontSize: 12, color: 'var(--app-muted)', marginTop: -8, lineHeight: 1.5 },
   label: {
@@ -1903,6 +1915,7 @@ function UserManagementTab() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [userAccountTab, setUserAccountTab] = useState('faculty');
 
   async function reloadUsers() {
     const [tRes, sRes] = await Promise.all([fetchTeachers(), fetchStudents()]);
@@ -2061,106 +2074,123 @@ function UserManagementTab() {
       {loading ? (
         <div style={s.comingSoon}>Loading users...</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-            <SectionHeader title="Faculty Accounts" />
-            {teachers.filter(matches).length === 0 ? (
-              <div style={{ padding: 16, color: c.muted }}>No teachers found.</div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                <thead>
-                  <tr style={{ background: 'var(--app-panel)' }}>
-                    {['Name', 'Email', 'Employee ID', 'Department', 'Status', 'Action'].map((h) => (
-                      <th key={h} style={s.th}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {teachers.filter(matches).map((t) => (
-                    <tr key={t.id}>
-                      <td style={s.td}>{t.full_name}</td>
-                      <td style={s.td}>{t.email}</td>
-                      <td style={s.td}>{t.employee_id}</td>
-                      <td style={s.td}>{t.department || '--'}</td>
-                      <td style={s.td}>{t.is_active ? 'Active' : 'Inactive'}</td>
-                      <td style={s.td}>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                          <button
-                            style={s.submitBtn(false)}
-                            onClick={() => editUser(t)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            style={s.submitBtn(false)}
-                            onClick={() => toggleActive(t.user_id, t.is_active)}
-                          >
-                            {t.is_active ? 'Deactivate' : 'Activate'}
-                          </button>
-                          <button
-                            style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
-                            onClick={() => deleteUser(t.user_id, `${t.full_name} (${t.email})`)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+        <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+          <div style={s.tabNav}>
+            <button
+              style={s.tabButton(userAccountTab === 'faculty')}
+              onClick={() => setUserAccountTab('faculty')}
+            >
+              Faculty Accounts
+            </button>
+            <button
+              style={s.tabButton(userAccountTab === 'student')}
+              onClick={() => setUserAccountTab('student')}
+            >
+              Student Accounts
+            </button>
           </div>
 
-          <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-            <SectionHeader title="Student Accounts" />
-            {students.filter(matches).length === 0 ? (
-              <div style={{ padding: 16, color: c.muted }}>No students found.</div>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                <thead>
-                  <tr style={{ background: 'var(--app-panel)' }}>
-                    {['Name', 'Email', 'Student ID', 'Program', 'Status', 'Action'].map((h) => (
-                      <th key={h} style={s.th}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {students.filter(matches).map((st) => (
-                    <tr key={st.id}>
-                      <td style={s.td}>{st.full_name}</td>
-                      <td style={s.td}>{st.email}</td>
-                      <td style={s.td}>{st.student_id}</td>
-                      <td style={s.td}>{st.program_name || '--'}</td>
-                      <td style={s.td}>{st.is_active ? 'Active' : 'Inactive'}</td>
-                      <td style={s.td}>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                          <button
-                            style={s.submitBtn(false)}
-                            onClick={() => editUser(st)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            style={s.submitBtn(false)}
-                            onClick={() => toggleActive(st.user_id, st.is_active)}
-                          >
-                            {st.is_active ? 'Deactivate' : 'Activate'}
-                          </button>
-                          <button
-                            style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
-                            onClick={() => deleteUser(st.user_id, `${st.full_name} (${st.email})`)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+          {userAccountTab === 'faculty' && (
+            <div style={s.tabPanel}>
+              {teachers.filter(matches).length === 0 ? (
+                <div style={{ color: c.muted }}>No teachers found.</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: 'var(--app-panel)' }}>
+                      {['Name', 'Email', 'Employee ID', 'Department', 'Status', 'Action'].map((h) => (
+                        <th key={h} style={s.th}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                  </thead>
+                  <tbody>
+                    {teachers.filter(matches).map((t) => (
+                      <tr key={t.id}>
+                        <td style={s.td}>{t.full_name}</td>
+                        <td style={s.td}>{t.email}</td>
+                        <td style={s.td}>{t.employee_id}</td>
+                        <td style={s.td}>{t.department || '--'}</td>
+                        <td style={s.td}>{t.is_active ? 'Active' : 'Inactive'}</td>
+                        <td style={s.td}>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                              style={s.submitBtn(false)}
+                              onClick={() => editUser(t)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              style={s.submitBtn(false)}
+                              onClick={() => toggleActive(t.user_id, t.is_active)}
+                            >
+                              {t.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                              style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
+                              onClick={() => deleteUser(t.user_id, `${t.full_name} (${t.email})`)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+
+          {userAccountTab === 'student' && (
+            <div style={s.tabPanel}>
+              {students.filter(matches).length === 0 ? (
+                <div style={{ color: c.muted }}>No students found.</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: 'var(--app-panel)' }}>
+                      {['Name', 'Email', 'Student ID', 'Program', 'Status', 'Action'].map((h) => (
+                        <th key={h} style={s.th}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.filter(matches).map((st) => (
+                      <tr key={st.id}>
+                        <td style={s.td}>{st.full_name}</td>
+                        <td style={s.td}>{st.email}</td>
+                        <td style={s.td}>{st.student_id}</td>
+                        <td style={s.td}>{st.program_name || '--'}</td>
+                        <td style={s.td}>{st.is_active ? 'Active' : 'Inactive'}</td>
+                        <td style={s.td}>
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                              style={s.submitBtn(false)}
+                              onClick={() => editUser(st)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              style={s.submitBtn(false)}
+                              onClick={() => toggleActive(st.user_id, st.is_active)}
+                            >
+                              {st.is_active ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                              style={{ ...s.submitBtn(false), borderColor: c.danger, color: c.danger }}
+                              onClick={() => deleteUser(st.user_id, `${st.full_name} (${st.email})`)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
         </div>
       )}
     </>

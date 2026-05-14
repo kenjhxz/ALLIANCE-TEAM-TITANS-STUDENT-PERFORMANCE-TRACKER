@@ -32,9 +32,11 @@ const s = {
     flexDirection: 'column', padding: '28px 16px', gap: 6, flexShrink: 0,
   },
   logo: {
-    fontFamily: 'monospace', fontSize: 12, color: 'var(--app-accent)',
+    fontFamily: 'monospace', fontSize: 16, color: 'var(--app-accent)',
+    display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden', whiteSpace: 'nowrap',
+    padding: '10px 14px', marginBottom: 6,
   },
-  logoImg: { width: 22, height: 22, objectFit: 'contain' },
+  logoImg: { width: 28, height: 28, objectFit: 'contain' },
   logoDot: { width: 8, height: 8, background: 'var(--app-accent)', borderRadius: '50%', boxShadow: '0 0 8px var(--app-accent)', flexShrink: 0 },
   navLabel: {
     fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', color: 'var(--app-muted)',
@@ -52,15 +54,27 @@ const s = {
     display: 'flex', flexDirection: 'column', gap: 6,
   },
   main: { flex: 1, overflowY: 'auto', padding: '36px 40px', display: 'flex', flexDirection: 'column', gap: 24 },
-  pageTitle: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em' },
+  pageTitle: { fontSize: 26, fontWeight: 600, letterSpacing: '-0.01em' },
   pageSub:   { fontSize: 13, color: 'var(--app-muted)', marginTop: 4 },
   panels:    { display: 'flex', gap: 20, flexWrap: 'wrap' },
   panel: {
     background: 'var(--app-card)', border: '1px solid var(--app-border)', borderRadius: 10,
     padding: 24, flex: 1, minWidth: 260, display: 'flex', flexDirection: 'column', gap: 14,
   },
+  tabNav: {
+    display: 'flex', gap: 8, padding: '12px 16px', background: 'var(--app-panel)', borderBottom: '1px solid var(--app-border)',
+  },
+  tabButton: (active) => ({
+    padding: '10px 14px', borderRadius: 999, border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
+    background: active ? 'var(--app-accent-bg)' : 'transparent', color: active ? 'var(--app-accent)' : 'var(--app-muted)',
+    fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.18s', whiteSpace: 'nowrap', flexShrink: 0,
+  }),
+  tabPanel: {
+    padding: 20,
+    overflowX: 'auto',
+  },
   panelTitle: {
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+    fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
     color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
   },
   hint:  { fontSize: 12, color: 'var(--app-muted)', marginTop: -8, lineHeight: 1.5 },
@@ -132,7 +146,7 @@ const s = {
     gap: 8,
   },
   notifTitle: {
-    fontSize: 11,
+    fontSize: 14,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
     fontWeight: 700,
@@ -161,8 +175,13 @@ const s = {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', minHeight: 260, gap: 12, color: 'var(--app-muted)', textAlign: 'center',
   },
-  th: { padding: '8px 14px', textAlign: 'center', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)' },
-  td: { padding: '10px 14px', borderBottom: '1px solid var(--app-border)', textAlign: 'left' },
+  th: { padding: '8px 14px', textAlign: 'center', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--app-muted)', borderBottom: '1px solid var(--app-border)', borderRight: '1px solid rgba(148, 163, 184, 0.18)' },
+  td: { padding: '10px 14px', borderBottom: '1px solid var(--app-border)', borderRight: '1px solid rgba(148, 163, 184, 0.12)', textAlign: 'left' },
+  tableScroll: {
+    maxHeight: 'calc(100vh - 360px)',
+    overflowY: 'auto',
+    overflowX: 'auto',
+  },
 };
 
 const STATUS_STYLE = {
@@ -211,7 +230,7 @@ function SectionHeader({ title, right }) {
   return (
     <div style={{
       padding: '10px 20px', background: 'var(--app-accent-bg)', borderBottom: '1px solid var(--app-border)',
-      fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+      fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
       color: 'var(--app-accent)', display: 'flex', alignItems: 'center', gap: 6,
     }}>
       <span style={{ width: 6, height: 6, background: 'var(--app-accent)', borderRadius: '50%', display: 'inline-block' }} />
@@ -447,10 +466,10 @@ function ProspectusTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: 'var(--app-panel)' }}>
-                <th style={{ ...s.th, width: 36 }}></th>
-                {['Code', 'Subject', 'Units', 'Prerequisites', 'Status', 'Offer Code'].map((h) => (
+                {['Code', 'Subject', 'Units', 'Prerequisites', 'Status'].map((h) => (
                   <th key={h} style={s.th}>{h}</th>
                 ))}
+                <th style={{ ...s.th, width: 52 }}></th>
               </tr>
             </thead>
             <tbody>
@@ -469,18 +488,6 @@ function ProspectusTab() {
                       transition: 'background 0.1s',
                     }}
                   >
-                    <td style={{ ...s.td, paddingLeft: 20 }}>
-                      {!alreadyReq && (
-                        <span style={{
-                          width: 15, height: 15, borderRadius: 3,
-                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                          border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
-                          background: isSelected ? 'var(--app-success)' : 'transparent',
-                        }}>
-                          {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
-                        </span>
-                      )}
-                    </td>
                     <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{d.code}</td>
                     <td style={{ ...s.td, color: 'var(--app-text)' }}>{d.name}</td>
                     <td style={{ ...s.td, color: 'var(--app-muted)', textAlign: 'center' }}>{d.units}</td>
@@ -500,8 +507,17 @@ function ProspectusTab() {
                         ? <StatusBadge status={d.request_status} />
                         : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>Not requested</span>}
                     </td>
-                    <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>
-                      {d.offer_code || <span style={{ color: 'var(--app-muted)' }}>-</span>}
+                    <td style={{ ...s.td, paddingRight: 20, textAlign: 'center' }}>
+                      {!alreadyReq && (
+                        <span style={{
+                          width: 15, height: 15, borderRadius: 3,
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
+                          background: isSelected ? 'var(--app-success)' : 'transparent',
+                        }}>
+                          {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -640,10 +656,10 @@ function EnrollmentTab() {
       )}
 
       {activeTerm && !loadingMain && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
 
           {approved.length > 0 && (
-            <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
+            <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden', flex: '1 1 520px', minWidth: 360 }}>
               <SectionHeader title="Step 2 - Pick Your Schedule" right={`${approved.length} subject${approved.length !== 1 ? 's' : ''} need a schedule`} />
               {approved.map((item) => {
                 const isOpen   = expandedEnr === item.enrollment_id;
@@ -710,7 +726,7 @@ function EnrollmentTab() {
           )}
 
           {/* Stage 1: Request subjects */}
-          <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
+          <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden', flex: '1 1 640px', minWidth: 420 }}>
             <SectionHeader
               title="Step 1 - Request Subjects"
               right={selected.length > 0 ? `${selected.length} selected - ${committedUnits + selectedUnits} units total` : undefined}
@@ -722,10 +738,10 @@ function EnrollmentTab() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                     <thead>
                       <tr style={{ background: 'var(--app-panel)' }}>
-                        <th style={{ ...s.th, width: 36 }}></th>
-                        {['Code', 'Subject', 'Units', 'Prerequisites', 'Status'].map((h) => (
+                        {['Code', 'Subject', 'Units', 'Prerequisites', 'Offer Code', 'Status'].map((h) => (
                           <th key={h} style={s.th}>{h}</th>
                         ))}
+                        <th style={{ ...s.th, width: 36 }}></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -745,18 +761,6 @@ function EnrollmentTab() {
                               transition: 'background 0.1s',
                             }}
                           >
-                            <td style={{ ...s.td, paddingLeft: 20 }}>
-                              {!alreadyReq && (
-                                <span style={{
-                                  width: 15, height: 15, borderRadius: 3,
-                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                  border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
-                                  background: isSelected ? 'var(--app-success)' : 'transparent',
-                                }}>
-                                  {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
-                                </span>
-                              )}
-                            </td>
                             <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{d.code}</td>
                             <td style={{ ...s.td, color: 'var(--app-text)' }}>{d.name}</td>
                             <td style={{ ...s.td, color: 'var(--app-muted)', textAlign: 'center' }}>{d.units}</td>
@@ -771,17 +775,25 @@ function EnrollmentTab() {
                                 )
                                 : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>-</span>}
                             </td>
+                            <td style={{ ...s.td, fontFamily: 'monospace', color: d.offer_code ? 'var(--app-success)' : 'var(--app-muted)', fontSize: 11 }}>
+                              {d.offer_code || '--'}
+                            </td>
                             <td style={{ ...s.td }}>
                               {d.request_status
-                                ? (
-                                  <>
-                                    <StatusBadge status={d.request_status} />
-                                    {d.offer_code && (
-                                      <span style={{ marginLeft: 6, fontFamily: 'monospace', fontSize: 10, color: 'var(--app-success)' }}>{d.offer_code}</span>
-                                    )}
-                                  </>
-                                )
+                                ? <StatusBadge status={d.request_status} />
                                 : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>Not requested</span>}
+                            </td>
+                            <td style={{ ...s.td, paddingRight: 20 }}>
+                              {!alreadyReq && (
+                                <span style={{
+                                  width: 15, height: 15, borderRadius: 3,
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                  border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
+                                  background: isSelected ? 'var(--app-success)' : 'transparent',
+                                }}>
+                                  {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
+                                </span>
+                              )}
                             </td>
                           </tr>
                         );
@@ -825,6 +837,7 @@ function GradesTab() {
   const [exporting, setExporting] = useState(false);
   const [timeline, setTimeline] = useState([]);
   const [timelineLoading, setTimelineLoading] = useState(true);
+  const [activeGradeTab, setActiveGradeTab] = useState('enrolled');
   const exportRef = useRef(null);
 
   useEffect(() => {
@@ -1088,241 +1101,50 @@ function GradesTab() {
       </div>
 
       <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-        <SectionHeader title="Currently Enrolled Subjects (Synced)" />
-
-        {syncedEnrolled.length === 0 ? (
-          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
-            No enrolled subjects found.
-          </div>
-        ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ background: 'var(--app-panel)' }}>
-                {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
-                  (h) => (
-                    <th key={h} style={s.th}>
-                      {h}
-                    </th>
-                  )
-                )}
-              </tr>
-            </thead>
-
-            <tbody>
-              {syncedEnrolled.map((d, idx) => (
-                <tr key={`${d.discipline_id ?? 'disc'}-${d.id ?? idx}`}>
-                  <td
-                    style={{
-                      ...s.td,
-                      fontFamily: 'monospace',
-                      color: 'var(--app-success)',
-                    }}
-                  >
-                    {d.discipline_code || d.code}
-                  </td>
-
-                  <td style={{ ...s.td }}>
-                    {d.discipline_name || d.name}
-                  </td>
-
-                  <td style={{ ...s.td, textAlign: 'center' }}>
-                    {d.units || '--'}
-                  </td>
-
-                <td style={{ ...s.td, textAlign: 'center' }}>
-                    {d.prelim ?? '--'}
-                </td>
-
-                <td style={{ ...s.td, textAlign: 'center' }}>
-                    {d.midterm ?? '--'}
-                </td>
-
-                <td style={{ ...s.td, textAlign: 'center' }}>
-                    {d.finals ?? '--'}
-                </td>
-
-        <td style={{ ...s.td }}>
-          {d.remarks || '--'}
-        </td>
-
-                  
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* GRADE RECORDS */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <PanelTitle>Grade Records</PanelTitle>
-
-          {termKeys.length > 1 && (
-            <div style={{ marginLeft: 'auto' }}>
-              <select
-                style={{
-                  ...s.input,
-                  width: 'auto',
-                  fontSize: 12,
-                  padding: '6px 10px',
-                }}
-                value={filterTerm}
-                onChange={(e) => setFilterTerm(e.target.value)}
-              >
-                <option value="">All Terms</option>
-                {termKeys.map((k) => (
-                  <option key={k} value={k}>
-                    {k}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+        <div style={s.tabNav}>
+          {[
+            { key: 'enrolled', label: 'Enrolled Subjects' },
+            { key: 'records', label: 'Grade Records' },
+            { key: 'timeline', label: 'History Timeline' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveGradeTab(tab.key)}
+              style={s.tabButton(activeGradeTab === tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {loading && (
-          <div style={{ ...s.comingSoon, minHeight: 160 }}>
-            <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>
-              Loading grades...
-            </div>
-          </div>
-        )}
+        <div style={s.tabPanel}>
+          {activeGradeTab === 'enrolled' && (
+            <>
+              <SectionHeader title="Currently Enrolled Subjects (Synced)" />
 
-        {!loading &&
-          visible.map((term) => {
-            const tg = grouped[term];
-
-            const tGraded = tg.filter((g) => g.finals != null);
-            const tPassed = tGraded.filter(
-              (g) => parseFloat(g.finals) <= 3.0
-            );
-
-            const tUnits = tPassed.reduce(
-              (sum, g) => sum + (g.units || 0),
-              0
-            );
-
-            const tGWA = tGraded.length
-              ? (
-                  tGraded.reduce(
-                    (sum, g) =>
-                      sum + parseFloat(g.finals) * (g.units || 1),
-                    0
-                  ) /
-                  tGraded.reduce(
-                    (sum, g) => sum + (g.units || 1),
-                    0
-                  )
-                ).toFixed(4)
-              : null;
-
-            return (
-              <div
-                key={term}
-                style={{
-                  ...s.panel,
-                  padding: 0,
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    padding: '10px 20px',
-                    background: 'var(--app-accent-soft)',
-                    borderBottom: '1px solid var(--app-border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      background: 'var(--app-success)',
-                      borderRadius: '50%',
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: 'var(--app-success)',
-                    }}
-                  >
-                    {term}
-                  </span>
-
-                  <span
-                    style={{
-                      marginLeft: 'auto',
-                      display: 'flex',
-                      gap: 14,
-                    }}
-                  >
-                    {tGWA && (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: gradeColor(parseFloat(tGWA)),
-                        }}
-                      >
-                        GWA <strong>{tGWA}</strong>
-                      </span>
-                    )}
-                    <span
-                      style={{
-                        fontSize: 11,
-                        color: 'var(--app-muted)',
-                      }}
-                    >
-                      {tUnits} units earned
-                    </span>
-                  </span>
+              {syncedEnrolled.length === 0 ? (
+                <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
+                  No enrolled subjects found.
                 </div>
+              ) : (
+                <div style={s.tableScroll}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: 'var(--app-panel)' }}>
+                        {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
+                          (h) => (
+                            <th key={h} style={s.th}>
+                              {h}
+                            </th>
+                          )
+                        )}
+                      </tr>
+                    </thead>
 
-                <table
-                  style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    fontSize: 13,
-                  }}
-                >
-                  <thead>
-                    <tr style={{ background: 'var(--app-panel)' }}>
-                      {[
-                        'Code',
-                        'Subject',
-                        'Units',
-                        'Prelim',
-                        'Midterm',
-                        'Finals',
-                        'Status',
-                        'Remarks',
-                      ].map((h) => (
-                        <th key={h} style={s.th}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {tg.map((g, i) => {
-                      const fg =
-                        g.finals != null ? parseFloat(g.finals) : null;
-                      const passed = fg != null && fg <= 3.0;
-
-                      return (
-                        <tr
-                          key={g.id}
-                          style={{
-                            background:
-                              i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
-                            borderBottom: '1px solid var(--app-border)',
-                          }}
-                        >
+                    <tbody>
+                      {syncedEnrolled.map((d, idx) => (
+                        <tr key={`${d.discipline_id ?? 'disc'}-${d.id ?? idx}`}>
                           <td
                             style={{
                               ...s.td,
@@ -1330,117 +1152,332 @@ function GradesTab() {
                               color: 'var(--app-success)',
                             }}
                           >
-                            {g.discipline_code}
+                            {d.discipline_code || d.code}
                           </td>
+
                           <td style={{ ...s.td }}>
-                            {g.discipline_name}
+                            {d.discipline_name || d.name}
                           </td>
+
                           <td style={{ ...s.td, textAlign: 'center' }}>
-                            {g.units}
+                            {d.units || '--'}
                           </td>
 
-                          <td
-                            style={{
-                              ...s.td,
-                              textAlign: 'center',
-                              color: gradeColor(g.prelim),
-                            }}
-                          >
-                            {g.prelim ?? '--'}
+                          <td style={{ ...s.td, textAlign: 'center' }}>
+                            {d.prelim ?? '--'}
                           </td>
 
-                          <td
-                            style={{
-                              ...s.td,
-                              textAlign: 'center',
-                              color: gradeColor(g.midterm),
-                            }}
-                          >
-                            {g.midterm ?? '--'}
+                          <td style={{ ...s.td, textAlign: 'center' }}>
+                            {d.midterm ?? '--'}
                           </td>
 
-                          <td
-                            style={{
-                              ...s.td,
-                              textAlign: 'center',
-                              color: gradeColor(fg),
-                            }}
-                          >
-                            {fg ?? '--'}
+                          <td style={{ ...s.td, textAlign: 'center' }}>
+                            {d.finals ?? '--'}
                           </td>
 
                           <td style={{ ...s.td }}>
-                            {fg == null ? (
-                              <span style={{ color: 'var(--app-muted)' }}>
-                                In Progress
-                              </span>
-                            ) : (
-                              <span
-                                style={{
-                                  color: passed
-                                    ? 'var(--app-success)'
-                                    : 'var(--app-danger)',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {passed ? 'PASSED' : 'FAILED'}
-                              </span>
-                            )}
-                          </td>
-
-                          <td style={{ ...s.td }}>
-                            {g.remarks || '--'}
+                            {d.remarks || '--'}
                           </td>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })}
-      </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
 
-      {/* TIMELINE */}
-      <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
-        <SectionHeader title="Grade History Timeline" right="Recent updates" />
-        {timelineLoading ? (
-          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
-            Loading history...
-          </div>
-        ) : timeline.length === 0 ? (
-          <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
-            No grade changes recorded yet.
-          </div>
-        ) : (
-          <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {timeline.slice(0, 12).map((item) => (
-              <div key={item.id} style={{
-                background: 'var(--app-card)',
-                border: '1px solid var(--app-border)',
-                borderRadius: 8,
-                padding: '10px 12px',
-                fontSize: 12,
-                color: 'var(--app-text)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}>
-                <div>
-                  <strong>{item.action}</strong> · Grade ID {item.grade}
-                  {item.current?.remarks && (
-                    <div style={{ color: 'var(--app-muted)', marginTop: 4 }}>
-                      Remarks: {item.current.remarks}
-                    </div>
-                  )}
-                </div>
-                <div style={{ color: 'var(--app-muted)', fontSize: 11 }}>
-                  {new Date(item.created_at).toLocaleString()}
-                </div>
+          {activeGradeTab === 'records' && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <PanelTitle>Grade Records</PanelTitle>
+                {termKeys.length > 1 && (
+                  <div style={{ marginLeft: 'auto' }}>
+                    <select
+                      style={{
+                        ...s.input,
+                        width: 'auto',
+                        fontSize: 12,
+                        padding: '6px 10px',
+                      }}
+                      value={filterTerm}
+                      onChange={(e) => setFilterTerm(e.target.value)}
+                    >
+                      <option value="">All Terms</option>
+                      {termKeys.map((k) => (
+                        <option key={k} value={k}>
+                          {k}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+
+              {loading ? (
+                <div style={{ ...s.comingSoon, minHeight: 160 }}>
+                  <div style={{ fontSize: 13, color: 'var(--app-muted)' }}>
+                    Loading grades...
+                  </div>
+                </div>
+              ) : (
+                visible.map((term) => {
+                  const tg = grouped[term];
+
+                  const tGraded = tg.filter((g) => g.finals != null);
+                  const tPassed = tGraded.filter(
+                    (g) => parseFloat(g.finals) <= 3.0
+                  );
+
+                  const tUnits = tPassed.reduce(
+                    (sum, g) => sum + (g.units || 0),
+                    0
+                  );
+
+                  const tGWA = tGraded.length
+                    ? (
+                        tGraded.reduce(
+                          (sum, g) =>
+                            sum + parseFloat(g.finals) * (g.units || 1),
+                          0
+                        ) /
+                        tGraded.reduce(
+                          (sum, g) => sum + (g.units || 1),
+                          0
+                        )
+                      ).toFixed(4)
+                    : null;
+
+                  return (
+                    <div
+                      key={term}
+                      style={{
+                        ...s.panel,
+                        padding: 0,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '10px 20px',
+                          background: 'var(--app-accent-soft)',
+                          borderBottom: '1px solid var(--app-border)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 6,
+                            height: 6,
+                            background: 'var(--app-success)',
+                            borderRadius: '50%',
+                          }}
+                        />
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: 'var(--app-success)',
+                          }}
+                        >
+                          {term}
+                        </span>
+
+                        <span
+                          style={{
+                            marginLeft: 'auto',
+                            display: 'flex',
+                            gap: 14,
+                          }}
+                        >
+                          {tGWA && (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                color: gradeColor(parseFloat(tGWA)),
+                              }}
+                            >
+                              GWA <strong>{tGWA}</strong>
+                            </span>
+                          )}
+                          <span
+                            style={{
+                              fontSize: 11,
+                              color: 'var(--app-muted)',
+                            }}
+                          >
+                            {tUnits} units earned
+                          </span>
+                        </span>
+                      </div>
+
+                      <div style={s.tableScroll}>
+                        <table
+                          style={{
+                            width: '100%',
+                            borderCollapse: 'collapse',
+                            fontSize: 13,
+                          }}
+                        >
+                          <thead>
+                            <tr style={{ background: 'var(--app-panel)' }}>
+                              {[
+                                'Code',
+                                'Subject',
+                                'Units',
+                                'Prelim',
+                                'Midterm',
+                                'Finals',
+                                'Status',
+                                'Remarks',
+                              ].map((h) => (
+                                <th key={h} style={s.th}>
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {tg.map((g, i) => {
+                              const fg =
+                                g.finals != null ? parseFloat(g.finals) : null;
+                              const passed = fg != null && fg <= 3.0;
+
+                              return (
+                                <tr
+                                  key={g.id}
+                                  style={{
+                                    background:
+                                      i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
+                                    borderBottom: '1px solid var(--app-border)',
+                                  }}
+                                >
+                                  <td
+                                    style={{
+                                      ...s.td,
+                                      fontFamily: 'monospace',
+                                      color: 'var(--app-success)',
+                                    }}
+                                  >
+                                    {g.discipline_code}
+                                  </td>
+                                  <td style={{ ...s.td }}>
+                                    {g.discipline_name}
+                                  </td>
+                                  <td style={{ ...s.td, textAlign: 'center' }}>
+                                    {g.units}
+                                  </td>
+
+                                  <td
+                                    style={{
+                                      ...s.td,
+                                      textAlign: 'center',
+                                      color: gradeColor(g.prelim),
+                                    }}
+                                  >
+                                    {g.prelim ?? '--'}
+                                  </td>
+
+                                  <td
+                                    style={{
+                                      ...s.td,
+                                      textAlign: 'center',
+                                      color: gradeColor(g.midterm),
+                                    }}
+                                  >
+                                    {g.midterm ?? '--'}
+                                  </td>
+
+                                  <td
+                                    style={{
+                                      ...s.td,
+                                      textAlign: 'center',
+                                      color: gradeColor(fg),
+                                    }}
+                                  >
+                                    {fg ?? '--'}
+                                  </td>
+
+                                  <td style={{ ...s.td }}>
+                                    {fg == null ? (
+                                      <span style={{ color: 'var(--app-muted)' }}>
+                                        In Progress
+                                      </span>
+                                    ) : (
+                                      <span
+                                        style={{
+                                          color: passed
+                                            ? 'var(--app-success)'
+                                            : 'var(--app-danger)',
+                                          fontWeight: 600,
+                                        }}
+                                      >
+                                        {passed ? 'PASSED' : 'FAILED'}
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  <td style={{ ...s.td }}>
+                                    {g.remarks || '--'}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                }))}
+            </>
+          )}
+
+          {activeGradeTab === 'timeline' && (
+            <>
+              <SectionHeader title="Grade History Timeline" right="Recent updates" />
+              {timelineLoading ? (
+                <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
+                  Loading history...
+                </div>
+              ) : timeline.length === 0 ? (
+                <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
+                  No grade changes recorded yet.
+                </div>
+              ) : (
+                <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {timeline.slice(0, 12).map((item) => (
+                    <div key={item.id} style={{
+                      background: 'var(--app-card)',
+                      border: '1px solid var(--app-border)',
+                      borderRadius: 8,
+                      padding: '10px 12px',
+                      fontSize: 12,
+                      color: 'var(--app-text)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                    }}>
+                      <div>
+                        <strong>{item.action}</strong> · Grade ID {item.grade}
+                        {item.current?.remarks && (
+                          <div style={{ color: 'var(--app-muted)', marginTop: 4 }}>
+                            Remarks: {item.current.remarks}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ color: 'var(--app-muted)', fontSize: 11 }}>
+                        {new Date(item.created_at).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </>
   );
