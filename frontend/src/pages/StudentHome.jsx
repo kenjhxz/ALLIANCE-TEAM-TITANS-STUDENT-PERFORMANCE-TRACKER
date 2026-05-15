@@ -1583,8 +1583,8 @@ export default function StudentHome() {
               )}
             </div>
           )}
-          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: 'var(--app-danger)', border: '1px solid var(--app-danger-border)', borderRadius: 50 }}>
-            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>L</span>
+          <button onClick={handleLogout} style={{ ...s.pillBtn(false), color: 'var(--app-danger)', border: '1px solid var(--app-danger-border)' }}>
+            <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>⏻</span>
             Log Out
           </button>
         </div>

@@ -473,7 +473,7 @@ export default function TeacherHome() {
                 )}
               </div>
             )}
-            <button onClick={handleLogout} style={{ ...shell.pillBtn(false), color: '#ef4444', border: '1px solid #3a1a1a' }}>
+            <button onClick={handleLogout} style={{ ...shell.pillBtn(false), color: 'var(--app-danger)', border: '1px solid var(--app-danger-border)' }}>
               <span style={{ fontSize: 14, width: 18, textAlign: 'center' }}>⏻</span>
               Log Out
             </button>

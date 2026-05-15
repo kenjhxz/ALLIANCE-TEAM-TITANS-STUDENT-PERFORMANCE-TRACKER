@@ -75,6 +75,7 @@ const s = {
   },
   tabNav: {
     display: 'flex', gap: 8, padding: '12px 16px', background: 'var(--app-panel)', borderBottom: '1px solid var(--app-border)',
+    alignItems: 'center',
   },
   tabButton: (active) => ({
     padding: '10px 14px', borderRadius: 999, border: active ? '1px solid var(--app-accent)' : '1px solid transparent',
@@ -2003,16 +2004,6 @@ function UserManagementTab() {
         <div style={s.pageSub}>Search, activate, and manage faculty/student accounts.</div>
       </div>
 
-      <div style={{ ...s.panel, maxWidth: 420 }}>
-        <PanelTitle>Search Users</PanelTitle>
-        <input
-          style={s.input}
-          placeholder="Search by name, email, or ID"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
       {editingUser && (
         <div style={{ ...s.panel, maxWidth: 420 }}>
           <PanelTitle>Edit User Account</PanelTitle>
@@ -2076,18 +2067,28 @@ function UserManagementTab() {
       ) : (
         <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
           <div style={s.tabNav}>
-            <button
-              style={s.tabButton(userAccountTab === 'faculty')}
-              onClick={() => setUserAccountTab('faculty')}
-            >
-              Faculty Accounts
-            </button>
-            <button
-              style={s.tabButton(userAccountTab === 'student')}
-              onClick={() => setUserAccountTab('student')}
-            >
-              Student Accounts
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                style={s.tabButton(userAccountTab === 'faculty')}
+                onClick={() => setUserAccountTab('faculty')}
+              >
+                Faculty Accounts
+              </button>
+              <button
+                style={s.tabButton(userAccountTab === 'student')}
+                onClick={() => setUserAccountTab('student')}
+              >
+                Student Accounts
+              </button>
+            </div>
+            <div style={{ marginLeft: 'auto', minWidth: 240 }}>
+              <input
+                style={{ ...s.input, maxWidth: 280 }}
+                placeholder="Search by name, email, or ID"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
           </div>
 
           {userAccountTab === 'faculty' && (
@@ -2099,7 +2100,12 @@ function UserManagementTab() {
                   <thead>
                     <tr style={{ background: 'var(--app-panel)' }}>
                       {['Name', 'Email', 'Employee ID', 'Department', 'Status', 'Action'].map((h) => (
-                        <th key={h} style={s.th}>{h}</th>
+                        <th
+                          key={h}
+                          style={h === 'Action' ? { ...(s.th || {}), paddingLeft: 24 } : s.th}
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -2111,7 +2117,7 @@ function UserManagementTab() {
                         <td style={s.td}>{t.employee_id}</td>
                         <td style={s.td}>{t.department || '--'}</td>
                         <td style={s.td}>{t.is_active ? 'Active' : 'Inactive'}</td>
-                        <td style={s.td}>
+                        <td style={{ ...(s.td || {}), paddingLeft: 24 }}>
                           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                             <button
                               style={s.submitBtn(false)}
@@ -2150,7 +2156,12 @@ function UserManagementTab() {
                   <thead>
                     <tr style={{ background: 'var(--app-panel)' }}>
                       {['Name', 'Email', 'Student ID', 'Program', 'Status', 'Action'].map((h) => (
-                        <th key={h} style={s.th}>{h}</th>
+                        <th
+                          key={h}
+                          style={h === 'Action' ? { ...(s.th || {}), paddingLeft: 24 } : s.th}
+                        >
+                          {h}
+                        </th>
                       ))}
                     </tr>
                   </thead>
@@ -2162,7 +2173,7 @@ function UserManagementTab() {
                         <td style={s.td}>{st.student_id}</td>
                         <td style={s.td}>{st.program_name || '--'}</td>
                         <td style={s.td}>{st.is_active ? 'Active' : 'Inactive'}</td>
-                        <td style={s.td}>
+                        <td style={{ ...(s.td || {}), paddingLeft: 24 }}>
                           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                             <button
                               style={s.submitBtn(false)}
@@ -2622,7 +2633,7 @@ function ReportsTab() {
         <div style={s.pageSub}>Generate grade summary reports and export files.</div>
       </div>
 
-      <div style={{ ...s.panel, maxWidth: 520 }}>
+      <div style={{ ...s.panel, maxWidth: 520, flex: '0 0 auto' }}>
         <PanelTitle>Filters</PanelTitle>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input
@@ -2659,23 +2670,39 @@ function ReportsTab() {
           <button style={s.submitBtn(false)} onClick={handleExportExcel}>Export Excel</button>
           <button style={s.submitBtn(false)} onClick={handlePrint} disabled={!report}>Print Report</button>
         </div>
-      </div>
-
-      <div style={{ ...s.panel, maxWidth: 720 }}>
-        <PanelTitle>More Filters</PanelTitle>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <input
-            style={s.input}
-            placeholder="Student ID"
-            value={filters.student}
-            onChange={(e) => setFilters({ ...filters, student: e.target.value })}
-          />
-          <input
-            style={s.input}
-            placeholder="Discipline ID"
-            value={filters.discipline}
-            onChange={(e) => setFilters({ ...filters, discipline: e.target.value })}
-          />
+        <div style={{ marginTop: 8 }}>
+          <details>
+            <summary style={{
+              cursor: 'pointer',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: 'var(--app-muted)',
+              listStyle: 'none',
+              outline: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <span>More Filters</span>
+              <span style={{ fontSize: 12, color: 'var(--app-border)' }}>▾</span>
+            </summary>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+              <input
+                style={s.input}
+                placeholder="Student ID"
+                value={filters.student}
+                onChange={(e) => setFilters({ ...filters, student: e.target.value })}
+              />
+              <input
+                style={s.input}
+                placeholder="Discipline ID"
+                value={filters.discipline}
+                onChange={(e) => setFilters({ ...filters, discipline: e.target.value })}
+              />
+            </div>
+          </details>
         </div>
       </div>
 
