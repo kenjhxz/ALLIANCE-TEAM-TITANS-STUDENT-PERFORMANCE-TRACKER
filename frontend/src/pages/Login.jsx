@@ -71,7 +71,9 @@ export default function Login({ preferredRole }) {
         body::-webkit-scrollbar, html::-webkit-scrollbar { width: 0; height: 0; }
       `}</style>
       <div className="login-card">
-        <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
+        <Link to="/">
+          <img className="brand-logo" src={Logo} alt="Alliance Team Titans logo" />
+        </Link>
         <div className="login-title">Login</div>
         <div className="login-sub">
           {roleLabel ? `${roleLabel} access` : 'Access your account'}
@@ -143,10 +145,6 @@ export default function Login({ preferredRole }) {
         <p className="footer-text">
           No account yet?{" "}
           <Link to="/signup" className="link">Sign up free</Link>
-        </p>
-        <p className="footer-text" style={{ marginTop: "0.4rem" }}>
-          Need a different role login?{" "}
-          <Link to="/" className="link">Choose login path</Link>
         </p>
         <p className="footer-text" style={{ marginTop: "0.4rem" }}>
           Didn't get the email?{" "}
