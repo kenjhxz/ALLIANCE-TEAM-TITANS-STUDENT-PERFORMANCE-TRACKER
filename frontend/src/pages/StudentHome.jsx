@@ -1121,69 +1121,71 @@ function GradesTab() {
         <div style={s.tabPanel}>
           {activeGradeTab === 'enrolled' && (
             <>
-              <SectionHeader title="Currently Enrolled Subjects (Synced)" />
+              <div style={{ ...s.panel, padding: 0, overflow: 'hidden' }}>
+                <SectionHeader title="Currently Enrolled Subjects (Synced)" />
 
-              {syncedEnrolled.length === 0 ? (
-                <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
-                  No enrolled subjects found.
-                </div>
-              ) : (
-                <div style={s.tableScroll}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr style={{ background: 'var(--app-panel)' }}>
-                        {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
-                          (h) => (
-                            <th key={h} style={s.th}>
-                              {h}
-                            </th>
-                          )
-                        )}
-                      </tr>
-                    </thead>
+                {syncedEnrolled.length === 0 ? (
+                  <div style={{ padding: 16, color: 'var(--app-muted)', fontSize: 12 }}>
+                    No enrolled subjects found.
+                  </div>
+                ) : (
+                  <div style={s.tableScroll}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      <thead>
+                                <tr style={{ background: 'var(--app-panel)' }}>
+                                  {['Code', 'Subject', 'Units', 'PRELIM', 'MIDTERM', 'FINALS', 'REMARKS'].map(
+                                    (h) => (
+                                      <th key={h} style={s.th}>
+                                        {h}
+                                      </th>
+                                    )
+                                  )}
+                                </tr>
+                              </thead>
 
-                    <tbody>
-                      {syncedEnrolled.map((d, idx) => (
-                        <tr key={`${d.discipline_id ?? 'disc'}-${d.id ?? idx}`}>
-                          <td
-                            style={{
-                              ...s.td,
-                              fontFamily: 'monospace',
-                              color: 'var(--app-success)',
-                            }}
-                          >
-                            {d.discipline_code || d.code}
-                          </td>
+                              <tbody>
+                                {syncedEnrolled.map((d, idx) => (
+                                  <tr key={`${d.discipline_id ?? 'disc'}-${d.id ?? idx}`}>
+                                    <td
+                                      style={{
+                                        ...s.td,
+                                        fontFamily: 'monospace',
+                                        color: 'var(--app-success)',
+                                      }}
+                                    >
+                                      {d.discipline_code || d.code}
+                                    </td>
 
-                          <td style={{ ...s.td }}>
-                            {d.discipline_name || d.name}
-                          </td>
+                                    <td style={{ ...s.td }}>
+                                      {d.discipline_name || d.name}
+                                    </td>
 
-                          <td style={{ ...s.td, textAlign: 'center' }}>
-                            {d.units || '--'}
-                          </td>
+                                    <td style={{ ...s.td, textAlign: 'center' }}>
+                                      {d.units || '--'}
+                                    </td>
 
-                          <td style={{ ...s.td, textAlign: 'center' }}>
-                            {d.prelim ?? '--'}
-                          </td>
+                                    <td style={{ ...s.td, textAlign: 'center' }}>
+                                      {d.prelim ?? '--'}
+                                    </td>
 
-                          <td style={{ ...s.td, textAlign: 'center' }}>
-                            {d.midterm ?? '--'}
-                          </td>
+                                    <td style={{ ...s.td, textAlign: 'center' }}>
+                                      {d.midterm ?? '--'}
+                                    </td>
 
-                          <td style={{ ...s.td, textAlign: 'center' }}>
-                            {d.finals ?? '--'}
-                          </td>
+                                    <td style={{ ...s.td, textAlign: 'center' }}>
+                                      {d.finals ?? '--'}
+                                    </td>
 
-                          <td style={{ ...s.td }}>
-                            {d.remarks || '--'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                                    <td style={{ ...s.td }}>
+                                      {d.remarks || '--'}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </>
           )}
 
