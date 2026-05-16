@@ -592,9 +592,27 @@ class GradeViewSet(viewsets.ModelViewSet):
                 qs = qs.filter(offering__offer_code=offering)
         if params.get('term'):
             qs = qs.filter(term_id=params.get('term'))
+        if params.get('discipline'):
+            qs = qs.filter(discipline_id=params.get('discipline'))
+        # Support filtering by grading period presence (prelim/midterm/finals)
+        period = params.get('period')
+        if period in ('prelim', 'midterm', 'finals'):
+            lookup = {f"{period}__isnull": False}
+            qs = qs.filter(**lookup)
         if params.get('teacher'):
             qs = qs.filter(teacher_id=params.get('teacher'))
+        # Debug logging to help diagnose empty results from frontend
+        try:
+            logger.debug(f"GradeViewSet.get_queryset filters={dict(params)} count={qs.count()}")
+        except Exception:
+            logger.debug("GradeViewSet.get_queryset - could not compute count")
         return qs
+
+    @action(detail=False, methods=['get'], url_path='debug-count', permission_classes=[IsAuthenticated])
+    def debug_count(self, request):
+        """Return the count of Grade rows matching the current query params."""
+        qs = self.get_queryset()
+        return Response({'count': qs.count(), 'filters': dict(request.query_params)})
 
     @action(detail=False, methods=['get'], url_path='mine')
     def mine(self, request):

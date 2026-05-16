@@ -429,7 +429,7 @@ function ProspectusTab() {
     <>
       <div>
         <div style={s.pageTitle}>My Prospectus</div>
-        <div style={s.pageSub}>Curriculum for the active semester. Select subjects to request enrollment.</div>
+        <div style={s.pageSub}>Request subjects for this semester. Submit your requests and wait for admin approval.</div>
       </div>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
@@ -553,8 +553,6 @@ function EnrollmentTab() {
   const [activeTerm,  setActiveTerm]  = useState(null);
   const [prospectus,  setProspectus]  = useState([]);
   const [approved,    setApproved]    = useState([]);
-  const [selected,    setSelected]    = useState([]);
-  const [submitting,  setSubmitting]  = useState(false);
   const [scheduling,  setScheduling]  = useState({});
   const [expandedEnr, setExpandedEnr] = useState(null);
   const [loadingMain, setLoadingMain] = useState(true);
@@ -577,40 +575,6 @@ function EnrollmentTab() {
     reload().catch(console.error).finally(() => setLoadingMain(false));
   }, [reload]);
 
-  const selectedUnits = selected.reduce((sum, id) => {
-    const d = prospectus.find((p) => p.discipline_id === id);
-    return sum + (d?.units || 0);
-  }, 0);
-
-  const committedUnits = prospectus
-    .filter((d) => ['PENDING', 'APPROVED', 'ENROLLED'].includes(d.request_status))
-    .reduce((sum, d) => sum + (d.units || 0), 0);
-
-  function toggleSelect(disciplineId) {
-    setSelected((prev) =>
-      prev.includes(disciplineId)
-        ? prev.filter((x) => x !== disciplineId)
-        : [...prev, disciplineId]
-    );
-  }
-
-  async function handleSubmitRequest() {
-    if (!selected.length) return;
-    setSubmitting(true);
-    try {
-      const { data } = await submitDisciplineRequest(selected);
-      const msg = [
-        data.requested?.length ? `OK: Requested: ${data.requested.join(', ')}` : null,
-        data.errors?.length    ? `Errors:\n${data.errors.join('\n')}`           : null,
-      ].filter(Boolean).join('\n\n');
-      alert(msg || 'OK: Done.');
-      setSelected([]);
-      await reload();
-    } catch (err) {
-      alert('Error: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
-    } finally { setSubmitting(false); }
-  }
-
   async function handleSelectSchedule(enrollmentId, offeringId) {
     setScheduling((p) => ({ ...p, [enrollmentId]: true }));
     try {
@@ -623,7 +587,6 @@ function EnrollmentTab() {
     } finally { setScheduling((p) => ({ ...p, [enrollmentId]: false })); }
   }
 
-  const pendingCount  = prospectus.filter((d) => d.request_status === 'PENDING').length;
   const enrolledCount = prospectus.filter((d) => d.request_status === 'ENROLLED').length;
 
   return (
@@ -631,14 +594,13 @@ function EnrollmentTab() {
       <div>
         <div style={s.pageTitle}>Enrollment</div>
         <div style={s.pageSub}>
-          {activeTerm ? `Active term: ${activeTerm.school_year} - Semester ${activeTerm.semester}` : 'No active enrollment period.'}
+          {activeTerm ? `Select schedules for your approved subjects. Active term: ${activeTerm.school_year} - Semester ${activeTerm.semester}` : 'No active enrollment period. Check back later.'}
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <StatCard label="Term"          value={activeTerm ? activeTerm.school_year : 'Closed'} sub={activeTerm ? `Semester ${activeTerm.semester}` : 'check back later'} accent={activeTerm ? 'var(--app-success)' : 'var(--app-muted)'} />
-        <StatCard label="Pending"       value={pendingCount}    sub="awaiting admin"         accent="var(--app-warning)" />
-        <StatCard label="Pick Schedule" value={approved.length} sub="approved, no slot yet"  accent="var(--app-info)" />
+        <StatCard label="Pick Schedule" value={approved.length} sub="approved, awaiting slot"  accent="var(--app-info)" />
         <StatCard label="Enrolled"      value={enrolledCount}   sub="schedule confirmed"      accent="var(--app-success)" />
       </div>
 
@@ -656,11 +618,18 @@ function EnrollmentTab() {
       )}
 
       {activeTerm && !loadingMain && (
-        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-
-          {approved.length > 0 && (
-            <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden', flex: '1 1 520px', minWidth: 360 }}>
-              <SectionHeader title="Step 2 - Pick Your Schedule" right={`${approved.length} subject${approved.length !== 1 ? 's' : ''} need a schedule`} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {approved.length === 0 ? (
+            <div style={{ ...s.panel, gap: 12, textAlign: 'center' }}>
+              <div style={{ fontSize: 38, opacity: 0.25 }}>*</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--app-text)' }}>No approved subjects yet</div>
+              <div style={{ fontSize: 12, color: 'var(--app-muted)', lineHeight: 1.6 }}>
+                Go to the <strong>Prospectus</strong> tab to request subjects. Once approved by admin, you can select your schedules here.
+              </div>
+            </div>
+          ) : (
+            <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden' }}>
+              <SectionHeader title="Step 1 - Pick Your Schedule" right={`${approved.length} subject${approved.length !== 1 ? 's' : ''} approved`} />
               {approved.map((item) => {
                 const isOpen   = expandedEnr === item.enrollment_id;
                 const isActing = !!scheduling[item.enrollment_id];
@@ -724,103 +693,6 @@ function EnrollmentTab() {
               })}
             </div>
           )}
-
-          {/* Stage 1: Request subjects */}
-          <div style={{ ...s.panel, gap: 0, padding: 0, overflow: 'hidden', flex: '1 1 640px', minWidth: 420 }}>
-            <SectionHeader
-              title="Step 1 - Request Subjects"
-              right={selected.length > 0 ? `${selected.length} selected - ${committedUnits + selectedUnits} units total` : undefined}
-            />
-            {prospectus.length === 0
-              ? <div style={{ ...s.comingSoon, minHeight: 120 }}><div style={{ fontSize: 13, color: 'var(--app-muted)' }}>No subjects found for this term.</div></div>
-              : (
-                <>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                    <thead>
-                      <tr style={{ background: 'var(--app-panel)' }}>
-                        {['Code', 'Subject', 'Units', 'Prerequisites', 'Offer Code', 'Status'].map((h) => (
-                          <th key={h} style={s.th}>{h}</th>
-                        ))}
-                        <th style={{ ...s.th, width: 36 }}></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {prospectus.map((d, i) => {
-                        const alreadyReq = !!d.request_status;
-                        // FIX: use discipline_id as the selection key
-                        const isSelected = selected.includes(d.discipline_id);
-                        return (
-                          <tr
-                            key={d.discipline_id}
-                            onClick={() => !alreadyReq && toggleSelect(d.discipline_id)}
-                            style={{
-                              background: isSelected ? 'var(--app-accent-soft)' : i % 2 === 0 ? 'transparent' : 'rgba(148, 163, 184, 0.08)',
-                              borderBottom: '1px solid var(--app-border)',
-                              cursor: alreadyReq ? 'default' : 'pointer',
-                              opacity: alreadyReq ? 0.6 : 1,
-                              transition: 'background 0.1s',
-                            }}
-                          >
-                            <td style={{ ...s.td, fontFamily: 'monospace', color: 'var(--app-success)', fontSize: 11 }}>{d.code}</td>
-                            <td style={{ ...s.td, color: 'var(--app-text)' }}>{d.name}</td>
-                            <td style={{ ...s.td, color: 'var(--app-muted)', textAlign: 'center' }}>{d.units}</td>
-                            <td style={{ ...s.td }}>
-                              {d.prerequisites?.length > 0
-                                ? (
-                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                                    {d.prerequisites.map((p) => (
-                                      <span key={p} style={{ background: 'var(--app-panel)', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 4, padding: '1px 7px', fontSize: 11 }}>{p}</span>
-                                    ))}
-                                  </div>
-                                )
-                                : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>-</span>}
-                            </td>
-                            <td style={{ ...s.td, fontFamily: 'monospace', color: d.offer_code ? 'var(--app-success)' : 'var(--app-muted)', fontSize: 11 }}>
-                              {d.offer_code || '--'}
-                            </td>
-                            <td style={{ ...s.td }}>
-                              {d.request_status
-                                ? <StatusBadge status={d.request_status} />
-                                : <span style={{ color: 'var(--app-muted)', fontSize: 11 }}>Not requested</span>}
-                            </td>
-                            <td style={{ ...s.td, paddingRight: 20 }}>
-                              {!alreadyReq && (
-                                <span style={{
-                                  width: 15, height: 15, borderRadius: 3,
-                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                  border: isSelected ? '1px solid var(--app-success)' : '1px solid var(--app-border)',
-                                  background: isSelected ? 'var(--app-success)' : 'transparent',
-                                }}>
-                                  {isSelected && <span style={{ fontSize: 9, color: 'var(--app-surface-strong)', fontWeight: 700 }}>x</span>}
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-
-                  {selected.length > 0 && (
-                    <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border)', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--app-card)' }}>
-                      <span style={{ flex: 1, fontSize: 12, color: 'var(--app-muted)' }}>
-                        {selected.length} subject{selected.length !== 1 ? 's' : ''} selected
-                        <span style={{ color: 'var(--app-success)', fontWeight: 600 }}>+{selectedUnits} units</span>
-                      </span>
-                      <button
-                        onClick={() => setSelected([])}
-                        style={{ background: 'none', border: '1px solid var(--app-border)', color: 'var(--app-muted)', borderRadius: 6, padding: '7px 14px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
-                      >
-                        Clear
-                      </button>
-                      <button onClick={handleSubmitRequest} disabled={submitting} style={s.submitBtn(submitting)}>
-                        {submitting ? 'Submitting...' : 'Submit Request'}
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-          </div>
         </div>
       )}
     </>

@@ -387,9 +387,9 @@ export default function TeacherHome() {
       discipline: row.discipline_id || selected.discipline,
       offering: selected.id,
       term: selected.term,
-      prelim: row.prelim === '' ? null : row.prelim,
-      midterm: row.midterm === '' ? null : row.midterm,
-      finals: row.finals,
+      prelim: row.prelim === '' ? null : Number(row.prelim),
+      midterm: row.midterm === '' ? null : Number(row.midterm),
+      finals: row.finals === '' ? null : Number(row.finals),
       remarks: row.remarks,
     };
 
